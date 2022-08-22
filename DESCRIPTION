@@ -1,12 +1,23 @@
 Package: samEst
-Title: What the Package Does (One Line, Title Case)
+Title: Salmon Stock Recruitment Estimation Models
 Version: 0.0.0.9000
 Authors@R: 
-    person("First", "Last", , "first.last@example.com", role = c("aut", "cre"),
-           comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: What the package does (one paragraph).
-License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
-    license
+    c(person(given = "Catarina", 
+             family = "Wor",
+             email ="catarina.wor@dfo-mpo.gc.ca", 
+             role =  c("aut", "cre")),
+     person(given ="Dan", 
+            family = "Greenberg",
+            email = "Dan.Greenberg@dfo-mpo.gc.ca",
+            role = c("aut")))
+Description: Collection of salmon stock recruit estimation models including models with time-varying parameters and regime shifts. Models are written primarily with TMB and stan functions.
+License: `use_gpl3_license()` 
+URL: https://gitlab.com/chinook-technical-committee/programs/r-packages/ream
+BugReports: https://gitlab.com/chinook-technical-committee/programs/r-packages/ream/issues
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
+Depends: 
+    R (>= 4.2.0),
+    TMB, RcppEigen, tmbstan
 RoxygenNote: 7.2.1
+LazyData: true

@@ -1,0 +1,8 @@
+all: Ricker_simple.dll 
+
+Ricker_simple.dll: Ricker_simple.cpp
+	Rscript --vanilla -e "TMB::compile('Ricker_simple.cpp','-O1 -g', DLLFLAGS='', framework = 'TMBad')"
+
+
+clean:
+	rm -rf *.dll
