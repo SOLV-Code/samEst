@@ -21,13 +21,14 @@ rickerTMB <- function(data,  silent = FALSE, control = TMBcontrol()) {
   #===================================
   tmb_data <- list(
     obs_S = data$S,
-    obs_logRS = logRS
+    obs_logRS = data$logRS
   )
 
+  initlm<-lm(logRS~S, data=data)
 
   tmb_params <- list(
-    alpha   = lm(y~x, data=tmb_data)$coefficients[[1]],
-    logbeta = log(-lm(y~x, data=tmb_data)$coefficients[[2]]),
+    alpha   = initlm$coefficients[[1]],
+    logbeta = ifelse(initlm$coefficients[[2]]<0,1e-08,log(-initlm$coefficients[[2]])),
     logsigobs = log(1)
   )
 
@@ -53,8 +54,8 @@ rickerTMB <- function(data,  silent = FALSE, control = TMBcontrol()) {
   #todo add alpha, beta and sigma parameter esitimates
 
   structure(list(
-    alpha      = tmb_obj$report()$alpha,
-    beta      = tmb_obj$report()$beta,
+    alpha    = tmb_obj$report()$alpha,
+    beta     = tmb_obj$report()$beta,
     sig      = tmb_obj$report()$sigobs,
     model      = tmb_opt,
     data       = data,

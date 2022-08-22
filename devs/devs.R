@@ -31,3 +31,7 @@ harck<-har[!is.na(har$S),]
 
 setwd("C:\\Users\\worc\\Documents\\timevarproject\\samEst\\data")
 usethis::use_data(harck)
+
+
+
+taa<-rickerTMB(data=harck)
