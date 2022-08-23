@@ -5,26 +5,6 @@ bool isNA(Type x){
   return R_IsNA(asDouble(x));
 }
 
- // dlnorm
-template<class Type>
-Type dlnorm(Type x, Type meanlog, Type sdlog, int give_log=0){
-  Type logres;
-  logres = dnorm( log(x), meanlog, sdlog, true) - log(x);
-  //return 1/(sqrt(2*M_PI)*sd)*exp(-.5*pow((x-mean)/sd,2));
-  if(give_log)return logres; else return exp(logres);
-}
-
-template <class Type>
-Type dstudent(Type x, Type mean, Type sigma, Type df, int give_log = 0) {
-  // from metRology::dt.scaled()
-  // dt((x - mean)/sd, df, ncp = ncp, log = TRUE) - log(sd)
-  Type logres = dt((x - mean) / sigma, df, true) - log(sigma);
-  if (give_log)
-    return logres;
-  else
-    return exp(logres);
-}
-
 template<class Type>
 Type objective_function<Type>::operator() ()
 {

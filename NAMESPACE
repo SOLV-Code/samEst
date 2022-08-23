@@ -3,5 +3,6 @@
 export(TMBcontrol)
 export(get_convergence_diagnostics)
 export(rickerTMB)
+export(ricker_rwa_TMB)
 useDynLib(Ricker_simple)
-useDynLib(Rickerkf)
+useDynLib(Ricker_tva)

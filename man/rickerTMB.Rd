@@ -2,7 +2,7 @@
 % Please edit documentation in R/TMB_functions.R
 \name{rickerTMB}
 \alias{rickerTMB}
-\title{Simple Ricker model fir with TMB}
+\title{Simple Ricker model estimated with TMB}
 \usage{
 rickerTMB(data, silent = FALSE, control = TMBcontrol())
 }
@@ -14,5 +14,5 @@ rickerTMB(data, silent = FALSE, control = TMBcontrol())
 \item{control}{output from TMBcontrol() function, to be passed to nlminb()}
 }
 \description{
-Simple Ricker model fir with TMB
+Simple Ricker model estimated with TMB
 }

@@ -34,4 +34,6 @@ usethis::use_data(harck)
 
 
 
-taa<-rickerTMB(data=harck)
+p<-rickerTMB(data=harck)
+
+ptva <- ricker_rwa_TMB(data=harck)

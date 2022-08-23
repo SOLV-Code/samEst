@@ -4,7 +4,7 @@
 #https://github.com/pbs-assess/sdmTMB
 
 
-#' Simple Ricker model fir with TMB
+#' Simple Ricker model estimated with TMB
 #'
 #' @param data A list or data frame containing Spawners (S) and log(Recruits/Spawners) (logRS) time series. 
 #' 
@@ -75,6 +75,82 @@ rickerTMB <- function(data,  silent = FALSE, control = TMBcontrol()) {
 
 
 
+#' Ricker model with random walk in alpha parameter with TMB
+#'
+#' @param data A list or data frame containing Spawners (S) and log(Recruits/Spawners) (logRS) time series. 
+#' 
+#' @param silent Logical Silent or optimization details? default is FALSE
+#' @param control output from TMBcontrol() function, to be passed to nlminb()
+#' 
+#' 
+#' 
+#' @export
+ricker_rwa_TMB <- function(data,  silent = FALSE, control = TMBcontrol()) {
+
+  #===================================
+  #prepare TMB input and options
+  #===================================
+  tmb_data <- list(
+    obs_S = data$S,
+    obs_logRS = data$logRS
+  )
+
+  initlm<-lm(logRS~S, data=data)
+
+  tmb_params <- list(
+    alphao   = initlm$coefficients[[1]],
+    logbeta = ifelse(initlm$coefficients[[2]]<0,log(1e-08),log(-initlm$coefficients[[2]])),
+    logsigobs = log(1),
+    logsiga = log(1),
+    alpha = rep(1,length(tmb_data$obs_S))
+  )
+
+  #to be implemented
+  tmb_map <- list()
+  tmb_random <- NULL
+
+  #===================================
+  # TMB fit
+  #===================================
+
+  tmb_obj <- TMB::MakeADFun(
+      data = tmb_data, parameters = tmb_params, map = tmb_map,
+      random = tmb_random, DLL = "Ricker_tva", silent = silent)
+  
+  tmb_opt <- stats::nlminb(
+    start = tmb_obj$par, objective = tmb_obj$fn, gradient = tmb_obj$gr,
+    control = control)
+  
+  sd_report <- TMB::sdreport(tmb_obj)
+  conv <- get_convergence_diagnostics(sd_report)
+
+  #todo add alpha, beta and sigma parameter esitimates
+
+  structure(list(
+    alpha    = tmb_obj$report()$alpha,
+    beta     = tmb_obj$report()$beta,
+    sig      = tmb_obj$report()$sigobs,
+    siga      = tmb_obj$report()$siga,
+    model      = tmb_opt,
+    data       = data,
+    tmb_data   = tmb_data,
+    tmb_params = tmb_params,
+    tmb_map    = tmb_map,
+    tmb_random = tmb_random,
+    tmb_obj    = tmb_obj,
+    gradients  = conv$final_grads,
+    bad_eig    = conv$bad_eig,
+    call       = match.call(expand.dots = TRUE),
+    sd_report  = sd_report),
+    class      = "Ricker_tva")
+
+}
+
+
+
+
+
+
 
 
 #' Optimization control options. Copied from sdmTMB
@@ -133,7 +209,7 @@ get_convergence_diagnostics <- function(sd_report) {
 #' This tag will populate the namespace with compiled c++ functions upon package install.
 #'
 #' @useDynLib Ricker_simple
-#' @useDynLib Rickerkf
+#' @useDynLib Ricker_tva
 #'
 dummy <- function(){
   return(NULL)
