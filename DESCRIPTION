@@ -20,7 +20,7 @@ Depends:
     R (>= 4.2.0),
     TMB, RcppEigen, tmbstan
 RoxygenNote: 7.2.1
-LazyData: truewarnings()
+LazyData: true
 Biarch: true
 Imports: 
     methods,

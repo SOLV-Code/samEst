@@ -34,6 +34,9 @@ har<-data.frame(by=sr$Brood.Year,
 data(harck)
 
 
+
+##testing functions
+
 p<-rickerTMB(data=harck)
 
 ptva <- ricker_rwa_TMB(data=harck)
@@ -45,7 +48,7 @@ phmm <- ricker_HMM_TMB(data=harck)
 
 ptvb <- ricker_rwb_TMB(data=harck)
 
-
+#stan functions
 stn <- rickerstan(data=harck,warmup = 500, chains = 4, iter = 2000, thin = 1)
 
 
