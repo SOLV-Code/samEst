@@ -1,4 +1,4 @@
-all: Ricker_simple.dll  Ricker_tva.dll 
+all: Ricker_simple.dll  Ricker_tva.dll SR_HMM.dll
 
 Ricker_simple.dll: Ricker_simple.cpp
 	Rscript --vanilla -e "TMB::compile('Ricker_simple.cpp','-O1 -g', DLLFLAGS='', framework = 'TMBad')"
@@ -6,6 +6,9 @@ Ricker_simple.dll: Ricker_simple.cpp
 Ricker_tva.dll: Ricker_tva.cpp
 	Rscript --vanilla -e "TMB::compile('Ricker_tva.cpp','-O1 -g', DLLFLAGS='', framework = 'TMBad')"
 
+
+SR_HMM.dll: SR_HMM.cpp
+	Rscript --vanilla -e "TMB::compile('SR_HMM.cpp','-O1 -g', DLLFLAGS='', framework = 'TMBad')"
 
 clean:
 	rm -rf *.dll

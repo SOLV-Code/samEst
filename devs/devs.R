@@ -31,9 +31,13 @@ harck<-har[!is.na(har$S),]
 
 setwd("C:\\Users\\worc\\Documents\\timevarproject\\samEst\\data")
 usethis::use_data(harck)
-
+data(harck)
 
 
 p<-rickerTMB(data=harck)
 
 ptva <- ricker_rwa_TMB(data=harck)
+
+phmm <- ricker_HMM_TMB(data=harck)
+
+plot(ptva$alpha, type="b")

@@ -6,5 +6,8 @@ Ricker_simple.so: Ricker_simple.cpp
 Ricker_tva.so: Ricker_tva.cpp
 	Rscript --vanilla -e "TMB::compile('Ricker_tva.cpp')"
 
+SR_HMM.so: SR_HMM.cpp
+	Rscript --vanilla -e "TMB::compile('SR_HMM.cpp')"
+
 clean:
 	rm -rf *o
