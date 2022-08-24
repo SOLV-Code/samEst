@@ -32,7 +32,9 @@ ricker_HMM_TMB(
 \item{control}{output from TMBcontrol() function, to be passed to nlminb()}
 
 \item{ini_param}{Optional. A list with initial parameter guesses. The list should contain: lalpha (vector of length k_regime),
-lbeta (vector of length k_regime), lsigma (vector of length k_regime), pi1_tran (vector of length k_regime-1), and qij_tran (matrix with nrow=k_regime, and ncol=k_regime-1)}
+lbeta (vector of length k_regime), lsigma (vector of length k_regime), pi1_tran (vector of length k_regime-1),
+and qij_tran (matrix with nrow=k_regime, and ncol=k_regime-1). Keep in mind that the main
+parameters (alpha, beta and sigma) are transformed with a logistic function to account for the custom upper and lower values.}
 }
 \value{
 a list containing several model outputs:

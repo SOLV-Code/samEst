@@ -27,10 +27,10 @@ har<-data.frame(by=sr$Brood.Year,
 	logRS=log(sr$AEQ_Recruitment..age.2.5./sr$Sum.Total.Spawners))
 
 
-harck<-har[!is.na(har$S),]
+#harck<-har[!is.na(har$S),]
 
-setwd("C:\\Users\\worc\\Documents\\timevarproject\\samEst\\data")
-usethis::use_data(harck)
+#setwd("C:\\Users\\worc\\Documents\\timevarproject\\samEst\\data")
+#usethis::use_data(harck)
 data(harck)
 
 
@@ -38,6 +38,9 @@ p<-rickerTMB(data=harck)
 
 ptva <- ricker_rwa_TMB(data=harck)
 
+plot(ptva$alpha, type="b")
+
 phmm <- ricker_HMM_TMB(data=harck)
 
-plot(ptva$alpha, type="b")
+
+ptvb <- ricker_rwb_TMB(data=harck)

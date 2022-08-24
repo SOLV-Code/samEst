@@ -20,7 +20,7 @@ ricker_rwa_TMB(
 \item{control}{output from TMBcontrol() function, to be passed to nlminb()}
 
 \item{ini_param}{Optional. A list with initial parameter guesses. The list should contain: alphao (a number),
-logbeta (a number), logsigobs (a number), logsiga (a number), and alpha ( a vector with the same length as the data)}
+logbeta (a number), logsigobs (a number), logsiga (a number), and alpha ( a vector with the same length as the data).}
 
 \item{tmb_map}{optional, mapping list indicating if parameters should be estimated of fixed.
 Default is all parameters are estimated}
