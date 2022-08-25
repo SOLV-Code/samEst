@@ -1534,6 +1534,6 @@ log_lik_oos_5bw = normal_lpdf(y_oos|log_a_5bw - x_oos*b_5bw, sigma_5bw);
 
 "}
 }
-m2=stan_model(model_code = m)
+m2=rstan::stan_model(model_code = m)
 return(m2)  
 }
