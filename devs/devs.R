@@ -49,7 +49,7 @@ phmm <- ricker_HMM_TMB(data=harck)
 ptvb <- ricker_rwb_TMB(data=harck)
 
 #stan functions
-stn <- rickerstan(data=harck,warmup = 500, chains = 4, iter = 2000, thin = 1)
+
 
 
 
