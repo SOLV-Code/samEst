@@ -6,5 +6,5 @@ Install instructions
 In R:
 ```{r} 
 install.packages("remotes") 
-remotes::install_git('https://gitlab.com/chinook-technical-committee/programs/r-packages/ream')
+remotes::install_git('https://github.com/Pacific-salmon-assess/samEst')
 ```
