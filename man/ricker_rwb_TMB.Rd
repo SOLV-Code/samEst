@@ -47,3 +47,8 @@ a list containing several model outputs:
 \description{
 Ricker model with random walk in log(beta) parameter with TMB
 }
+\examples{
+data(harck)
+ricker_rwb_TMB(data=harck)
+
+}

@@ -37,3 +37,8 @@ a list containing several model outputs:
 \description{
 Simple Ricker model estimated with TMB
 }
+\examples{
+data(harck)
+rickerTMB(data=harck)
+
+}

@@ -67,3 +67,7 @@ Ricker hidden markov model with regime shiftts for alpha and beta.
 This model was published in Tang et al. 2021 Identification of recruitment regime shifts with a hidden Markov stock-recruitment model.
 The code for this model was a contribution by Xiaozhuo Tang.
 }
+\examples{
+data(harck)
+ricker_HMM_TMB(data=harck)
+}

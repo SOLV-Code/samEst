@@ -28,9 +28,14 @@
 #' * sd_report - MLE estimates and sdt Error estimates for main parameter estimates
 #' * class - name of cpp model
 #' 
-#' 
+#' @importFrom stats nlminb 
 #' 
 #' @export
+#' 
+#' @examples
+#' data(harck)
+#' rickerTMB(data=harck)
+#' 
 rickerTMB <- function(data,  silent = FALSE, control = TMBcontrol(),  tmb_map = list()) {
 
   #===================================
@@ -121,6 +126,11 @@ rickerTMB <- function(data,  silent = FALSE, control = TMBcontrol(),  tmb_map = 
 #' 
 #' 
 #' @export
+#' @examples 
+#' data(harck)
+#' ricker_rwa_TMB(data=harck)
+#' 
+#' 
 ricker_rwa_TMB <- function(data,  silent = FALSE, control = TMBcontrol(), ini_param=NULL, tmb_map = list()) {
 
   #===================================
@@ -221,6 +231,10 @@ ricker_rwa_TMB <- function(data,  silent = FALSE, control = TMBcontrol(), ini_pa
 #' 
 #' 
 #' @export
+#' @examples 
+#' data(harck)
+#' ricker_rwb_TMB(data=harck)
+#' 
 ricker_rwb_TMB <- function(data,  silent = FALSE, control = TMBcontrol(), ini_param=NULL, tmb_map = list()) {
 
   #===================================
@@ -332,6 +346,9 @@ ricker_rwb_TMB <- function(data,  silent = FALSE, control = TMBcontrol(), ini_pa
 #' }
 #' 
 #' @export
+#' @examples 
+#' data(harck)
+#' ricker_HMM_TMB(data=harck)
 ricker_HMM_TMB <- function(data, k_regime=2, alpha_limits=c(0,20), beta_upper=.1, sigma_upper=2, 
   silent = FALSE, control = TMBcontrol(), ini_param=NULL, tmb_map = list()) {
 
