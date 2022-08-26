@@ -45,13 +45,17 @@ lfostatic<-tmb_mod_lfo_cv(data=harck,tv.par='static')
 names(p)
 
 ptva <- ricker_rwa_TMB(data=harck)
-
 plot(ptva$alpha, type="b")
+
+lfoalpha <- tmb_mod_lfo_cv(data=harck,tv.par='alpha')
 
 phmm <- ricker_HMM_TMB(data=harck)
 
 
 ptvb <- ricker_rwb_TMB(data=harck)
+
+
+ptvab <- ricker_rwab_TMB(data=harck)
 
 #stan functions
 
