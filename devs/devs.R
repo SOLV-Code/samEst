@@ -39,6 +39,11 @@ data(harck)
 
 p<-rickerTMB(data=harck)
 
+lfostatic<-tmb_mod_lfo_cv(data=harck,tv.par='static')
+
+
+names(p)
+
 ptva <- ricker_rwa_TMB(data=harck)
 
 plot(ptva$alpha, type="b")
