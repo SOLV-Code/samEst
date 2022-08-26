@@ -6,7 +6,7 @@
 
 
  devtools::document()
- devtools::load_all()
+devtools::load_all()
 
 
 
@@ -50,6 +50,9 @@ plot(ptva$alpha, type="b")
 lfoalpha <- tmb_mod_lfo_cv(data=harck,tv.par='alpha')
 
 phmm <- ricker_HMM_TMB(data=harck)
+
+phmm[1:7]
+lfohmm <- tmb_mod_lfo_cv(data=harck,tv.par='HMM')
 
 
 ptvb <- ricker_rwb_TMB(data=harck)

@@ -8,7 +8,7 @@
 #'
 #' @param data A list or data frame containing Spawners (S) and log(Recruits/Spawners) (logRS) time series. 
 #' 
-#' @param tv.par string. Which parameters are time-varying? Options are c('static','alpha','beta','both')
+#' @param tv.par string. Which parameters are time-varying? Options are c('static','alpha','beta','both', 'HMM')
 #' @param L starting point for LFO-CV (min. 10)
 #' 
 #' 
@@ -72,7 +72,9 @@ tmb_mod_lfo_cv=function(data,tv.par=c('static','alpha','beta','both'),L=10){
     exact_elpds_1b=exact_elpds_1b[-(1:L)]
     exact_elpds_3b=exact_elpds_3b[-(1:L)]
     exact_elpds_5b=exact_elpds_5b[-(1:L)]
-    return(list(exact_elpds_1b,exact_elpds_3b,exact_elpds_5b))
+    return(list(lastparam=exact_elpds_1b,
+    	last3paramavg=exact_elpds_3b,
+    	last5paramavg=exact_elpds_5b))
   }else if(tv.par=='beta'){
   	#stop("not defined")
     exact_elpds_1b <- numeric(nrow(data)) #loglik for 1-year back estimates of productivity/capacity
@@ -97,7 +99,9 @@ tmb_mod_lfo_cv=function(data,tv.par=c('static','alpha','beta','both'),L=10){
     exact_elpds_1b=exact_elpds_1b[-(1:L)]
     exact_elpds_3b=exact_elpds_3b[-(1:L)]
     exact_elpds_5b=exact_elpds_5b[-(1:L)]
-    return(list(exact_elpds_1b,exact_elpds_3b,exact_elpds_5b))
+    return(list(lastparam=exact_elpds_1b,
+    	last3paramavg=exact_elpds_3b,
+    	last5paramavg=exact_elpds_5b))
   }else if(tv.par=='both'){
   	
     exact_elpds_1b <- numeric(nrow(data)) #loglik for 1-year back estimates of productivity/capacity
@@ -122,11 +126,45 @@ tmb_mod_lfo_cv=function(data,tv.par=c('static','alpha','beta','both'),L=10){
     exact_elpds_1b=exact_elpds_1b[-(1:L)]
     exact_elpds_3b=exact_elpds_3b[-(1:L)]
     exact_elpds_5b=exact_elpds_5b[-(1:L)]
-    return(list(exact_elpds_1b,exact_elpds_3b,exact_elpds_5b))
+    return(list(lastparam=exact_elpds_1b,
+    	last3paramavg=exact_elpds_3b,
+    	last5paramavg=exact_elpds_5b))
   }else if(tv.par=='HMM'){
     #stop("not defined")
+    exact_elpds_1k <- numeric(nrow(data)) #loglik choosing a specific regime in a given year
+    exact_elpds_wk <- numeric(nrow(data)) #loglik using weighted average of regimes
+    
+    for (i in L:(nrow(data) - 1)) {
+      past <- 1:i
+      oos <- i + 1
+      df_past <- data[past, , drop = FALSE]
+      df_oos <- data[c(past, oos), , drop = FALSE]
+      
+      fit_past_hmm_tmb<- ricker_HMM_TMB(data=df_past)
+
+     
+      alpha <- fit_past_hmm_tmb$alpha[fit_past_hmm_tmb$regime]
+      alphaw <- fit_past_hmm_tmb$alpha%*%fit_past_hmm_tmb$probregime
+      beta <- fit_past_hmm_tmb$beta[fit_past_hmm_tmb$regime]
+      betaw <- fit_past_hmm_tmb$beta%*%fit_past_hmm_tmb$probregime
+      sigma <- fit_past_hmm_tmb$sigma[fit_past_hmm_tmb$regime]
+      sigmaw <- sqrt((fit_past_hmm_tmb$sigma^2)%*%fit_past_hmm_tmb$probregime)
+
+      rs_pred_1k=alpha[i]-beta[i]*df_oos$S[i + 1]
+      rs_pred_wk=alphaw[i]-betaw[i]*df_oos$S[i + 1]
+      
+      
+      exact_elpds_1k[i+1] <- log(dnorm(df_oos$logRS[i+1],mean=rs_pred_1k,sd=sigma[i]))
+      exact_elpds_wk[i+1] <- log(dnorm(df_oos$logRS[i+1],mean=rs_pred_wk,sd=sigmaw[i]))
+    }
+    exact_elpds_1k=exact_elpds_1k[-(1:L)]
+    exact_elpds_wk=exact_elpds_wk[-(1:L)]
+    
+    return(list(regime_pick=exact_elpds_1k,
+    	regime_average=exact_elpds_wk))
+
   }else{
-  	stop(paste("tv.par", tv.par,"not defined, valid options are c('static','alpha','beta','both')"))
+  	stop(paste("tv.par", tv.par,"not defined, valid options are c('static','alpha','beta','both', 'HMM')"))
   }
 }
 

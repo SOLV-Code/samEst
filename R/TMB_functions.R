@@ -481,9 +481,9 @@ ricker_HMM_TMB <- function(data, k_regime=2, alpha_limits=c(0,20), beta_upper=.1
          
         lalpha = -(1:k_regime+1),
          lbeta = rep(log(1/max(data$S))+1,k_regime),
-         lsigma = rep(log(1),k_regime),
-         pi1_tran = rep(0,k_regime-1),
-         qij_tran = matrix(0,nrow=k_regime,ncol=k_regime-1)          
+         lsigma = rep(log(.5),k_regime),
+         pi1_tran = rep(0.5,k_regime-1),
+         qij_tran = matrix(0.1,nrow=k_regime,ncol=k_regime-1)          
        )  
 
   }else{
@@ -517,6 +517,7 @@ ricker_HMM_TMB <- function(data, k_regime=2, alpha_limits=c(0,20), beta_upper=.1
     sigma      = tmb_obj$report()$sigma,
     pi1      = tmb_obj$report()$pi1,
     qij      = tmb_obj$report()$qij,
+    probregime =  tmb_obj$report()$r_pred,
     regime =  apply(tmb_obj$report()$r_pred, 2,which.max),
     model      = tmb_opt,
     data       = data,

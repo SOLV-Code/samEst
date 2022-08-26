@@ -9,7 +9,7 @@ tmb_mod_lfo_cv(data, tv.par = c("static", "alpha", "beta", "both"), L = 10)
 \arguments{
 \item{data}{A list or data frame containing Spawners (S) and log(Recruits/Spawners) (logRS) time series.}
 
-\item{tv.par}{string. Which parameters are time-varying? Options are c('static','alpha','beta','both')}
+\item{tv.par}{string. Which parameters are time-varying? Options are c('static','alpha','beta','both', 'HMM')}
 
 \item{L}{starting point for LFO-CV (min. 10)}
 }
