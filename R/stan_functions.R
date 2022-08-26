@@ -7,7 +7,7 @@
 #' @param par For time-varying or regime S-R models, what parameter should vary? Either productivity (intercept, a), capacity (slope, b) or both parameters
 #' @param loglik TRUE or FALSE statement that dictates whether model is being used for out-of-sample log-likelihood estimation
 #' @return returns the compiled rstan code for a given S-R model
-#' @importFrom rstan stan_model()
+#' @importFrom rstan stan_model
 #' @export
 #' @examples
 #' m2=sr_mod(type='static',ac = TRUE,par='n',loglik=T)
