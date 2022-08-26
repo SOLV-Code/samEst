@@ -20,7 +20,6 @@ Depends:
     R (>= 4.1.0)
 Imports:
     TMB (>= 1.8.0)
-    rstan (>= 2.21)
 RoxygenNote: 7.2.1
 LazyData: true
 
