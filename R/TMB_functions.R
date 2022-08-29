@@ -45,12 +45,13 @@ rickerTMB <- function(data,  silent = FALSE, control = TMBcontrol(),  tmb_map = 
     obs_S = data$S,
     obs_logRS = data$logRS
   )
-
-  initlm<-lm(logRS~S, data=data)
+  
+  magS <- log10_ceiling(max(data$S))
+  initlm <- lm(logRS~S, data=data)
 
   tmb_params <- list(
     alpha   = initlm$coefficients[[1]],
-    logbeta = ifelse(initlm$coefficients[[2]]>0,1e-08,log(-initlm$coefficients[[2]])),
+    logbeta = ifelse(initlm$coefficients[[2]]>0,log(magS),log(-initlm$coefficients[[2]])),
     logsigobs = log(1)
   )
 
@@ -144,9 +145,10 @@ ricker_rwa_TMB <- function(data,  silent = FALSE, control = TMBcontrol(), ini_pa
   
 
   if(is.null(ini_param)){
+     magS <- log10_ceiling(max(data$S))
      initlm<-lm(logRS~S, data=data)
      tmb_params <- list(alphao   = initlm$coefficients[[1]],
-                   logbeta = ifelse(initlm$coefficients[[2]]>0,log(1e-08),log(-initlm$coefficients[[2]])),
+                   logbeta = ifelse(initlm$coefficients[[2]]>0,log(magS),log(-initlm$coefficients[[2]])),
                    logsigobs = log(.5),
                    logsiga = log(.5),
                    alpha = rep(1,length(tmb_data$obs_S))
@@ -248,8 +250,9 @@ ricker_rwb_TMB <- function(data,  silent = FALSE, control = TMBcontrol(), ini_pa
   
 
   if(is.null(ini_param)){
+     magS <- log10_ceiling(max(data$S))
      initlm<-lm(logRS~S, data=data)
-     tmb_params <- list(logbetao = ifelse(initlm$coefficients[[2]]>0,log(1e-06),log(-initlm$coefficients[[2]])),
+     tmb_params <- list(logbetao = ifelse(initlm$coefficients[[2]]>0,log(magS),log(-initlm$coefficients[[2]])),
                         alpha   = initlm$coefficients[[1]],                 
                         logsigobs = log(.5),
                         logsigb = log(.5),
@@ -355,8 +358,9 @@ ricker_rwab_TMB <- function(data,  silent = FALSE, control = TMBcontrol(), ini_p
   
 
   if(is.null(ini_param)){
+     magS <- log10_ceiling(max(data$S))
      initlm<-lm(logRS~S, data=data)
-     tmb_params <- list(logbetao = ifelse(initlm$coefficients[[2]]>0,log(1e-06),log(-initlm$coefficients[[2]])),
+     tmb_params <- list(logbetao = ifelse(initlm$coefficients[[2]]>0,log(magS),log(-initlm$coefficients[[2]])),
                         alphao   = initlm$coefficients[[1]],                 
                         logsigobs = log(.5),
                         logsiga = log(.5),
@@ -475,7 +479,8 @@ ricker_HMM_TMB <- function(data, k_regime=2, alpha_limits=c(0,20), beta_upper=.1
   )  
 
   if(is.null(ini_param)){
-    initlm<-lm(logRS~S, data=data)
+     #magS <- log10_ceiling(max(data$S))
+    #initlm<-lm(logRS~S, data=data)
     
     tmb_params <- list( 
          
