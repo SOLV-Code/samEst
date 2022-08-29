@@ -50,7 +50,7 @@ rickerTMB <- function(data,  silent = FALSE, control = TMBcontrol(),  tmb_map = 
 
   tmb_params <- list(
     alpha   = initlm$coefficients[[1]],
-    logbeta = ifelse(initlm$coefficients[[2]]<0,1e-08,log(-initlm$coefficients[[2]])),
+    logbeta = ifelse(initlm$coefficients[[2]]>0,1e-08,log(-initlm$coefficients[[2]])),
     logsigobs = log(1)
   )
 
