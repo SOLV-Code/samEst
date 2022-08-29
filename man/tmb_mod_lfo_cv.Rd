@@ -4,7 +4,12 @@
 \alias{tmb_mod_lfo_cv}
 \title{Simple Ricker model estimated with TMB}
 \usage{
-tmb_mod_lfo_cv(data, tv.par = c("static", "alpha", "beta", "both"), L = 10)
+tmb_mod_lfo_cv(
+  data,
+  tv.par = c("static", "alpha", "beta", "both"),
+  L = 10,
+  siglfo = c("obs", "total")
+)
 }
 \arguments{
 \item{data}{A list or data frame containing Spawners (S) and log(Recruits/Spawners) (logRS) time series.}
@@ -12,6 +17,10 @@ tmb_mod_lfo_cv(data, tv.par = c("static", "alpha", "beta", "both"), L = 10)
 \item{tv.par}{string. Which parameters are time-varying? Options are c('static','alpha','beta','both', 'HMM')}
 
 \item{L}{starting point for LFO-CV (min. 10)}
+
+\item{siglfo}{string. Incating whether full variance should be used for lfo of models with random walks in parameters
+"obs" incates that only observation variance is considered for lfo calculations, "total" indicates that sum of
+process and observation variances are used. Option valud only for 'alpha' tv par.}
 }
 \value{
 vector of lfo by year

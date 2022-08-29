@@ -10,6 +10,9 @@
 #' 
 #' @param tv.par string. Which parameters are time-varying? Options are c('static','alpha','beta','both', 'HMM')
 #' @param L starting point for LFO-CV (min. 10)
+#' @param siglfo string. Incating whether full variance should be used for lfo of models with random walks in parameters
+#' "obs" incates that only observation variance is considered for lfo calculations, "total" indicates that sum of 
+#' process and observation variances are used. Option valud only for 'alpha' tv par. 
 #' 
 #' 
 #' @returns vector of lfo by year
@@ -22,7 +25,7 @@
 #' data(harck)
 #' rickerTMB(data=harck)
 #' 
-tmb_mod_lfo_cv=function(data,tv.par=c('static','alpha','beta','both'),L=10){
+tmb_mod_lfo_cv=function(data,tv.par=c('static','alpha','beta','both'),L=10, siglfo=c("obs","total")){
   #df = full data frame
   #ac = autocorrelation, if ac=T then implement AR-1
   #L = starting point for LFO-CV (min. 10)
@@ -65,9 +68,20 @@ tmb_mod_lfo_cv=function(data,tv.par=c('static','alpha','beta','both'),L=10){
       rs_pred_3b=mean(fit_past_tv_a_tmb$alpha[(i-2):i])-fit_past_tv_a_tmb$beta*df_oos$S[i + 1]
       rs_pred_5b=mean(fit_past_tv_a_tmb$alpha[(i-4):i])-fit_past_tv_a_tmb$beta*df_oos$S[i + 1]
       
-      exact_elpds_1b[i+1] <- log(dnorm(df_oos$logRS[i+1],mean=rs_pred_1b,sd=exp(fit_past_tv_a_tmb$sig)))
-      exact_elpds_3b[i+1] <- log(dnorm(df_oos$logRS[i+1],mean=rs_pred_3b,sd=exp(fit_past_tv_a_tmb$sig)))
-      exact_elpds_5b[i+1] <- log(dnorm(df_oos$logRS[i+1],mean=rs_pred_5b,sd=exp(fit_past_tv_a_tmb$sig)))
+      if(siglfo=="obs"){
+        exact_elpds_1b[i+1] <- log(dnorm(df_oos$logRS[i+1],mean=rs_pred_1b,sd=fit_past_tv_a_tmb$sig))
+        exact_elpds_3b[i+1] <- log(dnorm(df_oos$logRS[i+1],mean=rs_pred_3b,sd=fit_past_tv_a_tmb$sig))
+        exact_elpds_5b[i+1] <- log(dnorm(df_oos$logRS[i+1],mean=rs_pred_5b,sd=fit_past_tv_a_tmb$sig))
+      }else if(siglfo=="total"){
+
+        sigtot <-sqrt(fit_past_tv_a_tmb$sig^2+fit_past_tv_a_tmb$siga^2)
+        exact_elpds_1b[i+1] <- log(dnorm(df_oos$logRS[i+1],mean=rs_pred_1b,sd=sigtot))
+        exact_elpds_3b[i+1] <- log(dnorm(df_oos$logRS[i+1],mean=rs_pred_3b,sd=sigtot))
+        exact_elpds_5b[i+1] <- log(dnorm(df_oos$logRS[i+1],mean=rs_pred_5b,sd=sigtot))
+      }else{
+        stop("siglfo incorrectly defined options are `total` or `obs`")
+      }
+      
     }
     exact_elpds_1b=exact_elpds_1b[-(1:L)]
     exact_elpds_3b=exact_elpds_3b[-(1:L)]
