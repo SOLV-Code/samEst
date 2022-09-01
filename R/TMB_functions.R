@@ -252,12 +252,11 @@ ricker_rwb_TMB <- function(data,  silent = FALSE, control = TMBcontrol(), ini_pa
   if(is.null(ini_param)){
      magS <- log10_ceiling(max(data$S))
      initlm<-lm(logRS~S, data=data)
-     tmb_params <- list(logbetao = ifelse(initlm$coefficients[[2]]>0,log(magS),log(-initlm$coefficients[[2]])),
-                        alpha   = initlm$coefficients[[1]],                 
+     tmb_params <- list(logbetao = ifelse(initlm$coefficients[[2]]>0,log(1/max(data$S)),log(-initlm$coefficients[[2]])),
+                        alpha   = abs(initlm$coefficients[[1]]),                 
                         logsigobs = log(.5),
-                        logsigb = log(.5),
-                        logbeta=log(rep(ifelse(initlm$coefficients[[2]]>0,log(1e-06),-initlm$coefficients[[2]]),length(data$S)))
-                  
+                        logsigb = log(.2),
+                        logbeta=rep(ifelse(initlm$coefficients[[2]]>0,log(1/max(data$S)),log(-initlm$coefficients[[2]])),length(data$S))                  
      )
 
   }else{

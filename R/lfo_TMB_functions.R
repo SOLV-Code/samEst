@@ -100,11 +100,26 @@ tmb_mod_lfo_cv=function(data,tv.par=c('static','alpha','beta','both'),L=10, sigl
       df_past <- data[past, , drop = FALSE]
       df_oos <- data[c(past, oos), , drop = FALSE]
       
-      fit_past_tv_b_tmb<- ricker_rwb_TMB(df=df_past)
+      fit_past_tv_b_tmb<- ricker_rwb_TMB(data=df_past)
       
       rs_pred_1b=fit_past_tv_b_tmb$alpha-fit_past_tv_b_tmb$beta[i]*df_oos$S[i + 1]
       rs_pred_3b=fit_past_tv_b_tmb$alpha-mean(fit_past_tv_b_tmb$beta[(i-2):i])*df_oos$S[i + 1]
       rs_pred_5b=fit_past_tv_b_tmb$alpha-mean(fit_past_tv_b_tmb$beta[(i-4):i])*df_oos$S[i + 1]
+
+      if(siglfo=="obs"){
+        exact_elpds_1b[i+1] <- log(dnorm(df_oos$logRS[i+1],mean=rs_pred_1b,sd=fit_past_tv_a_tmb$sig))
+        exact_elpds_3b[i+1] <- log(dnorm(df_oos$logRS[i+1],mean=rs_pred_3b,sd=fit_past_tv_a_tmb$sig))
+        exact_elpds_5b[i+1] <- log(dnorm(df_oos$logRS[i+1],mean=rs_pred_5b,sd=fit_past_tv_a_tmb$sig))
+      }else if(siglfo=="total"){
+
+        sigtot <-sqrt(fit_past_tv_a_tmb$sig^2+fit_past_tv_a_tmb$siga^2)
+        exact_elpds_1b[i+1] <- log(dnorm(df_oos$logRS[i+1],mean=rs_pred_1b,sd=sigtot))
+        exact_elpds_3b[i+1] <- log(dnorm(df_oos$logRS[i+1],mean=rs_pred_3b,sd=sigtot))
+        exact_elpds_5b[i+1] <- log(dnorm(df_oos$logRS[i+1],mean=rs_pred_5b,sd=sigtot))
+      }else{
+        stop("siglfo incorrectly defined options are `total` or `obs`")
+      }
+      
       
       exact_elpds_1b[i+1] <- log(dnorm(df_oos$logRS[i+1],mean=rs_pred_1b,sd=exp(fit_past_tv_b_tmb$sig)))
       exact_elpds_3b[i+1] <- log(dnorm(df_oos$logRS[i+1],mean=rs_pred_3b,sd=exp(fit_past_tv_b_tmb$sig)))
