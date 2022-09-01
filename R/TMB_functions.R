@@ -478,18 +478,26 @@ ricker_HMM_TMB <- function(data, k_regime=2, alpha_limits=c(0,20), beta_upper=.1
   )  
 
   if(is.null(ini_param)){
-     #magS <- log10_ceiling(max(data$S))
-    #initlm<-lm(logRS~S, data=data)
+     magS <- 1/log10_ceiling(max(data$S))
+    initlm<-lm(logRS~S, data=data)
+    bguess<-ifelse(initlm$coefficients[[2]]>0,(magS),initlm$coefficients[[2]])
     
-    tmb_params <- list( 
-         
-        lalpha = -(1:k_regime+1),
-         lbeta = rep(log(1/max(data$S))+1,k_regime),
-         lsigma = rep(log(.5),k_regime),
+    tmb_params <- list(        
+        lalpha = rep(find_linit(alpha_limits[2],alpha_limits[1],initlm$coefficients[[1]]),
+          k_regime),
+         lbeta = rep(find_linit(beta_upper,0,-bguess),k_regime),
+         lsigma = rep(find_linit(sigma_upper,0,.1),k_regime),
          pi1_tran = rep(0.5,k_regime-1),
          qij_tran = matrix(0.1,nrow=k_regime,ncol=k_regime-1)          
        )  
-
+   #tmb_params <- list( 
+   #      
+   #     lalpha = find_linit(alpha_limits[2],alpha_limits[1],initlm$coefficients[[1]]),
+   #      lbeta = rep(log(1/max(data$S))+1,k_regime),
+   #      lsigma = rep(log(.5),k_regime),
+   #      pi1_tran = rep(0.5,k_regime-1),
+   #      qij_tran = matrix(0.1,nrow=k_regime,ncol=k_regime-1)          
+   #    )  
   }else{
     tmb_params <-ini_param
   }

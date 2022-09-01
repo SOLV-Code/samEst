@@ -23,7 +23,7 @@ log10_ceiling <- function(x) {
 #' @param L a number. lower limit for parameter 
 #' @param initpar Inital value of parameter to be transformed 
 #' 
-#' 
+#' @export
 #' @returns order of magnitude
 #' 
 #' 
