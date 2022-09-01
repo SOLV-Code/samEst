@@ -15,7 +15,30 @@ log10_ceiling <- function(x) {
     10^(ceiling(log10(x)))
 }
 
-log10_ceiling(max(data$S))
+
+
+#' Find lalpha intial value for logistic transformed TMB HMM model parameters
+#'
+#' @param U a number. upper limit for parameter 
+#' @param L a number. lower limit for parameter 
+#' @param initpar Inital value of parameter to be transformed 
+#' 
+#' 
+#' @returns order of magnitude
+#' 
+#' 
+find_linit <- function(U, L, initpar) {
+    linitpar <- -log((U-L)/(initpar-L)-1)
+
+    return( linitpar)
+}
+
+
+
+
+
+
+
 
 
 
