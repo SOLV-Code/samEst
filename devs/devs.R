@@ -60,6 +60,11 @@ ptvb <- ricker_rwb_TMB(data=harck)
 
 ptvab <- ricker_rwab_TMB(data=harck)
 
+
+phmma<-ricker_HMM_TMB_a(data=harck)
+
+phmmb<-ricker_HMM_TMB_b(data=harck)
+
 #stan functions
 
 
