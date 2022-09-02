@@ -31,6 +31,7 @@ har<-data.frame(by=sr$Brood.Year,
 
 #setwd("C:\\Users\\worc\\Documents\\timevarproject\\samEst\\data")
 #usethis::use_data(harck)
+
 data(harck)
 
 
@@ -62,9 +63,11 @@ ptvab <- ricker_rwab_TMB(data=harck)
 
 
 phmma<-ricker_HMM_TMB_a(data=harck)
+phmma[1:7]
+
 
 phmmb<-ricker_HMM_TMB_b(data=harck)
-
+phmmb[1:7]
 #stan functions
 
 
