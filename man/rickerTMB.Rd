@@ -4,7 +4,13 @@
 \alias{rickerTMB}
 \title{Simple Ricker model estimated with TMB}
 \usage{
-rickerTMB(data, silent = FALSE, control = TMBcontrol(), tmb_map = list())
+rickerTMB(
+  data,
+  silent = FALSE,
+  control = TMBcontrol(),
+  tmb_map = list(),
+  AC = FALSE
+)
 }
 \arguments{
 \item{data}{A list or data frame containing Spawners (S) and log(Recruits/Spawners) (logRS) time series.}
@@ -15,6 +21,8 @@ rickerTMB(data, silent = FALSE, control = TMBcontrol(), tmb_map = list())
 
 \item{tmb_map}{optional, mapping list indicating if parameters should be estimated of fixed.
 Default is all parameters are estimated}
+
+\item{AC}{Logical. Are residuals autocorrelated? Default is FALSE}
 }
 \value{
 a list containing several model outputs:

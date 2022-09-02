@@ -12,6 +12,7 @@
 #' @param control output from TMBcontrol() function, to be passed to nlminb()
 #' @param tmb_map optional, mapping list indicating if parameters should be estimated of fixed. 
 #' Default is all parameters are estimated
+#' @param AC Logical. Are residuals autocorrelated? Default is FALSE
 #' 
 #' @returns a list containing several model outputs:
 #' * alpha - MLE estimates for the alpha parameter vector
@@ -36,11 +37,9 @@
 #' data(harck)
 #' rickerTMB(data=harck)
 #' 
-rickerTMB <- function(data,  silent = FALSE, control = TMBcontrol(),  tmb_map = list()) {
+rickerTMB <- function(data,  silent = FALSE, control = TMBcontrol(),  tmb_map = list(), AC=FALSE) {
 
-  #===================================
-  #prepare TMB input and options
-  #===================================
+  
   tmb_data <- list(
     obs_S = data$S,
     obs_logRS = data$logRS
@@ -48,38 +47,49 @@ rickerTMB <- function(data,  silent = FALSE, control = TMBcontrol(),  tmb_map = 
   
   magS <- log10_ceiling(max(data$S))
   initlm <- lm(logRS~S, data=data)
-
-  tmb_params <- list(
-    alpha   = initlm$coefficients[[1]],
-    logbeta = ifelse(initlm$coefficients[[2]]>0,log(magS),log(-initlm$coefficients[[2]])),
-    logsigobs = log(1)
-  )
-
-  #to be implemented
-
   tmb_random <- NULL
 
-  #===================================
-  # TMB fit
-  #===================================
+  if(!AC){
+    tmb_params <- list(
+      alpha   = initlm$coefficients[[1]],
+      logbeta = ifelse(initlm$coefficients[[2]]>0,log(magS),log(-initlm$coefficients[[2]])),
+      logsigobs = log(1)
+    )
 
-  tmb_obj <- TMB::MakeADFun(
+    tmb_obj <- TMB::MakeADFun(
       data = tmb_data, parameters = tmb_params, map = tmb_map,
       random = tmb_random, DLL = "Ricker_simple", silent = silent)
   
+  }else{
+    tmb_params <- list(
+      alpha   = initlm$coefficients[[1]],
+      logbeta = ifelse(initlm$coefficients[[2]]>0,log(magS),log(-initlm$coefficients[[2]])),
+      logsigobs = log(1),
+      rho=0
+    )
+
+    tmb_obj <- TMB::MakeADFun(
+      data = tmb_data, parameters = tmb_params, map = tmb_map,
+      random = tmb_random, DLL = "Ricker_autocorr", silent = silent)
+  
+
+  }
+
   tmb_opt <- stats::nlminb(
-    start = tmb_obj$par, objective = tmb_obj$fn, gradient = tmb_obj$gr,
-    control = control)
+      start = tmb_obj$par, objective = tmb_obj$fn, gradient = tmb_obj$gr,
+      control = control)
   
   sd_report <- TMB::sdreport(tmb_obj)
   conv <- get_convergence_diagnostics(sd_report)
+  
 
-  #todo add alpha, beta and sigma parameter esitimates
-
+  
   structure(list(
     alpha    = tmb_obj$report()$alpha,
     beta     = tmb_obj$report()$beta,
     sig      = tmb_obj$report()$sigobs,
+    sigar    = ifelse(AC,tmb_obj$report()$sigAR,NA),
+    rho      = ifelse(AC,tmb_obj$report()$rhoo,NA),
     model      = tmb_opt,
     tmb_data   = tmb_data,
     tmb_params = tmb_params,
@@ -89,7 +99,7 @@ rickerTMB <- function(data,  silent = FALSE, control = TMBcontrol(),  tmb_map = 
     bad_eig    = conv$bad_eig,
     call       = match.call(expand.dots = TRUE),
     sd_report  = sd_report),
-    class      = "Ricker_simple")
+    class      = ifelse(AC,"Ricker_autocorr","Ricker_simple"))
 
 }
 
@@ -851,6 +861,7 @@ get_convergence_diagnostics <- function(sd_report) {
 #' This tag will populate the namespace with compiled c++ functions upon package install.
 #'
 #' @useDynLib Ricker_simple
+#' @useDynLib Ricker_autocorr
 #' @useDynLib Ricker_tva
 #' @useDynLib SR_HMM
 #' @useDynLib Ricker_tvlogb

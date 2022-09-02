@@ -6,7 +6,7 @@
 \usage{
 tmb_mod_lfo_cv(
   data,
-  tv.par = c("static", "alpha", "beta", "both"),
+  tv.par = c("static", "alpha", "beta", "both", "HMM", "HMM_a", "HMM_b"),
   L = 10,
   siglfo = c("obs", "total")
 )
@@ -14,9 +14,9 @@ tmb_mod_lfo_cv(
 \arguments{
 \item{data}{A list or data frame containing Spawners (S) and log(Recruits/Spawners) (logRS) time series.}
 
-\item{tv.par}{string. Which parameters are time-varying? Options are c('static','alpha','beta','both', 'HMM')}
+\item{tv.par}{string. Which parameters are time-varying? Options are c('static','alpha','beta','both', 'HMM', 'HMM_a', 'HMM_b')}
 
-\item{L}{starting point for LFO-CV (min. 10)}
+\item{L}{starting point for LFO-CV (minimum value is 10)}
 
 \item{siglfo}{string. Incating whether full variance should be used for lfo of models with random walks in parameters
 "obs" incates that only observation variance is considered for lfo calculations, "total" indicates that sum of

@@ -1,7 +1,11 @@
-all: Ricker_simple.dll  Ricker_tva.dll SR_HMM.dll Ricker_tvlogb.dll Ricker_tva_tvb.dll SR_HMM_a.dll SR_HMM_b.dll
+all: Ricker_simple.dll  Ricker_tva.dll SR_HMM.dll Ricker_tvlogb.dll Ricker_tva_tvb.dll SR_HMM_a.dll SR_HMM_b.dll 
 
 Ricker_simple.dll: Ricker_simple.cpp
 	Rscript --vanilla -e "TMB::compile('Ricker_simple.cpp','-O1 -g', DLLFLAGS='', framework = 'TMBad')"
+
+Ricker_autocorr.dll: Ricker_autocorr.cpp
+	Rscript --vanilla -e "TMB::compile('Ricker_autocorr.cpp','-O1 -g', DLLFLAGS='', framework = 'TMBad')"
+
 
 Ricker_tva.dll: Ricker_tva.cpp
 	Rscript --vanilla -e "TMB::compile('Ricker_tva.cpp','-O1 -g', DLLFLAGS='', framework = 'TMBad')"

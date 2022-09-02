@@ -40,6 +40,9 @@ data(harck)
 
 p<-rickerTMB(data=harck)
 
+
+pac<-rickerTMB(data=harck, AC=TRUE)
+
 lfostatic<-tmb_mod_lfo_cv(data=harck,tv.par='static')
 
 

@@ -182,6 +182,13 @@ tmb_mod_lfo_cv=function(data,tv.par=c('static','alpha','beta','both', 'HMM', 'HM
       
       exact_elpds_1k[i+1] <- log(dnorm(df_oos$logRS[i+1],mean=rs_pred_1k,sd=sigma[i]))
       exact_elpds_wk[i+1] <- log(dnorm(df_oos$logRS[i+1],mean=rs_pred_wk,sd=sigmaw[i]))
+    }
+    exact_elpds_1k=exact_elpds_1k[-(1:L)]
+    exact_elpds_wk=exact_elpds_wk[-(1:L)]
+    
+    return(list(regime_pick=exact_elpds_1k,
+      regime_average=exact_elpds_wk))
+
     }else if(tv.par=='HMM_a'){
     #stop("not defined")
     exact_elpds_1k <- numeric(nrow(data)) #loglik choosing a specific regime in a given year
