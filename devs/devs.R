@@ -34,7 +34,7 @@ har<-data.frame(by=sr$Brood.Year,
 #usethis::use_data(harck)
 
 data(harck)
-
+plot(harck$S,harck$R)
 
 
 ##testing functions

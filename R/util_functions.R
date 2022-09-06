@@ -24,7 +24,8 @@ log10_ceiling <- function(x) {
 #' @param initpar Inital value of parameter to be transformed 
 #' 
 #' @export
-#' @returns order of magnitude
+#' 
+#' @returns logistic transformed parameter guess
 #' 
 #' 
 find_linit <- function(U, L, initpar) {

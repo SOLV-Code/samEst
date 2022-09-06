@@ -14,7 +14,7 @@ find_linit(U, L, initpar)
 \item{initpar}{Inital value of parameter to be transformed}
 }
 \value{
-order of magnitude
+logistic transformed parameter guess
 }
 \description{
 Find lalpha intial value for logistic transformed TMB HMM model parameters
