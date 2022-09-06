@@ -35,13 +35,6 @@ Type objective_function<Type>::operator() ()
   
   int timeSteps=obs_logRS.size();
 
-  //priors - based on evaluation done with the prior predictive check
-  Type ans= Type(0);
-  ans -=dnorm(alpha,Type(0.0),Type(2.5),true);
-  ans -=dnorm(logbeta,Type(-12.0),Type(3.0),true); 
-  //ans -= dnorm(logsigobs,Type(0.0),Type(2.0),true);
-  ans -= dgamma(sigobs,Type(2.0),Type(1.0)/Type(3.0),true);
-
   Type rhoo = minus_one_to_one(rho);
 
   
@@ -51,6 +44,15 @@ Type objective_function<Type>::operator() ()
   
 
   Type sigAR  = sigobs*sqrt(1-pow(rhoo,2));
+
+  
+  //priors - based on evaluation done with the prior predictive check
+  Type ans= Type(0);
+  ans -=dnorm(alpha,Type(0.0),Type(2.5),true);
+  ans -=dnorm(logbeta,Type(-12.0),Type(3.0),true); 
+  //ans -= dnorm(logsigobs,Type(0.0),Type(2.0),true);
+  ans -= dgamma(sigobs,Type(2.0),Type(1.0)/Type(3.0),true);
+
   
   vector<Type> pred_logRS(timeSteps), pred_logR(timeSteps), residuals(timeSteps) ;
  
