@@ -1,6 +1,19 @@
 #include <TMB.hpp>
 #include <iostream>
 
+
+
+template <class Type>
+Type ddirichlet(vector<Type> x, vector<Type> alpha, int do_log)
+{
+  Type phi = alpha.sum();
+  int n = x.size();
+  Type ll = lgamma(phi);
+  for(int i = 0; i < n; i++) ll +=  -lgamma(alpha(i)) + (alpha(i) - 1.0) * log(x(i));
+  if(do_log == 1) return ll;
+  else return exp(ll);
+}
+
 template<class Type>
 vector<Type> segment_1(vector<Type> yt, vector<Type> st, matrix<Type> qij,vector<Type> pi1,vector<Type> alpha,vector<Type> beta,vector<Type> sigma,int t){
   
@@ -81,6 +94,7 @@ Type objective_function<Type>::operator() ()
   DATA_SCALAR(alpha_l); //lower bound for b
   DATA_SCALAR(beta_u);  //upper bound for a
   DATA_SCALAR(sigma_u); //upper bound for sigma
+  DATA_VECTOR(alpha_dirichlet); //prior inputs for dirichlet 
 
   PARAMETER_VECTOR(lalpha);
   PARAMETER_VECTOR(lbeta);
@@ -106,9 +120,11 @@ Type objective_function<Type>::operator() ()
 
   vector<Type> sigma = sigma_u/(1+exp(-lsigma));
   vector<Type> pi1(k_regime);
- 
+  //vector<Type> pi_prior 
+
   for(int i = 0;i < k_regime-1;++i){
     pi1(i) = exp(pi1_tran(i));
+    //pi_prior(i)= Type(1.0);
   }
   pi1(k_regime-1) = 1;
   pi1 = pi1/(pi1.sum());
@@ -137,11 +153,17 @@ Type objective_function<Type>::operator() ()
   nll = -nll;
 
   //priors
-  for(int j = 1;j < k_regime;++j){
-    nll -=dnorm(alpha(j),Type(0.0),Type(2.5),true);
-    nll -=dnorm(logbeta(j),Type(-12.0),Type(3.0),true);
-    nll -=dgamma(sigma(j),Type(2.0),Type(1.0)/Type(3.0),true);
-  }
+  
+  //for(int j = 1;j < k_regime;++j){
+  //  nll -=dnorm(alpha(j),Type(0.0),Type(2.5),true);
+  //  nll -=dnorm(logbeta(j),Type(-12.0),Type(3.0),true);
+  //  nll -=dgamma(sigma(j),Type(2.0),Type(1.0)/Type(3.0),true);
+  //  nll -=ddirichlet(exp(qij(j,)),alpha_dirichlet,true);
+  //
+  //}
+   
+  //nll -=ddirichlet(pi1,pi1_prior,true);
+
   
 
 

@@ -631,7 +631,7 @@ ricker_HMM_TMB_a <- function(data, k_regime=2, alpha_limits=c(0,20), beta_upper=
        )  
     
   }else{
-    tmb_params <-ini_param
+    tmb_params <- ini_param
   }
 
  

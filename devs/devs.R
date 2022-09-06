@@ -63,6 +63,8 @@ sum(lfoalpha$last5paramavg)
 
 phmm <- ricker_HMM_TMB(data=harck)
 
+fit_past_hmm_tmb[1:7]
+
 phmm[1:7]
 lfohmm <- tmb_mod_lfo_cv(data=harck,tv.par='HMM')
 
