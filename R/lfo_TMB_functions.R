@@ -25,7 +25,7 @@
 #' data(harck)
 #' rickerTMB(data=harck)
 #' 
-tmb_mod_lfo_cv=function(data,tv.par=c('static','alpha','beta','both', 'HMM', 'HMM_a','HMM_b'),L=10, siglfo=c("obs","total")){
+tmb_mod_lfo_cv=function(data,tv.par=c('static','staticAC','alpha','beta','both', 'HMM', 'HMM_a','HMM_b'),L=10, siglfo=c("obs","total")){
   #df = full data frame
   #ac = autocorrelation, if ac=T then implement AR-1
   #L = starting point for LFO-CV (min. 10)
@@ -48,6 +48,20 @@ tmb_mod_lfo_cv=function(data,tv.par=c('static','alpha','beta','both', 'HMM', 'HM
       fit_past_tmb<- rickerTMB(data=df_past)
       rs_pred_1b=fit_past_tmb$alpha-fit_past_tmb$beta*df_oos$S[i + 1]
       exact_elpds_1b[i+1] <- log(dnorm(df_oos$logRS[i+1],mean=rs_pred_1b,sd=fit_past_tmb$sig))
+    }
+    exact_elpds_1b=exact_elpds_1b[-(1:L)]
+    return(exact_elpds_1b)
+  }else if(tv.par=='staticAC'){
+    exact_elpds_1b <- numeric(nrow(data)) #loglik for 1-year back estimates of productivity/capacity
+    for (i in L:(nrow(data) - 1)) {
+      past <- 1:i
+      oos <- i + 1
+      df_past <- data[past, , drop = FALSE]
+      df_oos <- data[c(past, oos), , drop = FALSE]
+      
+      fit_past_tmb<- rickerTMB(data=df_past,AC=TRUE)
+      rs_pred_1b<-fit_past_tmb$alpha-fit_past_tmb$beta*df_oos$S[i + 1] + fit_past_tmb$residuals[i] * fit_past_tmb$rho
+      exact_elpds_1b[i+1] <- log(dnorm(df_oos$logRS[i+1],mean=rs_pred_1b,sd=fit_past_tmb$sigar))
     }
     exact_elpds_1b=exact_elpds_1b[-(1:L)]
     return(exact_elpds_1b)

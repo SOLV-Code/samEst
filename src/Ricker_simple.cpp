@@ -19,17 +19,20 @@ Type objective_function<Type>::operator() ()
 
   //priors - based on evaluation done with the prior predictive check
   Type ans= Type(0);
-  ans -=dnorm(alpha,Type(0.0),Type(2.5),true);
-  ans -=dnorm(logbeta,Type(-12.0),Type(3.0),true);
-  
-  ans -= dnorm(logsigobs,Type(0.0),Type(2.0),true);
-  //ans -= dexp(sigobs,Type(2.0),true);
-  //ans -= dt(sigobs,Type(3.0),true);
   
   //model
   Type beta = exp(logbeta);
   Type sigobs = exp(logsigobs);
   Type Smax  = Type(1.0)/beta;
+
+  ans -=dnorm(alpha,Type(0.0),Type(2.5),true);
+  ans -=dnorm(logbeta,Type(-12.0),Type(3.0),true);
+  
+  ans -= dgamma(sigobs,Type(2.0),Type(1.0)/Type(3.0),true);
+  //ans -= dnorm(logsigobs,Type(0.0),Type(2.0),true);
+  //ans -= dexp(sigobs,Type(2.0),true);
+  //ans -= dt(sigobs,Type(3.0),true);
+  
   
   vector<Type> pred_logRS(timeSteps), pred_logR(timeSteps), residuals(timeSteps); 
    

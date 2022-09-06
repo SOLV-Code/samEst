@@ -69,11 +69,10 @@ Type objective_function<Type>::operator() ()
   ans -=dnorm(alphao,Type(0.0),Type(2.5),true);
   ans -=dnorm(logbeta,Type(-12.0),Type(3.0),true);
   
-  ans -= dnorm(logsigobs,Type(0.0),Type(2.0),true);
-  ans -= dnorm(logsiga,Type(0.0),Type(2.0),true);
-
-  //ans -= dgamma(logsigobs,Type(2.0),Type(0.333),true);
-  //ans -= dgamma(logsiga,Type(2.0),Type(0.333),true);
+  //ans -= dnorm(logsigobs,Type(0.0),Type(2.0),true);
+  //ans -= dnorm(logsiga,Type(0.0),Type(2.0),true);
+  ans -= dgamma(sigobs,Type(2.0),Type(1.0)/Type(3.0),true);  
+  ans -= dgamma(siga,Type(2.0),Type(1.0)/Type(3.0),true);
   
   ans+= -dnorm(alpha(0),alphao,siga,true);
   

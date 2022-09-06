@@ -90,6 +90,7 @@ rickerTMB <- function(data,  silent = FALSE, control = TMBcontrol(),  tmb_map = 
     sig      = tmb_obj$report()$sigobs,
     sigar    = ifelse(AC,tmb_obj$report()$sigAR,NA),
     rho      = ifelse(AC,tmb_obj$report()$rhoo,NA),
+    residuals= tmb_obj$report()$residuals,
     model      = tmb_opt,
     tmb_data   = tmb_data,
     tmb_params = tmb_params,

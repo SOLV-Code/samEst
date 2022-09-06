@@ -6,7 +6,7 @@
 \usage{
 tmb_mod_lfo_cv(
   data,
-  tv.par = c("static", "alpha", "beta", "both", "HMM", "HMM_a", "HMM_b"),
+  tv.par = c("static", "staticAC", "alpha", "beta", "both", "HMM", "HMM_a", "HMM_b"),
   L = 10,
   siglfo = c("obs", "total")
 )

@@ -95,6 +95,7 @@ Type objective_function<Type>::operator() ()
   // }
 
   vector<Type> beta = beta_u/(1+exp(-lbeta));// when lbeta is negative infinity, beta=0; when lbeta is positive infinity, beta=beta_u
+  vector<Type> logbeta = log(beta);
   vector<Type> alpha(k_regime);
   
   alpha(0) = (alpha_u-alpha_l)/(1+exp(-lalpha(0)))+alpha_l;
@@ -134,6 +135,15 @@ Type objective_function<Type>::operator() ()
     nll = logspace_add(nll,sr(j));
   }
   nll = -nll;
+
+  //priors
+  for(int j = 1;j < k_regime;++j){
+    nll -=dnorm(alpha(j),Type(0.0),Type(2.5),true);
+    nll -=dnorm(logbeta(j),Type(-12.0),Type(3.0),true);
+    nll -=dgamma(sigma(j),Type(2.0),Type(1.0)/Type(3.0),true);
+  }
+  
+
 
 // predict r_t ///////////////////////////////////
   matrix<Type> r_pred(k_regime,n);

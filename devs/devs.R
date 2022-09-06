@@ -5,6 +5,7 @@
 #============================================
 
 
+
 devtools::document()
 devtools::load_all()
 
@@ -44,19 +45,29 @@ p<-rickerTMB(data=harck)
 pac<-rickerTMB(data=harck, AC=TRUE)
 
 lfostatic<-tmb_mod_lfo_cv(data=harck,tv.par='static')
+lfoac <- tmb_mod_lfo_cv(data=harck,tv.par='staticAC')
 
 
+sum(lfostatic)
+sum(lfoac)
 names(p)
 
 ptva <- ricker_rwa_TMB(data=harck)
 plot(ptva$alpha, type="b")
 
-lfoalpha <- tmb_mod_lfo_cv(data=harck,tv.par='alpha')
+lfoalpha <- tmb_mod_lfo_cv(data=harck,tv.par='alpha', siglfo="obs")
+sum(lfoalpha$lastparam)
+sum(lfoalpha$last3paramavg)
+sum(lfoalpha$last5paramavg)
+
 
 phmm <- ricker_HMM_TMB(data=harck)
 
 phmm[1:7]
 lfohmm <- tmb_mod_lfo_cv(data=harck,tv.par='HMM')
+
+sum(lfohmm$regime_pick,na.rm=T)
+sum(lfohmm$regime_average)
 
 
 ptvb <- ricker_rwb_TMB(data=harck)
@@ -67,6 +78,16 @@ ptvab <- ricker_rwab_TMB(data=harck)
 
 phmma<-ricker_HMM_TMB_a(data=harck)
 phmma[1:7]
+lfohmma <- tmb_mod_lfo_cv(data=harck,tv.par='HMM_a')
+
+sum(lfohmma$regime_pick)
+sum(lfohmma$regime_average)
+
+lfohmmb <- tmb_mod_lfo_cv(data=harck,tv.par='HMM_b')
+
+sum(lfohmmb$regime_pick,na.rm=T)
+sum(lfohmmb$regime_average)
+
 
 
 phmmb<-ricker_HMM_TMB_b(data=harck)
