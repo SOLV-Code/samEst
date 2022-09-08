@@ -485,7 +485,8 @@ ricker_HMM_TMB <- function(data, k_regime=2, alpha_limits=c(0,20), beta_upper=.1
   alpha_u= alpha_limits[2],
   alpha_l=alpha_limits[1],
   beta_u=beta_upper,
-  sigma_u = sigma_upper
+  sigma_u = sigma_upper,
+  alpha_dirichlet=c(1,1)  
   )  
 
   if(is.null(ini_param)){
@@ -497,7 +498,7 @@ ricker_HMM_TMB <- function(data, k_regime=2, alpha_limits=c(0,20), beta_upper=.1
         lalpha = rep(find_linit(alpha_limits[2],alpha_limits[1],initlm$coefficients[[1]]),
           k_regime),
          lbeta = rep(find_linit(beta_upper,0,-bguess),k_regime),
-         lsigma = rep(find_linit(sigma_upper,0,.1),k_regime),
+         lsigma = find_linit(sigma_upper,0,.1),
          pi1_tran = rep(0.5,k_regime-1),
          qij_tran = matrix(0.1,nrow=k_regime,ncol=k_regime-1)          
        )  
@@ -613,7 +614,8 @@ ricker_HMM_TMB_a <- function(data, k_regime=2, alpha_limits=c(0,20), beta_upper=
   alpha_u= alpha_limits[2],
   alpha_l=alpha_limits[1],
   beta_u=beta_upper,
-  sigma_u = sigma_upper
+  sigma_u = sigma_upper,
+  alpha_dirichlet=c(1,1) 
   )  
 
   if(is.null(ini_param)){
@@ -625,7 +627,7 @@ ricker_HMM_TMB_a <- function(data, k_regime=2, alpha_limits=c(0,20), beta_upper=
         lalpha = rep(find_linit(alpha_limits[2],alpha_limits[1],initlm$coefficients[[1]]),
           k_regime),
          lbeta = find_linit(beta_upper,0,-bguess),
-         lsigma = rep(find_linit(sigma_upper,0,.1),k_regime),
+         lsigma = find_linit(sigma_upper,0,.1),
          pi1_tran = rep(0.5,k_regime-1),
          qij_tran = matrix(0.1,nrow=k_regime,ncol=k_regime-1)          
        )  
@@ -734,7 +736,8 @@ ricker_HMM_TMB_b <- function(data, k_regime=2, alpha_limits=c(0,20), beta_upper=
   alpha_u= alpha_limits[2],
   alpha_l=alpha_limits[1],
   beta_u=beta_upper,
-  sigma_u = sigma_upper
+  sigma_u = sigma_upper,
+  alpha_dirichlet=c(1,1) 
   )  
 
   if(is.null(ini_param)){
@@ -745,7 +748,7 @@ ricker_HMM_TMB_b <- function(data, k_regime=2, alpha_limits=c(0,20), beta_upper=
     tmb_params <- list(        
         lalpha = find_linit(alpha_limits[2],alpha_limits[1],initlm$coefficients[[1]]),
          lbeta = rep(find_linit(beta_upper,0,-bguess),k_regime),
-         lsigma = rep(find_linit(sigma_upper,0,.1),k_regime),
+         lsigma = find_linit(sigma_upper,0,.1),
          pi1_tran = rep(0.5,k_regime-1),
          qij_tran = matrix(0.1,nrow=k_regime,ncol=k_regime-1)          
        )  

@@ -2,20 +2,37 @@
 #include <iostream>
 
 
-
 template <class Type>
-Type ddirichlet(vector<Type> x, vector<Type> alpha, int do_log)
+Type ddirichlet(vector<Type> x, vector<Type> a, int do_log)
 {
-  Type phi = alpha.sum();
+  Type phi = a.sum();
   int n = x.size();
   Type ll = lgamma(phi);
-  for(int i = 0; i < n; i++) ll +=  -lgamma(alpha(i)) + (alpha(i) - 1.0) * log(x(i));
+  for(int i = 0; i < n; i++) ll +=  -lgamma(a(i)) + (a(i) - 1.0) * log(x(i));
   if(do_log == 1) return ll;
   else return exp(ll);
 }
 
 template<class Type>
-vector<Type> segment_1(vector<Type> yt, vector<Type> st, matrix<Type> qij,vector<Type> pi1,vector<Type> alpha,vector<Type> beta,vector<Type> sigma,int t){
+Type ddirmultinom (vector<Type> obs, vector<Type> p, Type phi, int do_log) {
+  int dim = obs.size();
+  Type N = obs.sum();
+  // e.g. Eq. 4 Thorson et al. 2017 Fish. Res.; phi here = Beta in paper
+  // or Eq. B.2 in https://www.sciencedirect.com/science/article/pii/S0165783621000953#sec0190
+  // this is the 'saturating' version
+  Type ll = lgamma(N + Type(1.0)) + lgamma(phi) - lgamma(N + phi); // eq. outside of summations
+  for (int a = 0; a < dim; a++) {
+    ll += -lgamma(obs(a) + Type(1.0)) +
+      lgamma(obs(a) + phi * (p(a) + Type(1.0e-15))) - // 1e-15 for robustness to 0s
+      lgamma(phi * (p(a) + Type(1.0e-15)));
+  }
+  if (do_log) return ll;
+  else return exp(ll);
+}
+
+
+template<class Type>
+vector<Type> segment_1(vector<Type> yt, vector<Type> st, matrix<Type> qij,vector<Type> pi1,vector<Type> alpha,vector<Type> beta,Type sigma,int t){
   
   int k_regime = beta.size();
   Type small = pow(10,-300);
@@ -23,7 +40,7 @@ vector<Type> segment_1(vector<Type> yt, vector<Type> st, matrix<Type> qij,vector
   
   for(int j = 0;j < k_regime;++j){
     Type f_now = alpha(j) - beta(j)*st(0);
-    sr(j) += dnorm(yt(0), f_now, sigma(j),true);
+    sr(j) += dnorm(yt(0), f_now, sigma,true);
   }
   
   for(int i = 1;i <= t;++i){
@@ -41,7 +58,7 @@ vector<Type> segment_1(vector<Type> yt, vector<Type> st, matrix<Type> qij,vector
  
     for(int j = 0;j < k_regime;++j){
       Type f_now = alpha(j) - beta(j)*st(i);
-      sr(j) += dnorm(yt(i), f_now, sigma(j),true);
+      sr(j) += dnorm(yt(i), f_now, sigma,true);
     }
   }
   return sr;
@@ -50,7 +67,7 @@ vector<Type> segment_1(vector<Type> yt, vector<Type> st, matrix<Type> qij,vector
 
 template<class Type>
 Type segment_2(vector<Type> yt, vector<Type> st, matrix<Type> qij,vector<Type>
-pi1,vector<Type> alpha,vector<Type> beta,vector<Type> sigma,int rt,int t){
+pi1,vector<Type> alpha,vector<Type> beta,Type sigma,int rt,int t){
   
   int k_regime = beta.size();
   int n = yt.size();
@@ -58,7 +75,7 @@ pi1,vector<Type> alpha,vector<Type> beta,vector<Type> sigma,int rt,int t){
   
   for(int j = 0;j < k_regime;++j){
     Type f_now = alpha(j) - beta(j)*st(t+1);
-    sr(j) += dnorm(yt(t+1), f_now, sigma(j),true);
+    sr(j) += dnorm(yt(t+1), f_now, sigma,true);
   }
  
   for(int i = t+2;i < n;++i){
@@ -73,7 +90,7 @@ pi1,vector<Type> alpha,vector<Type> beta,vector<Type> sigma,int rt,int t){
     sr = sr_new;
     for(int j = 0;j < k_regime;++j){
       Type f_now = alpha(j) - beta(j)*st(i);
-      sr(j) += dnorm(yt(i), f_now, sigma(j),true);
+      sr(j) += dnorm(yt(i), f_now, sigma,true);
     }
   }
   Type seg2 = sr(0);
@@ -98,18 +115,13 @@ Type objective_function<Type>::operator() ()
 
   PARAMETER_VECTOR(lalpha);
   PARAMETER_VECTOR(lbeta);
-  PARAMETER_VECTOR(lsigma);
+  PARAMETER(lsigma);
   PARAMETER_VECTOR(pi1_tran);
   PARAMETER_MATRIX(qij_tran);
 
   int k_regime = lbeta.size();
-  // vector<Type> alpha = alpha_tr;
-  // for(int i = 1;i < k_regime;++i){
-  // alpha(i) = alpha(i-1) + exp(alpha_tr(i));
-  // }
-
+  
   vector<Type> beta = beta_u/(1+exp(-lbeta));// when lbeta is negative infinity, beta=0; when lbeta is positive infinity, beta=beta_u
-  vector<Type> logbeta = log(beta);
   vector<Type> alpha(k_regime);
   
   alpha(0) = (alpha_u-alpha_l)/(1+exp(-lalpha(0)))+alpha_l;
@@ -118,13 +130,11 @@ Type objective_function<Type>::operator() ()
     alpha(i) = alpha(i-1) + (alpha_u-alpha(i-1))/(1+exp(-lalpha(i)));
   } // alpha(1) from alpha(0) to alpha_u
 
-  vector<Type> sigma = sigma_u/(1+exp(-lsigma));
-  vector<Type> pi1(k_regime);
-  //vector<Type> pi_prior 
-
+  Type sigma = sigma_u/(1+exp(-lsigma));
+  vector<Type> pi1(k_regime); 
+ 
   for(int i = 0;i < k_regime-1;++i){
-    pi1(i) = exp(pi1_tran(i));
-    //pi_prior(i)= Type(1.0);
+    pi1(i) = exp(pi1_tran(i));    
   }
   pi1(k_regime-1) = 1;
   pi1 = pi1/(pi1.sum());
@@ -152,21 +162,8 @@ Type objective_function<Type>::operator() ()
   }
   nll = -nll;
 
-  //priors
   
-  //for(int j = 1;j < k_regime;++j){
-  //  nll -=dnorm(alpha(j),Type(0.0),Type(2.5),true);
-  //  nll -=dnorm(logbeta(j),Type(-12.0),Type(3.0),true);
-  //  nll -=dgamma(sigma(j),Type(2.0),Type(1.0)/Type(3.0),true);
-  //  nll -=ddirichlet(exp(qij(j,)),alpha_dirichlet,true);
-  //
-  //}
-   
-  //nll -=ddirichlet(pi1,pi1_prior,true);
-
   
-
-
 // predict r_t ///////////////////////////////////
   matrix<Type> r_pred(k_regime,n);
   for(int i = 0;i < n-1;++i){
@@ -184,12 +181,41 @@ Type objective_function<Type>::operator() ()
  
  qij = exp(qij.array());
 
+
+  //priors
+  Type pnll = Type(0.0);
+  vector<Type> pi_prior(k_regime);
+ 
+  pnll -= dgamma(sigma,Type(2.0),Type(1.0)/Type(3.0),true);
+   
+  for(int j = 0;j < k_regime;++j){
+    pi_prior(j) = Type(1.0);
+    Type logbeta = log(beta(j));
+    pnll -= dnorm(alpha(j),Type(0.0),Type(2.5),true);
+    pnll -= dnorm(logbeta,Type(-12.0),Type(3.0),true);
+    
+    vector<Type> qijtmp = qij.row(j);
+    pnll -= ddirichlet(qijtmp,alpha_dirichlet,true);   
+  
+  //
+  }
+  pnll -=ddirichlet(pi1,pi_prior,true);
+
+
+
+ Type ans= nll + pnll;
+
 REPORT(beta);
 REPORT(alpha);
 REPORT(sigma);
 REPORT(pi1);
 REPORT(qij);
-REPORT(r_pred);     
+REPORT(r_pred); 
+REPORT(nll);
+REPORT(pnll);  
+
+
+ 
 
 
 ADREPORT(alpha);
@@ -198,6 +224,6 @@ ADREPORT(sigma);
 ADREPORT(pi1);
 ADREPORT(qij);
 
-return nll;
+return ans;
 
 }
