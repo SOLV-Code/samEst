@@ -187,15 +187,15 @@ tmb_mod_lfo_cv=function(data,tv.par=c('static','staticAC','alpha','beta','both',
       alphaw <- fit_past_hmm_tmb$alpha%*%fit_past_hmm_tmb$probregime
       beta <- fit_past_hmm_tmb$beta[fit_past_hmm_tmb$regime]
       betaw <- fit_past_hmm_tmb$beta%*%fit_past_hmm_tmb$probregime
-      sigma <- fit_past_hmm_tmb$sigma[fit_past_hmm_tmb$regime]
-      sigmaw <- sqrt((fit_past_hmm_tmb$sigma^2)%*%fit_past_hmm_tmb$probregime)
+      sigma <- fit_past_hmm_tmb$sigma
+      #sigmaw <- sqrt((fit_past_hmm_tmb$sigma^2)%*%fit_past_hmm_tmb$probregime)
 
       rs_pred_1k=alpha[i]-beta[i]*df_oos$S[i + 1]
       rs_pred_wk=alphaw[i]-betaw[i]*df_oos$S[i + 1]
       
       
-      exact_elpds_1k[i+1] <- log(dnorm(df_oos$logRS[i+1],mean=rs_pred_1k,sd=sigma[i]))
-      exact_elpds_wk[i+1] <- log(dnorm(df_oos$logRS[i+1],mean=rs_pred_wk,sd=sigmaw[i]))
+      exact_elpds_1k[i+1] <- log(dnorm(df_oos$logRS[i+1],mean=rs_pred_1k,sd=sigma))
+      exact_elpds_wk[i+1] <- log(dnorm(df_oos$logRS[i+1],mean=rs_pred_wk,sd=sigma))
     }
     exact_elpds_1k=exact_elpds_1k[-(1:L)]
     exact_elpds_wk=exact_elpds_wk[-(1:L)]
@@ -221,15 +221,15 @@ tmb_mod_lfo_cv=function(data,tv.par=c('static','staticAC','alpha','beta','both',
       alphaw <- fit_past_hmm_tmb$alpha%*%fit_past_hmm_tmb$probregime
       beta <- fit_past_hmm_tmb$beta
       betaw <- fit_past_hmm_tmb$beta
-      sigma <- fit_past_hmm_tmb$sigma[fit_past_hmm_tmb$regime]
-      sigmaw <- sqrt((fit_past_hmm_tmb$sigma^2)%*%fit_past_hmm_tmb$probregime)
+      sigma <- fit_past_hmm_tmb$sigma
+      #sigmaw <- sqrt((fit_past_hmm_tmb$sigma^2)%*%fit_past_hmm_tmb$probregime)
 
       rs_pred_1k=alpha[i]-beta*df_oos$S[i + 1]
       rs_pred_wk=alphaw[i]-betaw*df_oos$S[i + 1]
       
       
-      exact_elpds_1k[i+1] <- log(dnorm(df_oos$logRS[i+1],mean=rs_pred_1k,sd=sigma[i]))
-      exact_elpds_wk[i+1] <- log(dnorm(df_oos$logRS[i+1],mean=rs_pred_wk,sd=sigmaw[i]))
+      exact_elpds_1k[i+1] <- log(dnorm(df_oos$logRS[i+1],mean=rs_pred_1k,sd=sigma))
+      exact_elpds_wk[i+1] <- log(dnorm(df_oos$logRS[i+1],mean=rs_pred_wk,sd=sigma))
     }
     exact_elpds_1k=exact_elpds_1k[-(1:L)]
     exact_elpds_wk=exact_elpds_wk[-(1:L)]
@@ -255,16 +255,16 @@ tmb_mod_lfo_cv=function(data,tv.par=c('static','staticAC','alpha','beta','both',
       alphaw <- fit_past_hmm_tmb$alpha
       beta <- fit_past_hmm_tmb$beta[fit_past_hmm_tmb$regime]
       betaw <- fit_past_hmm_tmb$beta%*%fit_past_hmm_tmb$probregime
-      sigma <- fit_past_hmm_tmb$sigma[fit_past_hmm_tmb$regime]
-      sigmaw <- sqrt((fit_past_hmm_tmb$sigma^2)%*%fit_past_hmm_tmb$probregime)
+      sigma <- fit_past_hmm_tmb$sigma
+      #sigmaw <- sqrt((fit_past_hmm_tmb$sigma^2)%*%fit_past_hmm_tmb$probregime)
 
       rs_pred_1k<-alpha-beta[i]*df_oos$S[i + 1]
       rs_pred_wk<-alphaw-betaw[i]*df_oos$S[i + 1]
 
       
       
-      exact_elpds_1k[i+1] <- log(dnorm(df_oos$logRS[i+1],mean=rs_pred_1k,sd=sigma[i]))
-      exact_elpds_wk[i+1] <- log(dnorm(df_oos$logRS[i+1],mean=rs_pred_wk,sd=sigmaw[i]))
+      exact_elpds_1k[i+1] <- log(dnorm(df_oos$logRS[i+1],mean=rs_pred_1k,sd=sigma))
+      exact_elpds_wk[i+1] <- log(dnorm(df_oos$logRS[i+1],mean=rs_pred_wk,sd=sigma))
     }
     exact_elpds_1k=exact_elpds_1k[-(1:L)]
     exact_elpds_wk=exact_elpds_wk[-(1:L)]
