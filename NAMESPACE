@@ -3,6 +3,7 @@
 export(TMBcontrol)
 export(find_linit)
 export(get_convergence_diagnostics)
+export(model_weights)
 export(rickerTMB)
 export(ricker_HMM_TMB)
 export(ricker_HMM_TMB_a)

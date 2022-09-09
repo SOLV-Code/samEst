@@ -130,3 +130,28 @@ stan_lfo_cv=function(mod,type=c('static','tv','regime'),df,L=10,K=NULL){
     return(list(exact_elpds_1b,exact_elpds_3b,exact_elpds_5b,exact_elpds_1bw,exact_elpds_3bw,exact_elpds_5bw))
   }
 }
+
+#' model_weights function
+#'
+#' This function implements estimates Pseudo Bayesian Model Averaging (Pseudo-BMA) weights based on Yao et al. 2018  (eq. 8, see http://www.stat.columbia.edu/~gelman/research/published/stacking_paper_discussion_rejoinder.pdf)
+#' @param x a dataframe of pointwise out-of-sample loglikelihoods, where each row represents model likelihood predictions - these can be estimated with the stan_lfo_cv function
+#' @return returns the relative weights for each of the included models
+#' @export
+#' @examples
+#' model_weights(rbind(ll1,ll2))
+model_weights<- function(x) {
+  #x = dataframe of pointwise log likelihoods
+  elpd_1=exp(apply(x,1,sum))
+  elpd_2=NA
+  w=NA
+  se_elpd=NA
+  for(i in 1:nrow(x)){
+    se_elpd[i]=sqrt(sum((x[i,]-(sum(x[i,])/ncol(x)))^2))
+    elpd_2[i]=exp(elpd_1[i]-0.5*se_elpd[i])
+  }
+  for(i in 1:nrow(x)){
+    w[i]=elpd_2[i]/sum(elpd_2) 
+  }
+  return(w)
+}
+
