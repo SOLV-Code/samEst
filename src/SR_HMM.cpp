@@ -203,7 +203,7 @@ Type objective_function<Type>::operator() ()
 
 
 
- Type ans= nll + pnll;
+  Type ans= nll + pnll;
 
 REPORT(beta);
 REPORT(alpha);

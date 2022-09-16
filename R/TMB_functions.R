@@ -264,7 +264,7 @@ ricker_rwb_TMB <- function(data,  silent = FALSE, control = TMBcontrol(), ini_pa
      magS <- log10_ceiling(max(data$S))
      initlm<-lm(logRS~S, data=data)
      tmb_params <- list(logbetao = ifelse(initlm$coefficients[[2]]>0,log(1/max(data$S)),log(-initlm$coefficients[[2]])),
-                        alpha   = abs(initlm$coefficients[[1]]),                 
+                        alpha   = max(initlm$coefficients[[1]],.5),                 
                         logsigobs = log(.5),
                         logsigb = log(.2),
                         logbeta=rep(ifelse(initlm$coefficients[[2]]>0,log(1/max(data$S)),log(-initlm$coefficients[[2]])),length(data$S))                  
@@ -371,7 +371,7 @@ ricker_rwab_TMB <- function(data,  silent = FALSE, control = TMBcontrol(), ini_p
      magS <- log10_ceiling(max(data$S))
      initlm<-lm(logRS~S, data=data)
      tmb_params <- list(logbetao = ifelse(initlm$coefficients[[2]]>0,log(magS),log(-initlm$coefficients[[2]])),
-                        alphao   = initlm$coefficients[[1]],                 
+                        alphao   = max(initlm$coefficients[[1]],.5),                 
                         logsigobs = log(.5),
                         logsiga = log(.5),
                         logsigb = log(.5),
@@ -495,7 +495,7 @@ ricker_HMM_TMB <- function(data, k_regime=2, alpha_limits=c(0,20), beta_upper=.1
     bguess<-ifelse(initlm$coefficients[[2]]>0,(magS),initlm$coefficients[[2]])
     
     tmb_params <- list(        
-        lalpha = rep(find_linit(alpha_limits[2],alpha_limits[1],initlm$coefficients[[1]]),
+        lalpha = rep(find_linit(alpha_limits[2],alpha_limits[1],max(initlm$coefficients[[1]],.5)),
           k_regime),
          lbeta = rep(find_linit(beta_upper,0,-bguess),k_regime),
          lsigma = find_linit(sigma_upper,0,.1),
@@ -624,7 +624,7 @@ ricker_HMM_TMB_a <- function(data, k_regime=2, alpha_limits=c(0,20), beta_upper=
     bguess<-ifelse(initlm$coefficients[[2]]>0,(magS),initlm$coefficients[[2]])
     
     tmb_params <- list(        
-        lalpha = rep(find_linit(alpha_limits[2],alpha_limits[1],initlm$coefficients[[1]]),
+        lalpha = rep(find_linit(alpha_limits[2],alpha_limits[1],max(initlm$coefficients[[1]],.5)),
           k_regime),
          lbeta = find_linit(beta_upper,0,-bguess),
          lsigma = find_linit(sigma_upper,0,.1),
@@ -746,7 +746,7 @@ ricker_HMM_TMB_b <- function(data, k_regime=2, alpha_limits=c(0,20), beta_upper=
     bguess<-ifelse(initlm$coefficients[[2]]>0,(magS),initlm$coefficients[[2]])
     
     tmb_params <- list(        
-        lalpha = find_linit(alpha_limits[2],alpha_limits[1],initlm$coefficients[[1]]),
+        lalpha = find_linit(alpha_limits[2],alpha_limits[1],max(initlm$coefficients[[1]],.5)),
          lbeta = rep(find_linit(beta_upper,0,-bguess),k_regime),
          lsigma = find_linit(sigma_upper,0,.1),
          pi1_tran = rep(0.5,k_regime-1),
