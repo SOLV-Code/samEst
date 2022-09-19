@@ -6,12 +6,13 @@
 #' @param ac TRUE or FALSE statement to include autocorrelated residuals. Only compatible with static model
 #' @param par For time-varying or regime S-R models, what parameter should vary? Either productivity (intercept, a), capacity (slope, b) or both parameters
 #' @param loglik TRUE or FALSE statement that dictates whether model is being used for out-of-sample log-likelihood estimation
+#' @param modelcode Logical indicating whether to output model_code or a stan_model object (FALSE, the default)  
 #' @return returns the compiled rstan code for a given S-R model
 #' @importFrom rstan stan_model
 #' @export
 #' @examples
 #' m2=sr_mod(type='static',ac = TRUE,par='n',loglik=T)
-sr_mod<- function(type=c('static','tv','regime'),ac=FALSE,par=c('n','a','b','both'),loglik=FALSE){
+sr_mod<- function(type=c('static','tv','regime'),ac=FALSE,par=c('n','a','b','both'),loglik=FALSE, modelcode=FALSE){
   
   #M1: Static S-R####
   if(type=='static'&ac==F){
@@ -1497,5 +1498,12 @@ log_lik_oos_5bw = normal_lpdf(y_oos|log_a_5bw - x_oos*b_5bw, sigma);
 }
 
 m2=rstan::stan_model(model_code = m)
-return(m2)  
+
+if(modelcode){
+  return(m)  
+
+}else{
+  return(m2)  
+
+}
 }

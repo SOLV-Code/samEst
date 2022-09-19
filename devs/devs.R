@@ -40,6 +40,14 @@ plot(harck$S,harck$R)
 ##testing functions
 
 p<-rickerTMB(data=harck)
+pb<-rickerstan(data=harck,iter = 2000)
+
+
+p$alpha
+pb$alpha
+
+p$beta
+pb$beta
 
 
 pac<-rickerTMB(data=harck, AC=TRUE)
@@ -63,6 +71,7 @@ sum(lfoalpha$last5paramavg)
 
 phmm <- ricker_HMM_TMB(data=harck)
 
+phmm[1:10]
 fit_past_hmm_tmb[1:7]
 
 lfohmm <- tmb_mod_lfo_cv(data=harck,tv.par='HMM')

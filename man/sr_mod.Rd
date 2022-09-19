@@ -8,7 +8,8 @@ sr_mod(
   type = c("static", "tv", "regime"),
   ac = FALSE,
   par = c("n", "a", "b", "both"),
-  loglik = FALSE
+  loglik = FALSE,
+  modelcode = FALSE
 )
 }
 \arguments{
@@ -20,6 +21,8 @@ a time-varying 'tv' model, or a regime shift model 'regime'}
 \item{par}{For time-varying or regime S-R models, what parameter should vary? Either productivity (intercept, a), capacity (slope, b) or both parameters}
 
 \item{loglik}{TRUE or FALSE statement that dictates whether model is being used for out-of-sample log-likelihood estimation}
+
+\item{modelcode}{Logical indicating whether to output model_code or a stan_model object (FALSE, the default)}
 }
 \value{
 returns the compiled rstan code for a given S-R model

@@ -23,7 +23,7 @@ Type ddirmultinom (vector<Type> obs, vector<Type> p, Type phi, int do_log) {
   Type ll = lgamma(N + Type(1.0)) + lgamma(phi) - lgamma(N + phi); // eq. outside of summations
   for (int a = 0; a < dim; a++) {
     ll += -lgamma(obs(a) + Type(1.0)) +
-      lgamma(obs(a) + phi * (p(a) + Type(1.0e-15))) - // 1e-15 for robustness to 0s
+      lgamma(obs(a) + phi * (p(a) + Type(1.0e-15))); // 1e-15 for robustness to 0s
       lgamma(phi * (p(a) + Type(1.0e-15)));
   }
   if (do_log) return ll;
