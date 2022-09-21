@@ -37,7 +37,7 @@
 #' data(harck)
 #' rickerstan(data=harck)
 #' 
-rickerstan <- function(data,  AC=FALSE, control = stancontrol(),  chains = 6, iter = 1000,...) {
+rickerstan <- function(data,  AC=FALSE, control = stancontrol(), warmup=300,  chains = 6, iter = 1000,...) {
 
   sm <- sr_mod(type='static',ac=AC,par='n',loglik=FALSE,modelcode=TRUE)
   
@@ -46,8 +46,14 @@ rickerstan <- function(data,  AC=FALSE, control = stancontrol(),  chains = 6, it
                                     R_S =data$logRS,
                                     S=data$S),
                         control = control, warmup = warmup, chains = chains, iter = iter)
-  print(fit)
-  aa<-rstan::summary(fit)
+  
+
+    mc <- rstan::extract(fit, 
+                inc_warmup=FALSE, permuted=FALSE)
+    
+    mcmc<-reshape::melt(mc, as.is=TRUE)
+    
+    aa<-rstan::summary(fit)
   
 
 
@@ -57,7 +63,7 @@ rickerstan <- function(data,  AC=FALSE, control = stancontrol(),  chains = 6, it
    stanfit=fit, 
    mcmcsummary=aa$summary,
    c_mcmcsummary=aa$c_summary, 
-   samples=samples ) )
+   samples=mcmc ) )
 
 }
 

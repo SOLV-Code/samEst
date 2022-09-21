@@ -8,6 +8,7 @@ rickerstan(
   data,
   AC = FALSE,
   control = stancontrol(),
+  warmup = 300,
   chains = 6,
   iter = 1000,
   ...
@@ -20,15 +21,15 @@ rickerstan(
 
 \item{control}{output of stancontrol}
 
+\item{warmup}{To be passed to rstan::sampling. A positive integer specifying the number of warmup (aka burnin) iterations per
+chain. The default is 200.}
+
 \item{chains}{To be passed to rstan::sampling. A positive integer specifying the number of Markov chains. The default is 6.}
 
 \item{iter}{To be passed to rstan::sampling. A positive integer specifying the number of iterations for each chain
 (including warmup). The default is 1000.}
 
 \item{...}{Anything else that would be passed to rstan::sampling}
-
-\item{warmup}{To be passed to rstan::sampling. A positive integer specifying the number of warmup (aka burnin) iterations per
-chain. The default is 200.}
 }
 \value{
 a list containing the
