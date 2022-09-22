@@ -101,7 +101,7 @@ smsySolver <- function(a,b) {
 #' 
 #' 
 #' 
-umsySolver <- function(a,b) {
+umsySolver <- function(a) {
   #gives the min Ricker log-likelihood
   umsy <- (1 - gsl::lambert_W0(exp(1 - a)))
 

@@ -24,6 +24,8 @@ logbeta (a number), logsigobs (a number), logsiga (a number), and alpha ( a vect
 
 \item{tmb_map}{optional, mapping list indicating if parameters should be estimated of fixed.
 Default is all parameters are estimated}
+
+\item{tvpar}{Which parameters should vary? Either productivity (intercept, a), capacity (slope, b) or both parameters}
 }
 \value{
 a list containing several model outputs:

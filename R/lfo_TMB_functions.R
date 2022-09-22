@@ -180,7 +180,7 @@ tmb_mod_lfo_cv=function(data,tv.par=c('static','staticAC','alpha','beta','both',
       df_past <- data[past, , drop = FALSE]
       df_oos <- data[c(past, oos), , drop = FALSE]
       
-      fit_past_hmm_tmb<- ricker_HMM_TMB(data=df_past)
+      fit_past_hmm_tmb<- ricker_HMMab_TMB(data=df_past)
 
      
       alpha <- fit_past_hmm_tmb$alpha[fit_past_hmm_tmb$regime]
@@ -214,7 +214,7 @@ tmb_mod_lfo_cv=function(data,tv.par=c('static','staticAC','alpha','beta','both',
       df_past <- data[past, , drop = FALSE]
       df_oos <- data[c(past, oos), , drop = FALSE]
       
-      fit_past_hmm_tmb<- ricker_HMM_TMB_a(data=df_past)
+      fit_past_hmm_tmb<- ricker_HMMa_TMB(data=df_past)
 
      
       alpha <- fit_past_hmm_tmb$alpha[fit_past_hmm_tmb$regime]
@@ -248,7 +248,7 @@ tmb_mod_lfo_cv=function(data,tv.par=c('static','staticAC','alpha','beta','both',
       df_past <- data[past, , drop = FALSE]
       df_oos <- data[c(past, oos), , drop = FALSE]
       
-      fit_past_hmm_tmb<- ricker_HMM_TMB_b(data=df_past)
+      fit_past_hmm_tmb<- ricker_HMMb_TMB(data=df_past)
 
      
       alpha <- fit_past_hmm_tmb$alpha

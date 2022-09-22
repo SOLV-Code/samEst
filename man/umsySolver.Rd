@@ -5,7 +5,7 @@
 \title{compute Umsy estimate based on Scheuerell 2016. An explicit solution for
 calculating optimum spawning stock size from Ricker’s stock recruitment model}
 \usage{
-umsySolver(a, b)
+umsySolver(a)
 }
 \arguments{
 \item{a}{alpha parameter in Ricker function: R=S\emph{exp(a-b}S)}
