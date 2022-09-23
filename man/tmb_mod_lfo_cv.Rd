@@ -6,7 +6,7 @@
 \usage{
 tmb_mod_lfo_cv(
   data,
-  tv.par = c("static", "staticAC", "alpha", "beta", "both", "HMM", "HMM_a", "HMM_b"),
+  model = c("static", "staticAC", "rw_a", "rw_b", "rw_both", "HMM", "HMM_a", "HMM_b"),
   L = 10,
   siglfo = c("obs", "total")
 )
@@ -14,7 +14,8 @@ tmb_mod_lfo_cv(
 \arguments{
 \item{data}{A list or data frame containing Spawners (S) and log(Recruits/Spawners) (logRS) time series.}
 
-\item{tv.par}{string. Which parameters are time-varying? Options are c('static','alpha','beta','both', 'HMM', 'HMM_a', 'HMM_b')}
+\item{model}{string. Which parameters are time-varying? Options are c('static','rw_a','rw_b',
+'rw_both', 'HMM', 'HMM_a', 'HMM_b')}
 
 \item{L}{starting point for LFO-CV (minimum value is 10)}
 
@@ -30,6 +31,6 @@ Simple Ricker model estimated with TMB
 }
 \examples{
 data(harck)
-rickerTMB(data=harck)
+tmb_mod_lfo_cv(data=harck, model=c('static'))
 
 }

@@ -7,8 +7,8 @@
 #' Simple Ricker model estimated with TMB
 #'
 #' @param data A list or data frame containing Spawners (S) and log(Recruits/Spawners) (logRS) time series. 
-#' 
-#' @param tv.par string. Which parameters are time-varying? Options are c('static','alpha','beta','both', 'HMM', 'HMM_a', 'HMM_b')
+#' @param model string. Which parameters are time-varying? Options are c('static','rw_a','rw_b',
+#' 'rw_both', 'HMM', 'HMM_a', 'HMM_b')
 #' @param L starting point for LFO-CV (minimum value is 10)
 #' @param siglfo string. Incating whether full variance should be used for lfo of models with random walks in parameters
 #' "obs" incates that only observation variance is considered for lfo calculations, "total" indicates that sum of 
@@ -23,9 +23,10 @@
 #' 
 #' @examples
 #' data(harck)
-#' rickerTMB(data=harck)
+#' tmb_mod_lfo_cv(data=harck, model=c('static'))
 #' 
-tmb_mod_lfo_cv=function(data,tv.par=c('static','staticAC','alpha','beta','both', 'HMM', 'HMM_a','HMM_b'),L=10, siglfo=c("obs","total")){
+tmb_mod_lfo_cv=function(data, model=c('static','staticAC','rw_a','rw_b','rw_both', 'HMM', 'HMM_a','HMM_b'), 
+  L=10, siglfo=c("obs","total")){
   #df = full data frame
   #ac = autocorrelation, if ac=T then implement AR-1
   #L = starting point for LFO-CV (min. 10)
@@ -37,7 +38,7 @@ tmb_mod_lfo_cv=function(data,tv.par=c('static','staticAC','alpha','beta','both',
   	stop("data must contain 'S' and 'logRS', please revise names(data)") 
   }
 
-  if(tv.par=='static'){
+  if(model=='static'){
     exact_elpds_1b <- numeric(nrow(data)) #loglik for 1-year back estimates of productivity/capacity
     for (i in L:(nrow(data) - 1)) {
       past <- 1:i
@@ -45,13 +46,13 @@ tmb_mod_lfo_cv=function(data,tv.par=c('static','staticAC','alpha','beta','both',
       df_past <- data[past, , drop = FALSE]
       df_oos <- data[c(past, oos), , drop = FALSE]
       
-      fit_past_tmb<- rickerTMB(data=df_past)
+      fit_past_tmb<- ricker_TMB(data=df_past)
       rs_pred_1b=fit_past_tmb$alpha-fit_past_tmb$beta*df_oos$S[i + 1]
       exact_elpds_1b[i+1] <- log(dnorm(df_oos$logRS[i+1],mean=rs_pred_1b,sd=fit_past_tmb$sig))
     }
     exact_elpds_1b=exact_elpds_1b[-(1:L)]
     return(exact_elpds_1b)
-  }else if(tv.par=='staticAC'){
+  }else if(model=='staticAC'){
     exact_elpds_1b <- numeric(nrow(data)) #loglik for 1-year back estimates of productivity/capacity
     for (i in L:(nrow(data) - 1)) {
       past <- 1:i
@@ -59,13 +60,13 @@ tmb_mod_lfo_cv=function(data,tv.par=c('static','staticAC','alpha','beta','both',
       df_past <- data[past, , drop = FALSE]
       df_oos <- data[c(past, oos), , drop = FALSE]
       
-      fit_past_tmb<- rickerTMB(data=df_past,AC=TRUE)
+      fit_past_tmb<- ricker_TMB(data=df_past,AC=TRUE)
       rs_pred_1b<-fit_past_tmb$alpha-fit_past_tmb$beta*df_oos$S[i + 1] + fit_past_tmb$residuals[i] * fit_past_tmb$rho
       exact_elpds_1b[i+1] <- log(dnorm(df_oos$logRS[i+1],mean=rs_pred_1b,sd=fit_past_tmb$sigar))
     }
     exact_elpds_1b=exact_elpds_1b[-(1:L)]
     return(exact_elpds_1b)
-  }else if(tv.par=='alpha'){
+  }else if(model=='rw_a'){
   
     exact_elpds_1b <- numeric(nrow(data)) #loglik for 1-year back estimates of productivity/capacity
     exact_elpds_3b <- numeric(nrow(data)) #loglik for average of last 3-years of productivity/capacity
@@ -76,7 +77,7 @@ tmb_mod_lfo_cv=function(data,tv.par=c('static','staticAC','alpha','beta','both',
       df_past <- data[past, , drop = FALSE]
       df_oos <- data[c(past, oos), , drop = FALSE]
       
-      fit_past_tv_a_tmb<- ricker_rwa_TMB(data=df_past)
+      fit_past_tv_a_tmb<- ricker_rw_TMB(data=df_past,tv.par='a')
     
       rs_pred_1b=fit_past_tv_a_tmb$alpha[i]-fit_past_tv_a_tmb$beta*df_oos$S[i + 1]
       rs_pred_3b=mean(fit_past_tv_a_tmb$alpha[(i-2):i])-fit_past_tv_a_tmb$beta*df_oos$S[i + 1]
@@ -103,7 +104,7 @@ tmb_mod_lfo_cv=function(data,tv.par=c('static','staticAC','alpha','beta','both',
     return(list(lastparam=exact_elpds_1b,
     	last3paramavg=exact_elpds_3b,
     	last5paramavg=exact_elpds_5b))
-  }else if(tv.par=='beta'){
+  }else if(model=='rw_b'){
   	#stop("not defined")
     exact_elpds_1b <- numeric(nrow(data)) #loglik for 1-year back estimates of productivity/capacity
     exact_elpds_3b <- numeric(nrow(data)) #loglik for average of last 3-years of productivity/capacity
@@ -114,7 +115,7 @@ tmb_mod_lfo_cv=function(data,tv.par=c('static','staticAC','alpha','beta','both',
       df_past <- data[past, , drop = FALSE]
       df_oos <- data[c(past, oos), , drop = FALSE]
       
-      fit_past_tv_b_tmb<- ricker_rwb_TMB(data=df_past)
+      fit_past_tv_b_tmb<- ricker_rw_TMB(data=df_past,tv.par='b')
       
       rs_pred_1b=fit_past_tv_b_tmb$alpha-fit_past_tv_b_tmb$beta[i]*df_oos$S[i + 1]
       rs_pred_3b=fit_past_tv_b_tmb$alpha-mean(fit_past_tv_b_tmb$beta[(i-2):i])*df_oos$S[i + 1]
@@ -142,7 +143,7 @@ tmb_mod_lfo_cv=function(data,tv.par=c('static','staticAC','alpha','beta','both',
     return(list(lastparam=exact_elpds_1b,
     	last3paramavg=exact_elpds_3b,
     	last5paramavg=exact_elpds_5b))
-  }else if(tv.par=='both'){
+  }else if(model=='rw_both'){
   	
     exact_elpds_1b <- numeric(nrow(data)) #loglik for 1-year back estimates of productivity/capacity
     exact_elpds_3b <- numeric(nrow(data)) #loglik for average of last 3-years of productivity/capacity
@@ -153,7 +154,7 @@ tmb_mod_lfo_cv=function(data,tv.par=c('static','staticAC','alpha','beta','both',
       df_past <- data[past, , drop = FALSE]
       df_oos <- data[c(past, oos), , drop = FALSE]
       
-      fit_past_tv_ab_tmb<- ricker_rwab_TMB(data=df_past)
+      fit_past_tv_ab_tmb<- ricker_rw_TMB(data=df_past,tv.par='both')
       
       rs_pred_1b=fit_past_tv_ab_tmb$alpha[i]-fit_past_tv_ab_tmb$beta[i]*df_oos$S[i + 1]
       rs_pred_3b=mean(fit_past_tv_ab_tmb$alpha[(i-2):i])-mean(fit_past_tv_ab_tmb$beta[(i-2):i])*df_oos$S[i + 1]
@@ -169,7 +170,7 @@ tmb_mod_lfo_cv=function(data,tv.par=c('static','staticAC','alpha','beta','both',
     return(list(lastparam=exact_elpds_1b,
     	last3paramavg=exact_elpds_3b,
     	last5paramavg=exact_elpds_5b))
-  }else if(tv.par=='HMM'){
+  }else if(model=='HMM'){
     #stop("not defined")
     exact_elpds_1k <- numeric(nrow(data)) #loglik choosing a specific regime in a given year
     exact_elpds_wk <- numeric(nrow(data)) #loglik using weighted average of regimes
@@ -180,7 +181,7 @@ tmb_mod_lfo_cv=function(data,tv.par=c('static','staticAC','alpha','beta','both',
       df_past <- data[past, , drop = FALSE]
       df_oos <- data[c(past, oos), , drop = FALSE]
       
-      fit_past_hmm_tmb<- ricker_HMMab_TMB(data=df_past)
+      fit_past_hmm_tmb<- ricker_HMM_TMB(data=df_past,tv.par='both')
 
      
       alpha <- fit_past_hmm_tmb$alpha[fit_past_hmm_tmb$regime]
@@ -203,7 +204,7 @@ tmb_mod_lfo_cv=function(data,tv.par=c('static','staticAC','alpha','beta','both',
     return(list(regime_pick=exact_elpds_1k,
       regime_average=exact_elpds_wk))
 
-    }else if(tv.par=='HMM_a'){
+    }else if(model=='HMM_a'){
     #stop("not defined")
     exact_elpds_1k <- numeric(nrow(data)) #loglik choosing a specific regime in a given year
     exact_elpds_wk <- numeric(nrow(data)) #loglik using weighted average of regimes
@@ -214,7 +215,7 @@ tmb_mod_lfo_cv=function(data,tv.par=c('static','staticAC','alpha','beta','both',
       df_past <- data[past, , drop = FALSE]
       df_oos <- data[c(past, oos), , drop = FALSE]
       
-      fit_past_hmm_tmb<- ricker_HMMa_TMB(data=df_past)
+      fit_past_hmm_tmb<- ricker_HMM_TMB(data=df_past,tv.par='a')
 
      
       alpha <- fit_past_hmm_tmb$alpha[fit_past_hmm_tmb$regime]
@@ -237,7 +238,7 @@ tmb_mod_lfo_cv=function(data,tv.par=c('static','staticAC','alpha','beta','both',
     return(list(regime_pick=exact_elpds_1k,
     	regime_average=exact_elpds_wk))
 
-  }else if(tv.par=='HMM_b'){
+  }else if(model=='HMM_b'){
     #stop("not defined")
     exact_elpds_1k <- numeric(nrow(data)) #loglik choosing a specific regime in a given year
     exact_elpds_wk <- numeric(nrow(data)) #loglik using weighted average of regimes
@@ -248,7 +249,7 @@ tmb_mod_lfo_cv=function(data,tv.par=c('static','staticAC','alpha','beta','both',
       df_past <- data[past, , drop = FALSE]
       df_oos <- data[c(past, oos), , drop = FALSE]
       
-      fit_past_hmm_tmb<- ricker_HMMb_TMB(data=df_past)
+      fit_past_hmm_tmb<- ricker_HMM_TMB(data=df_past,tv.par='b')
 
      
       alpha <- fit_past_hmm_tmb$alpha
@@ -273,7 +274,7 @@ tmb_mod_lfo_cv=function(data,tv.par=c('static','staticAC','alpha','beta','both',
       regime_average=exact_elpds_wk))
 
   }else{
-  	stop(paste("tv.par", tv.par,"not defined, valid options are c('static','alpha','beta','both', 'HMM', 'HMM_a','HMM_b')"))
+  	stop(paste("model", model,"not defined, valid options are c('static','rw_a','rw_b','rw_both', 'HMM', 'HMM_a','HMM_b')"))
   }
 }
 

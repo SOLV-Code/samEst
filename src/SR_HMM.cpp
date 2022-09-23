@@ -116,8 +116,8 @@ Type objective_function<Type>::operator() ()
   PARAMETER_VECTOR(lalpha);
   PARAMETER_VECTOR(lbeta);
   PARAMETER(lsigma);
-  PARAMETER_VECTOR(pi1_tran);
-  PARAMETER_MATRIX(qij_tran);
+  PARAMETER_VECTOR(pi1_tran); // initial state probabilities
+  PARAMETER_MATRIX(qij_tran); // transition probabilities
 
   int k_regime = lbeta.size();
   
