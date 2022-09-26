@@ -29,7 +29,8 @@
 #' * list of samples
 #' 
 #' 
-#' @importFrom rstan sampling 
+#' @importFrom rstan stan extract summary 
+#' @importFrom reshape2 melt 
 #' 
 #' @export
 #' 
@@ -51,7 +52,7 @@ rickerstan <- function(data,  AC=FALSE, control = stancontrol(), warmup=300,  ch
     mc <- rstan::extract(fit, 
                 inc_warmup=FALSE, permuted=FALSE)
     
-    mcmc<-reshape::melt(mc, as.is=TRUE)
+    mcmc<-reshape2::melt(mc, as.is=TRUE)
     
     aa<-rstan::summary(fit)
   

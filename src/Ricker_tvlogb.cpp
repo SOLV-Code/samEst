@@ -1,6 +1,49 @@
 #include <TMB.hpp>
 
 
+
+// Code taken from Brooke
+// Set up Lambert's W function to use to calculate SMSY
+// Code taken from https://kaskr.github.io/adcomp/lambert_8cpp_source.html
+// Step 1: Code up a plain C version
+// Double version of Lambert W function
+double LambertW(double x) {
+  double logx = log(x);
+  double y = (logx > 0 ? logx : 0);
+  int niter = 100, i=0;
+  for (; i < niter; i++) {
+    if ( fabs( logx - log(y) - y) < 1e-9) break;
+    y -= (y - exp(logx - y)) / (1 + y);
+  }
+  if (i == niter) Rf_warning("W: failed convergence");
+  return y;
+}
+
+TMB_ATOMIC_VECTOR_FUNCTION(
+  // ATOMIC_NAME
+  LambertW
+  ,
+  // OUTPUT_DIM
+  1,
+  // ATOMIC_DOUBLE
+  ty[0] = LambertW(tx[0]); // Call the 'double' version
+,
+// ATOMIC_REVERSE
+Type W  = ty[0];                    // Function value from forward pass
+Type DW = 1. / (exp(W) * (1. + W)); // Derivative
+px[0] = DW * py[0];                 // Reverse mode chain rule
+)
+  
+  // Scalar version
+  template<class Type>
+  Type LambertW(Type x){
+    CppAD::vector<Type> tx(1);
+    tx[0] = x;
+    return LambertW(tx)[0];
+  }
+  
+
+
 template<class Type>
 bool isNA(Type x){
   return R_IsNA(asDouble(x));
@@ -111,8 +154,9 @@ Type objective_function<Type>::operator() ()
       pred_logR(i) = pred_logRS(i) + log(obs_S(i));
       
       // Use the Hilborn approximations for Smsy and umsy
-      Smsy(i) =  alpha/beta(i) * (Type(0.5) -Type(0.07) * alpha);
       Srep(i) = alpha/beta(i);
+      //Smsy(i) =  alpha/beta(i) * (Type(0.5) -Type(0.07) * alpha);
+      Smsy(i) = (1 - LambertW(exp(Type(1)-alpha)) ) / beta(i);
 
       residuals(i) = obs_logRS(i) - pred_logRS(i);
       ans+=-dnorm(obs_logRS(i),pred_logRS(i),sigobs,true);
@@ -120,7 +164,8 @@ Type objective_function<Type>::operator() ()
   
   }
    // Use the Hilborn approximations for Smsy and umsy
-  Type umsy  = Type(.5) * alpha - Type(0.07) * (alpha * alpha);
+  //Type umsy  = Type(.5) * alpha - Type(0.07) * (alpha * alpha);
+  Type umsy  = (Type(1) - LambertW(exp(1-alpha)) ); 
  
 
   REPORT(pred_logRS)
@@ -133,6 +178,12 @@ Type objective_function<Type>::operator() ()
   REPORT(umsy)
   REPORT(Smsy)
   REPORT(Srep)
+
+  ADREPORT(alpha);
+  ADREPORT(beta);
+  ADREPORT(sigobs);
+  ADREPORT(umsy);
+  ADREPORT(Smsy);
   return ans;
 }
 

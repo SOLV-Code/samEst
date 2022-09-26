@@ -17,7 +17,7 @@ devtools::load_all()
 #use Harrison as an example
 
 
-sr<-read.csv("C:/Users/worc/Documents/timevarproject/simeval/data/samsimHarCk/HARSR.csv")
+sr <- read.csv("C:/Users/worc/Documents/timevarproject/simeval/data/samsimHarCk/HARSR.csv")
 
 head(sr)
 
@@ -39,8 +39,9 @@ plot(harck$S,harck$R)
 
 ##testing functions
 
-p<-ricker_TMB(data=harck)
-pb<-rickerstan(data=harck,iter = 2000)
+p <- ricker_TMB(data=harck)
+
+pb <- rickerstan(data=harck,iter = 2000)
 
 
 p$alpha

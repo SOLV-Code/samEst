@@ -165,10 +165,14 @@ Type objective_function<Type>::operator() ()
       pred_logRS(i) = alpha(i) - beta(i) * obs_S(i) ;
       pred_logR(i) = pred_logRS(i) + log(obs_S(i));
 
-      Smsy(i) =  alpha(i)/beta(i) * (Type(0.5) -Type(0.07) * alpha(i));
       Srep(i) = alpha(i)/beta(i);
-      umsy(i)  = Type(.5) * alpha(i) - Type(0.07) * (alpha(i) * alpha(i));
+      //Smsy(i) =  alpha(i)/beta(i) * (Type(0.5) -Type(0.07) * alpha(i));
+      //umsy(i)  = Type(.5) * alpha(i) - Type(0.07) * (alpha(i) * alpha(i));
 
+      Smsy(i) = (Type(1) - LambertW(exp(1-alpha(i))) ) / beta(i);
+      umsy(i) = (Type(1) - LambertW(exp(1-alpha(i))) ); 
+
+     
       residuals(i) = obs_logRS(i) - pred_logRS(i);
       ans+=-dnorm(obs_logRS(i),pred_logRS(i),sigobs,true);
     }
@@ -189,6 +193,13 @@ Type objective_function<Type>::operator() ()
   REPORT(umsy)
   REPORT(Smsy)
   REPORT(Srep)
+
+  ADREPORT(alpha);
+  ADREPORT(beta);
+  ADREPORT(sigobs);
+  ADREPORT(umsy);
+  ADREPORT(Smsy);
+
   return ans;
 }
 
