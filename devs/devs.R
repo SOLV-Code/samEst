@@ -52,6 +52,7 @@ pb$beta
 
 
 pac<-ricker_TMB(data=harck, AC=TRUE)
+pac[1:10]
 
 lfostatic<-tmb_mod_lfo_cv(data=harck,model='static')
 lfoac <- tmb_mod_lfo_cv(data=harck,model='staticAC')
@@ -63,7 +64,7 @@ names(p)
 
 
 ptva<- ricker_rw_TMB(data=harck,tv.par="a")
-
+ptva[1:10]
 
 lfoalpha <- tmb_mod_lfo_cv(data=harck,tv.par='a', siglfo="obs")
 sum(lfoalpha$lastparam)

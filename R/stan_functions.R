@@ -12,7 +12,7 @@
 #' @export
 #' @examples
 #' m2=sr_mod(type='static',ac = TRUE,par='n',loglik=T)
-sr_mod<- function(type=c('static','tv','regime'),ac=FALSE,par=c('n','a','b','both'),loglik=FALSE, modelcode=FALSE){
+sr_mod<- function(type=c('static','rw','regime'),ac=FALSE,par=c('n','a','b','both'),loglik=FALSE, modelcode=FALSE){
   
   #M1: Static S-R####
   if(type=='static'&ac==F){
@@ -202,7 +202,7 @@ generated quantities{
     "}
   }
 #M3: TV Prod S-R####
-if(type=='tv'&par=='a'){
+if(type=='rw'&par=='a'){
   if(loglik==FALSE){
     m="data{
   int<lower=1> N;//number of annual samples 
@@ -312,7 +312,7 @@ model{
     "}
 }  
 #M4: TV Cap S-R####
-if(type=='tv'&par=='b'){
+if(type=='rw'&par=='b'){
   if(loglik==FALSE){
     m="data{
   int<lower=1> N;//number of annual samples
@@ -423,7 +423,7 @@ generated quantities{
  "}
 }
 #M5: TV ProdCap S-R####
-if(type=='tv'&par=='both'){
+if(type=='rw'&par=='both'){
   if(loglik==FALSE){
     m="data{
   int<lower=1> N;//number of annual samples (time-series length)
@@ -551,7 +551,7 @@ generated quantities{
  "}
 }
 #M6: Regime Prod S-R####
-if(type=='regime'&par=='a'){
+if(type=='hmm'&par=='a'){
   if(loglik==FALSE){
     m="functions {
 vector normalize(vector x) {
@@ -859,7 +859,7 @@ log_lik_oos_5bw = normal_lpdf(y_oos|log_a_5bw - x_oos*b, sigma);
  "}
 }
 #M7: Regime Cap S-R####
-if(type=='regime'&par=='b'){
+if(type=='hmm'&par=='b'){
   if(loglik==FALSE){
     m="functions {
 vector normalize(vector x) {
@@ -1167,7 +1167,7 @@ log_lik_oos_5bw = normal_lpdf(y_oos|log_a - x_oos*b_5bw, sigma);
 }"}
 }
 #M8: Regime ProdCap S-R####
-if(type=='regime'&par=='both'){
+if(type=='hmm'&par=='both'){
   if(loglik==FALSE){
     m="functions {
       vector normalize(vector x) {
