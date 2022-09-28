@@ -328,7 +328,7 @@ ricker_rw_TMB <- function(data, tv.par=c('a','b','both'), silent = FALSE,
 #' @examples 
 #' data(harck)
 #' ricker_HMM_TMB(data=harck)
-ricker_HMM_TMB <- function(data, tv.par=c('a','b','both'), k_regime=2, alpha_limits=c(0,20), beta_upper=.1, sigma_upper=2, 
+ricker_hmm_TMB <- function(data, tv.par=c('a','b','both'), k_regime=2, alpha_limits=c(0,20), beta_upper=.1, sigma_upper=2, 
   silent = FALSE, control = TMBcontrol(), ini_param=NULL, tmb_map = list()) {
 
   #===================================
@@ -430,6 +430,8 @@ ricker_HMM_TMB <- function(data, tv.par=c('a','b','both'), k_regime=2, alpha_lim
     sigma      = tmb_obj$report()$sigma,
     pi1      = tmb_obj$report()$pi1,
     qij      = tmb_obj$report()$qij,
+    smsy      = tmb_obj$report()$Smsy,
+    umsy      = tmb_obj$report()$umsy,
     probregime =  tmb_obj$report()$r_pred,
     regime =  apply(tmb_obj$report()$r_pred, 2,which.max),
     model      = tmb_opt,

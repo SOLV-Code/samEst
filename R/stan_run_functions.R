@@ -174,17 +174,19 @@ ricker_rw_stan <- function(data, par=c('a','b','both'),  control = stancontrol()
 #' data(harck)
 #' ricker_hmm_stan(data=harck)
 #' 
-ricker_hmm_stan <- function(data, par=c('a','b','both'),  control = stancontrol(), warmup=300,  chains = 6, iter = 1000,...) {
-  #par='b'
-  sm <- sr_mod(type='tv',ac=FALSE,par=par,loglik=FALSE, modelcode=TRUE)
+ricker_hmm_stan <- function(data, par=c('a','b','both'), k_regime=2, 
+  control = stancontrol(), warmup=300,  chains = 6, iter = 1000,...) {
+  #par='both'
+  sm <- sr_mod(type='hmm',ac=FALSE,par=par,loglik=FALSE, modelcode=TRUE)
 
   
   fit <- rstan::stan(model_code = sm, 
                         data = list(N=nrow(data),
-                                    L=nrow(data),
-                                    ii=seq_along(data$logRS),
                                     R_S =data$logRS,
-                                    S=data$S),
+                                    S=data$S,
+                                    K=k_regime,
+                                    alpha_dirichlet=rep(1,k_regime)
+                                    ),
                         control = control, warmup = warmup, chains = chains, iter = iter)
   
 
@@ -195,13 +197,18 @@ ricker_hmm_stan <- function(data, par=c('a','b','both'),  control = stancontrol(
     
     aa<-rstan::summary(fit)
   
+row.names(aa$summary)[grep("^b\\[",row.names(aa$summary))]
 
-
-  return(list(alpha=aa$summary["log_a","50%"],
-   beta=aa$summary["b","50%"],
-   sigobs=aa$summary["sigma_e","50%"],
-   siga=ifelse(par=="a"|par=="both",aa$summary["sigma_a","50%"]),
-   sigb=ifelse(par=="b"|par=="both",aa$summary["sigma_a","50%"]), 
+aa$summary[grep("zstar",row.names(aa$summary)),"50%"]
+# these are meaningless need to calc for each mcmc draw check with Dan
+#need regime and weighted alpha, beta, sigma  
+   return(list(alpha=aa$summary[grep("log_a",row.names(aa$summary)),"50%"],
+   beta=aa$summary[grep("^b\\[",row.names(aa$summary)),"50%"],
+   sigobs=aa$summary["sigma","50%"],
+   pi=aa$summary[grep("pi1",row.names(aa$summary)),"50%"],
+   A=aa$summary[grep("A",row.names(aa$summary)),"50%"],
+   probregime =matrix(aa$summary[grep("gamma\\[",row.names(aa$summary)),"50%"],ncol=k_regime, byrow=T),
+   regime = aa$summary[grep("zstar",row.names(aa$summary)),"50%"]
    stanfit=fit, 
    mcmcsummary=aa$summary,
    c_mcmcsummary=aa$c_summary, 

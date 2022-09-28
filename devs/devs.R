@@ -41,7 +41,7 @@ plot(harck$S,harck$R)
 
 p <- ricker_TMB(data=harck)
 
-pb <- rickerstan(data=harck,iter = 2000)
+pb <- ricker_stan(data=harck,iter = 2000)
 
 
 p$alpha
@@ -72,11 +72,10 @@ sum(lfoalpha$last3paramavg)
 sum(lfoalpha$last5paramavg)
 
 
-phmm <- ricker_HMM_TMB(data=harck, tv.par='both')
-phmm[1:5]
+phmm <- ricker_hmm_TMB(data=harck, tv.par='both')
+phmm[1:8]
 
-phmm2 <- ricker_HMMab_TMB(data=harck)
-phmm2[1:5]
+pb <- rickerstan(data=harck,iter = 2000)
 
 
 

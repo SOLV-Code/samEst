@@ -5,7 +5,7 @@
 \title{sr_mod function}
 \usage{
 sr_mod(
-  type = c("static", "tv", "regime"),
+  type = c("static", "rw", "regime"),
   ac = FALSE,
   par = c("n", "a", "b", "both"),
   loglik = FALSE,
