@@ -208,7 +208,7 @@ aa$summary[grep("zstar",row.names(aa$summary)),"50%"]
    pi=aa$summary[grep("pi1",row.names(aa$summary)),"50%"],
    A=aa$summary[grep("A",row.names(aa$summary)),"50%"],
    probregime =matrix(aa$summary[grep("gamma\\[",row.names(aa$summary)),"50%"],ncol=k_regime, byrow=T),
-   regime = aa$summary[grep("zstar",row.names(aa$summary)),"50%"]
+   regime = aa$summary[grep("zstar",row.names(aa$summary)),"50%"],
    stanfit=fit, 
    mcmcsummary=aa$summary,
    c_mcmcsummary=aa$c_summary, 
