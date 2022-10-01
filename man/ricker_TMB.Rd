@@ -9,7 +9,8 @@ ricker_TMB(
   silent = FALSE,
   control = TMBcontrol(),
   tmb_map = list(),
-  AC = FALSE
+  AC = FALSE,
+  priors = 1
 )
 }
 \arguments{
@@ -23,6 +24,9 @@ ricker_TMB(
 Default is all parameters are estimated}
 
 \item{AC}{Logical. Are residuals autocorrelated? Default is FALSE}
+
+\item{Priors}{Integer, 1 priors are included in estimation model, 0 priors are not included.
+See details for priors documentation}
 }
 \value{
 a list containing several model outputs:
@@ -44,6 +48,12 @@ a list containing several model outputs:
 }
 \description{
 Simple Ricker model estimated with TMB
+}
+\details{
+Priors: Weakly informative priors are included for the main parameterst of the model:
+alpha ~ N(0,2.5)
+logbeta ~ N(-12,3)
+sigobs ~ gamma(2,1/3)
 }
 \examples{
 data(harck)

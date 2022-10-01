@@ -13,6 +13,14 @@
 #' @param tmb_map optional, mapping list indicating if parameters should be estimated of fixed. 
 #' Default is all parameters are estimated
 #' @param AC Logical. Are residuals autocorrelated? Default is FALSE
+#' @param Priors Integer, 1 priors are included in estimation model, 0 priors are not included.
+#'  See details for priors documentation
+#' 
+#' @details Priors: Weakly informative priors are included for the main parameterst of the model:
+#' alpha ~ N(0,2.5)
+#' logbeta ~ N(-12,3)
+#' sigobs ~ gamma(2,1/3) 
+#' 
 #' 
 #' @returns a list containing several model outputs:
 #' * alpha - MLE estimates for the alpha parameter vector
@@ -37,12 +45,13 @@
 #' data(harck)
 #' rickerTMB(data=harck)
 #' 
-ricker_TMB <- function(data,  silent = FALSE, control = TMBcontrol(),  tmb_map = list(), AC=FALSE) {
+ricker_TMB <- function(data,  silent = FALSE, control = TMBcontrol(),  tmb_map = list(), AC=FALSE, priors=1) {
 
   
   tmb_data <- list(
     obs_S = data$S,
-    obs_logRS = data$logRS
+    obs_logRS = data$logRS,
+    priors=priors
   )
   
   magS <- log10_ceiling(max(data$S))
