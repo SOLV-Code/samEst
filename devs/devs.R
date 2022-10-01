@@ -40,6 +40,7 @@ plot(harck$S,harck$R)
 ##testing functions
 
 p <- ricker_TMB(data=harck)
+pnp <- ricker_TMB(data=harck,prior=0)
 
 pb <- ricker_stan(data=harck,iter = 2000)
 
