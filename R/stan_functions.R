@@ -45,6 +45,15 @@ sr_mod<- function(type=c('static','rw','regime'),ac=FALSE,par=c('n','a','b','bot
       
       R_S ~ normal(log_a - S*b, sigma_e);
     }
+    generated quantities{
+     real S_max;
+     real U_msy;
+     real S_msy;
+     
+    S_max = 1/b;
+    U_msy = 1-lambert_w0(exp(1-log_a));
+    S_msy = (1-lambert_w0(exp(1-log_a)))/b;
+    }
     "
     }
     if(loglik==TRUE){
@@ -133,6 +142,15 @@ R_S[1] ~ normal(mu[1], sigma_e);
 for(t in 2:N) R_S[t] ~ normal(mu[t], sigma_AR);
   
 }
+ generated quantities{
+     real S_max;
+     real U_msy;
+     real S_msy;
+     
+    S_max = 1/b;
+    U_msy = 1-lambert_w0(exp(1-log_a));
+    S_msy = (1-lambert_w0(exp(1-log_a)))/b;
+    }
     "
     }
 if(loglik==TRUE){
@@ -248,7 +266,17 @@ model{
  
   for(n in 1:N) R_S[n] ~ normal(log_a[ii[n]] - S[n]*b, sigma_e); 
   
-} "
+}
+ generated quantities{
+     real S_max;
+     vector[L] U_msy;
+     vector[L] S_msy;
+     
+    S_max = 1/b;
+    U_msy = 1-lambert_w0(exp(1-log_a));
+    S_msy = (1-lambert_w0(exp(1-log_a)))/b;
+    }
+"
   }
 if(loglik==TRUE){
   m="data{
@@ -357,6 +385,15 @@ model{
   b_dev ~ std_normal();
  for(n in 1:N) R_S[n] ~ normal(log_a-b[ii[n]]*S[n], sigma_e);
 }
+ generated quantities{
+     vector[L] S_max;
+     real U_msy;
+     vector[L] S_msy;
+     
+    S_max = 1/b;
+    U_msy = 1-lambert_w0(exp(1-log_a));
+    S_msy = (1-lambert_w0(exp(1-log_a)))/b;
+    }
  "
   }
 if(loglik==TRUE){
@@ -474,7 +511,17 @@ model{
   b_dev ~ std_normal();
   
   for(n in 1:N) R_S[n] ~ normal(log_a[ii[n]]-b[ii[n]]*S[n], sigma_e);
-}"
+}
+ generated quantities{
+     real[L] S_max;
+     vector[L] U_msy;
+     vector[L] S_msy;
+     
+    S_max = 1/b;
+    U_msy = 1-lambert_w0(exp(1-log_a));
+    S_msy = (1-lambert_w0(exp(1-log_a)))/b;
+    }
+"
   }
 if(loglik==TRUE){
   m="data{
@@ -619,6 +666,11 @@ vector[K] loggamma[N];
 vector[K] beta[N];
 vector[K] gamma[N];
 
+real S_max;
+vector[K] U_msy;
+vector[K] S_msy;
+
+
 { // Forward algortihm
 for (t in 1:N)
 alpha[t] = softmax(logalpha[t]);
@@ -643,13 +695,14 @@ logbeta[t-1, j] = log_sum_exp(accumulator2);
 for (t in 1:N)
 beta[t] = softmax(logbeta[t]);
 } // Backward
-{ // forward-backward algorithm log p(z_t = j | y_{1:N})
+
+{ // Forward-backward algorithm log p(z_t = j | y_{1:N})
 for(t in 1:N) {
 loggamma[t] = alpha[t] .* beta[t];
 }
 for(t in 1:N)
 gamma[t] = normalize(loggamma[t]);
-} // forward-backward
+} // Forward-backward
 
 { // Viterbi algorithm
 int bpointer[N, K]; // backpointer to the most likely previous state on the most probable path
@@ -677,7 +730,12 @@ zstar[N] = j;
 for (t in 1:(N - 1)) {
 zstar[N - t] = bpointer[N - t + 1, zstar[N - t + 1]];
 }
-} 
+}
+
+     
+S_max = 1/b;
+U_msy = 1-lambert_w0(exp(1-log_a));
+S_msy = (1-lambert_w0(exp(1-log_a)))/b;
 }
 "
   }
@@ -928,10 +986,16 @@ vector[K] logbeta[N];
 vector[K] loggamma[N];
 vector[K] beta[N];
 vector[K] gamma[N];
+
+real[K] S_max;
+real U_msy;
+vector[K] S_msy;
+
 { // Forward algortihm
 for (t in 1:N)
 alpha[t] = softmax(logalpha[t]);
 } // Forward
+
 { // Backward algorithm log p(y_{t+1:T} | z_t = j)
 real accumulator[K];
 for (j in 1:K)
@@ -951,6 +1015,7 @@ logbeta[t-1, j] = log_sum_exp(accumulator);
 for (t in 1:N)
 beta[t] = softmax(logbeta[t]);
 } // Backward
+
 { // forward-backward algorithm log p(z_t = j | y_{1:N})
 for(t in 1:N) {
 loggamma[t] = alpha[t] .* beta[t];
@@ -985,8 +1050,13 @@ zstar[N] = j;
 for (t in 1:(N - 1)) {
 zstar[N - t] = bpointer[N - t + 1, zstar[N - t + 1]];
 }
-} 
 }
+
+S_max = 1/b;
+U_msy = 1-lambert_w0(exp(1-log_a));
+S_msy = (1-lambert_w0(exp(1-log_a)))/b;
+}
+
 "
   }
 if(loglik==TRUE){
@@ -1106,6 +1176,8 @@ logbeta[t-1, j] = log_sum_exp(accumulator);
 for (t in 1:N)
 beta[t] = softmax(logbeta[t]);
 } // Backward
+
+
 { // forward-backward algorithm log p(z_t = j | y_{1:N})
 for(t in 1:N) {
 loggamma[t] = alpha[t] .* beta[t];
@@ -1113,6 +1185,7 @@ loggamma[t] = alpha[t] .* beta[t];
 for(t in 1:N)
 gamma[t] = normalize(loggamma[t]);
 } // forward-backward
+
 
 { // Viterbi algorithm
 int bpointer[N, K]; // backpointer to the most likely previous state on the most probable path
@@ -1151,7 +1224,6 @@ for(k in 1:K){
  b_3bw_k[k]=(gamma[N,k]*log_b[k]+gamma[N-1,k]*log_b[k]+gamma[N-2,k]*log_b[k])/3; //prob of each regime x productivity for each regime
  b_5bw_k[k]=(gamma[N,k]*log_b[k]+gamma[N-1,k]*log_b[k]+gamma[N-2,k]*log_b[k]+gamma[N-3,k]*log_b[k]+gamma[N-4,k]*log_b[k])/5; //prob of each regime x productivity for each regime
  }
-
 
 b_1bw=sum(b_1bw_k); //weighted capacity
 b_3bw=exp(sum(b_3bw_k)); //weighted productivity
@@ -1229,17 +1301,25 @@ if(type=='hmm'&par=='both'){
       target += log_sum_exp(logalpha[N]);
     }
 generated quantities {
-int<lower=1, upper=K> zstar[N];
+//HMM estimators
+int<lower=1, upper=K> zstar[N]; \\regime state sequence
 real logp_zstar;
-vector[K] alpha[N];
+vector[K] alpha[N]; \\forward state probabilities
 vector[K] logbeta[N];
 vector[K] loggamma[N];
-vector[K] beta[N];
-vector[K] gamma[N];
+vector[K] beta[N]; \\backward state probabilities
+vector[K] gamma[N]; \\forward-backward state probabilities
+
+//refernece points
+real[K] S_max;
+real[K] U_msy;
+vector[K] S_msy;
+
 { // Forward algortihm
 for (t in 1:N)
 alpha[t] = softmax(logalpha[t]);
 } // Forward
+
 { // Backward algorithm log p(y_{t+1:T} | z_t = j)
 real accumulator[K];
 for (j in 1:K)
@@ -1259,6 +1339,8 @@ logbeta[t-1, j] = log_sum_exp(accumulator);
 for (t in 1:N)
 beta[t] = softmax(logbeta[t]);
 } // Backward
+
+
 { // forward-backward algorithm log p(z_t = j | y_{1:N})
 for(t in 1:N) {
 loggamma[t] = alpha[t] .* beta[t];
@@ -1293,7 +1375,11 @@ zstar[N] = j;
 for (t in 1:(N - 1)) {
 zstar[N - t] = bpointer[N - t + 1, zstar[N - t + 1]];
 }
-} 
+}
+
+S_max = 1/b;
+U_msy = 1-lambert_w0(exp(1-log_a));
+S_msy = (1-lambert_w0(exp(1-log_a)))/b;
 }
 "
   }
