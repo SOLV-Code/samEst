@@ -95,6 +95,7 @@ Type objective_function<Type>::operator() ()
   DATA_SCALAR(beta_u);  //upper bound for a
   DATA_SCALAR(sigma_u); //upper bound for sigma
   DATA_VECTOR(alpha_dirichlet); //prior inputs for dirichlet 
+  DATA_INTEGER(priors);
 
   PARAMETER_VECTOR(lalpha);
   PARAMETER(lbeta);
@@ -168,21 +169,22 @@ Type objective_function<Type>::operator() ()
 
   //priors
   Type pnll = Type(0.0);
-  vector<Type> pi_prior(k_regime);
+  if(priors == 1){
+    vector<Type> pi_prior(k_regime);
  
-  Type logbeta = log(beta);
-  pnll -= dnorm(logbeta,Type(-12.0),Type(3.0),true);
-  pnll -= dgamma(sigma,Type(2.0),Type(1.0)/Type(3.0),true);
+    Type logbeta = log(beta);
+    pnll -= dnorm(logbeta,Type(-12.0),Type(3.0),true);
+    pnll -= dgamma(sigma,Type(2.0),Type(1.0)/Type(3.0),true);
    
-  for(int j = 0;j < k_regime;++j){
-    pi_prior(j) = Type(1.0);
-    pnll -= dnorm(alpha(j),Type(0.0),Type(2.5),true);
+    for(int j = 0;j < k_regime;++j){
+      pi_prior(j) = Type(1.0);
+      pnll -= dnorm(alpha(j),Type(0.0),Type(2.5),true);
         
-    vector<Type> qijtmp = qij.row(j);
-    pnll -= ddirichlet(qijtmp,alpha_dirichlet,true);   
+      vector<Type> qijtmp = qij.row(j);
+      pnll -= ddirichlet(qijtmp,alpha_dirichlet,true);   
+    }
+    pnll -=ddirichlet(pi1,pi_prior,true);
   }
-  pnll -=ddirichlet(pi1,pi_prior,true);
-
 
   Type ans= nll + pnll;
 

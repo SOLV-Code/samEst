@@ -77,7 +77,8 @@ Type objective_function<Type>::operator() ()
 
   DATA_VECTOR(obs_S);    // observed  Spawner
   DATA_VECTOR(obs_logRS);   // observed recruitment
-  
+  DATA_INTEGER(priors);
+
   //DATA_SCALAR(prbeta1); //beta prior parameter
   //DATA_SCALAR(prbeta2); //beta prior parameter
   
@@ -123,19 +124,18 @@ Type objective_function<Type>::operator() ()
   //priors on parameters
   Type ans= Type(0);
 
-  ans -= dnorm(alpha,Type(0.0),Type(2.5),true);
-  ans -= dnorm(logbetao,Type(-12.0),Type(3.0),true);
-
-  //ans -= dnorm(logsigobs,Type(0.0),Type(2.0),true);
-  //ans -= dnorm(logsigb,Type(0.0),Type(2.0),true);
-  //ans -= dnorm(sigobs,Type(0.0),Type(2.0),true);
-  //ans -= dnorm(sigb,Type(0.0),Type(2.0),true);
-  //ans -= sigobs;
-  //ans -= sigb;
-
-  ans -= dgamma(sigobs,Type(2.0),Type(1.0)/Type(3.0),true);
-  ans -= dgamma(sigb,Type(2.0),Type(1.0)/Type(3.0),true);
- 
+  if(priors == 1){
+    ans -= dnorm(alpha,Type(0.0),Type(2.5),true);
+    ans -= dnorm(logbetao,Type(-12.0),Type(3.0),true);
+    //ans -= dnorm(logsigobs,Type(0.0),Type(2.0),true);
+    //ans -= dnorm(logsigb,Type(0.0),Type(2.0),true);
+    //ans -= dnorm(sigobs,Type(0.0),Type(2.0),true);
+    //ans -= dnorm(sigb,Type(0.0),Type(2.0),true);
+    //ans -= sigobs;
+    //ans -= sigb;
+    ans -= dgamma(sigobs,Type(2.0),Type(1.0)/Type(3.0),true);
+    ans -= dgamma(sigb,Type(2.0),Type(1.0)/Type(3.0),true);
+  }
   
   ans+= -dnorm(logbeta(0),logbetao,sigb,true);
   

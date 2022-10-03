@@ -74,6 +74,7 @@ Type objective_function<Type>::operator() ()
 
   DATA_VECTOR(obs_S);    // observed  Spawner
   DATA_VECTOR(obs_logRS);   // observed recruitment
+  DATA_INTEGER(priors);
   
   //logbeta     -> log of beta from ricker curve
   //alphao      -> initial alpha value
@@ -101,13 +102,15 @@ Type objective_function<Type>::operator() ()
   //priors on parameters
  
   Type ans= Type(0);
-  ans -=dnorm(alphao,Type(0.0),Type(2.5),true);
-  ans -=dnorm(logbeta,Type(-12.0),Type(3.0),true);
-  
-  //ans -= dnorm(logsigobs,Type(0.0),Type(2.0),true);
-  //ans -= dnorm(logsiga,Type(0.0),Type(2.0),true);
-  ans -= dgamma(sigobs,Type(2.0),Type(1.0)/Type(3.0),true);  
-  ans -= dgamma(siga,Type(2.0),Type(1.0)/Type(3.0),true);
+
+  if(priors == 1){
+    ans -=dnorm(alphao,Type(0.0),Type(2.5),true);
+    ans -=dnorm(logbeta,Type(-12.0),Type(3.0),true); 
+    //ans -= dnorm(logsigobs,Type(0.0),Type(2.0),true);
+    //ans -= dnorm(logsiga,Type(0.0),Type(2.0),true);
+    ans -= dgamma(sigobs,Type(2.0),Type(1.0)/Type(3.0),true);  
+    ans -= dgamma(siga,Type(2.0),Type(1.0)/Type(3.0),true);
+  }
   
   ans+= -dnorm(alpha(0),alphao,siga,true);
   

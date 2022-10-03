@@ -73,18 +73,9 @@ Type objective_function<Type>::operator() ()
 
   DATA_VECTOR(obs_S);    // observed  Spawner
   DATA_VECTOR(obs_logRS);   // observed recruitment
+  DATA_INTEGER(priors);
   
-  //DATA_SCALAR(prbeta1); //beta prior parameter
-  //DATA_SCALAR(prbeta2); //beta prior parameter
-  //DATA_SCALAR(prbeta3); //beta prior parameter
-  //DATA_SCALAR(prbeta4); //beta prior parameter
   
-  //logbeta     -> log of beta from ricker curve
-  //alphao      -> initial alpha value
-  //rho         -> Proportion of total variance associated with obs error.
-  //varphi      -> Total precision
-  //alpha       -> Time-varying alpha
-
   PARAMETER(logbetao);
   PARAMETER(alphao);
   
@@ -127,24 +118,25 @@ Type objective_function<Type>::operator() ()
   
   Type ans= Type(0); 
 
-  //prior on parameters
-  ans -=dnorm(alphao,Type(0.0),Type(2.5),true);
-  ans -=dnorm(logbetao,Type(-12.0),Type(3.0),true);
-  //prior on observation and process variance ratio
-  //Type ans= -dbeta(rho,prbeta1,prbeta2,true); 
-  //ans= -dbeta(kappa,prbeta3,prbeta4,true);  
-  //ans -= dexp(sigobs,Type(2.0),true);
-  //ans -= dexp(siga,Type(2.0),true);
-  //ans -= dexp(sigb,Type(2.0),true);
+  if(priors == 1){
+    //prior on parameters
+    ans -=dnorm(alphao,Type(0.0),Type(2.5),true);
+    ans -=dnorm(logbetao,Type(-12.0),Type(3.0),true);
+    //prior on observation and process variance ratio
+    //Type ans= -dbeta(rho,prbeta1,prbeta2,true); 
+    //ans= -dbeta(kappa,prbeta3,prbeta4,true);  
+    //ans -= dexp(sigobs,Type(2.0),true);
+    //ans -= dexp(siga,Type(2.0),true);
+    //ans -= dexp(sigb,Type(2.0),true);
   
-  //ans -= dnorm(sigobs,Type(0.0),Type(2.0),true);
-  //ans -= dnorm(siga,Type(0.0),Type(2.0),true);
-  //ans -= dnorm(sigb,Type(0.0),Type(2.0),true);
+    //ans -= dnorm(sigobs,Type(0.0),Type(2.0),true);
+    //ans -= dnorm(siga,Type(0.0),Type(2.0),true);
+    //ans -= dnorm(sigb,Type(0.0),Type(2.0),true);
 
-  ans -= dgamma(sigobs,Type(2.0),Type(1.0)/Type(3.0),true);
-  ans -= dgamma(sigb,Type(2.0),Type(1.0)/Type(3.0),true);
-  ans -= dgamma(siga,Type(2.0),Type(1.0)/Type(3.0),true);
-
+    ans -= dgamma(sigobs,Type(2.0),Type(1.0)/Type(3.0),true);
+    ans -= dgamma(sigb,Type(2.0),Type(1.0)/Type(3.0),true);
+    ans -= dgamma(siga,Type(2.0),Type(1.0)/Type(3.0),true);
+  }
    
   ans+= -dnorm(alpha(0),alphao,siga,true);
   ans+= -dnorm(logbeta(0),logbetao,sigb,true);

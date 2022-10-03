@@ -25,7 +25,7 @@ Default is all parameters are estimated}
 
 \item{AC}{Logical. Are residuals autocorrelated? Default is FALSE}
 
-\item{Priors}{Integer, 1 priors are included in estimation model, 0 priors are not included.
+\item{priors}{Integer, 1 priors are included in estimation model, 0 priors are not included.
 See details for priors documentation}
 }
 \value{
