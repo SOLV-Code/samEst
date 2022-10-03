@@ -110,6 +110,7 @@ ricker_TMB <- function(data,  silent = FALSE, control = TMBcontrol(),  tmb_map =
     tmb_obj    = tmb_obj,
     gradients  = conv$final_grads,
     bad_eig    = conv$bad_eig,
+    conv_problem= conv$conv_problem,
     call       = match.call(expand.dots = TRUE),
     sd_report  = sd_report),
     class      = ifelse(AC,"Ricker_autocorr","Ricker_simple"))
@@ -295,6 +296,7 @@ ricker_rw_TMB <- function(data, tv.par=c('a','b','both'), silent = FALSE,
     tmb_obj    = tmb_obj,
     gradients  = conv$final_grads,
     bad_eig    = conv$bad_eig,
+    conv_problem= conv$conv_problem,
     call       = match.call(expand.dots = TRUE),
     sd_report  = sd_report),
     class      = clss)
@@ -360,8 +362,9 @@ ricker_rw_TMB <- function(data, tv.par=c('a','b','both'), silent = FALSE,
 #' @examples 
 #' data(harck)
 #' ricker_HMM_TMB(data=harck)
-ricker_hmm_TMB <- function(data, tv.par=c('a','b','both'), k_regime=2, alpha_limits=c(0,20), beta_upper=.1, sigma_upper=2, 
-  silent = FALSE, control = TMBcontrol(), ini_param=NULL, tmb_map = list(), priors=1) {
+ricker_hmm_TMB <- function(data, tv.par=c('a','b','both'), k_regime=2, alpha_limits=c(0,20), 
+  beta_upper=.1, sigma_upper=2, silent = FALSE, control = TMBcontrol(), ini_param=NULL, 
+  tmb_map = list(), priors=1) {
 
   #===================================
   #prepare TMB input and options
@@ -475,9 +478,11 @@ ricker_hmm_TMB <- function(data, tv.par=c('a','b','both'), k_regime=2, alpha_lim
     tmb_obj    = tmb_obj,
     gradients  = conv$final_grads,
     bad_eig    = conv$bad_eig,
+    conv_problem= conv$conv_problem,
     call       = match.call(expand.dots = TRUE),
-    sd_report  = sd_report),
+    sd_report  = sd_report,
     class      = clss)
+    )
 
 }
 
@@ -514,23 +519,28 @@ TMBcontrol <- function(eval.max = 1e4, iter.max = 1e4, ...) {
 get_convergence_diagnostics <- function(sd_report) {
   final_grads <- sd_report$gradient.fixed
   bad_eig <- FALSE
+  conv_problem<-FALSE
   if (!is.null(sd_report$pdHess)) {
     if (!sd_report$pdHess) {
       warning("The model may not have converged: ",
         "non-positive-definite Hessian matrix.", call. = FALSE)
+      conv_problem<-TRUE
     } else {
       eigval <- try(1 / eigen(sd_report$cov.fixed)$values, silent = TRUE)
       if (is(eigval, "try-error") || (min(eigval) < .Machine$double.eps * 10)) {
         warning("The model may not have converged: ",
           "extreme or very small eigen values detected.", call. = FALSE)
         bad_eig <- TRUE
+        conv_problem<-TRUE
       }
-      if (any(final_grads > 0.01))
+      if (any(final_grads > 0.01)){
         warning("The model may not have converged. ",
           "Maximum final gradient: ", max(final_grads), ".", call. = FALSE)
+        conv_problem<-TRUE
+      }
     }
   }
-  invisible(list(final_grads = final_grads, bad_eig = bad_eig))
+  invisible(list(final_grads = final_grads, bad_eig = bad_eig, conv_problem = conv_problem))
 }
 
 
