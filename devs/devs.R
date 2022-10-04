@@ -65,7 +65,10 @@ names(p)
 
 
 ptva<- ricker_rw_TMB(data=harck,tv.par="a")
-ptva[1:10]
+ptva[1:6]
+
+pkfa<- ricker_kf_TMB(data=harck)
+pkfa[1:6]
 
 lfoalpha <- tmb_mod_lfo_cv(data=harck,tv.par='a', siglfo="obs")
 sum(lfoalpha$lastparam)

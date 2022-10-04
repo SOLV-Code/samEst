@@ -1,4 +1,4 @@
-all: Ricker_simple.dll  Ricker_tva.dll SR_HMM.dll Ricker_tvlogb.dll Ricker_tva_tvb.dll SR_HMM_a.dll SR_HMM_b.dll Ricker_autocorr.dll
+all: Ricker_simple.dll  Ricker_tva.dll SR_HMM.dll Ricker_tvlogb.dll Ricker_tva_tvb.dll SR_HMM_a.dll SR_HMM_b.dll Ricker_autocorr.dll Rickerkf_fullLL.dll Rickerkf.dll
 
 Ricker_simple.dll: Ricker_simple.cpp
 	Rscript --vanilla -e "TMB::compile('Ricker_simple.cpp','-O1 -g', DLLFLAGS='', framework = 'TMBad')"
@@ -16,7 +16,6 @@ Ricker_tvlogb.dll: Ricker_tvlogb.cpp
 Ricker_tva_tvb.dll: Ricker_tva_tvb.cpp
 	Rscript --vanilla -e "TMB::compile('Ricker_tva_tvb.cpp','-O1 -g', DLLFLAGS='', framework = 'TMBad')"
 
-
 SR_HMM.dll: SR_HMM.cpp
 	Rscript --vanilla -e "TMB::compile('SR_HMM.cpp','-O1 -g', DLLFLAGS='', framework = 'TMBad')"
 
@@ -25,6 +24,13 @@ SR_HMM_a.dll: SR_HMM_a.cpp
 
 SR_HMM_b.dll: SR_HMM_b.cpp
 	Rscript --vanilla -e "TMB::compile('SR_HMM_b.cpp','-O1 -g', DLLFLAGS='', framework = 'TMBad')"
+
+Rickerkf_fullLL.dll: Rickerkf_fullLL.cpp
+	Rscript --vanilla -e "TMB::compile('Rickerkf_fullLL.cpp', '-O1 -g',DLLFLAGS='', framework = 'TMBad')"
+
+Rickerkf.dll: Rickerkf_fullLL.cpp
+	Rscript --vanilla -e "TMB::compile('Rickerkf.cpp', '-O1 -g',DLLFLAGS='', framework = 'TMBad')"
+
 
 
 clean:
