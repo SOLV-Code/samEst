@@ -37,7 +37,7 @@ sr_mod<- function(type=c('static','rw','regime'),ac=FALSE,par=c('n','a','b','bot
     }
     model{
       //priors
-      log_a ~ normal(0,2.5); //intrinsic productivity - wide prior
+      log_a ~ gamma(3,1); //intrinsic productivity - wide prior
       log_b ~ normal(-12,3); //per capita capacity parameter - wide prior
       
       //variance terms
@@ -79,7 +79,7 @@ sr_mod<- function(type=c('static','rw','regime'),ac=FALSE,par=c('n','a','b','bot
     }
     model{
       //priors
-      log_a ~ normal(0,2.5); //intrinsic productivity - wide prior
+      log_a ~ gamma(3,1); //intrinsic productivity - wide prior
       log_b ~ normal(-12,3); //per capita capacity parameter - wide prior
       
       //variance terms
@@ -99,7 +99,7 @@ sr_mod<- function(type=c('static','rw','regime'),ac=FALSE,par=c('n','a','b','bot
     if(loglik==FALSE){
       m="data{
   int<lower=1> N;//number of annual samples
-  int<lower=1> TT;//number years in the data series(time-series length)
+  int<lower=1> L;//number years in the data series(time-series length)
   int ii[N];//index of years with data
   vector[N] R_S; //log(recruits per spawner)
   vector[N] S; //spawners in time T
@@ -131,7 +131,7 @@ sigma_AR = sigma_e*sqrt(1-rho^2);
 }
 model{
   //priors
-  log_a ~ normal(0,2.5); //initial productivity - wide prior
+  log_a ~ gamma(3,1); //initial productivity - wide prior
   log_b ~ normal(-12,3); //initial productivity - wide prior
   rho ~ uniform(-1,1);
   
@@ -192,7 +192,7 @@ sigma_AR = sigma_e*sqrt(1-rho^2);
 }
 model{
   //priors
-  log_a ~ normal(0,2.5); //initial productivity - wide prior
+  log_a ~ gamma(3,1); //initial productivity - wide prior
   log_b ~ normal(-12,3); //initial productivity - wide prior
   rho ~ uniform(-1,1);
   
@@ -255,7 +255,7 @@ transformed parameters{
 }  
 model{
   //priors
-  log_a0 ~ normal(0,2.5); //initial productivity - wide prior
+  log_a0 ~ gamma(3,1); //initial productivity - wide prior
   log_b ~ normal(-12,3); //per capita capacity parameter - wide prior
   a_dev ~ std_normal(); //standardized (z-scales) deviances
   
@@ -313,7 +313,7 @@ transformed parameters{
 }  
 model{
   //priors
-  log_a0 ~ normal(0,2.5); //initial productivity - wide prior
+  log_a0 ~ gamma(3,1); //initial productivity - wide prior
   log_b ~ normal(-12,3); //per capita capacity parameter - wide prior
   a_dev ~ std_normal(); //standardized (z-scales) deviances
   
@@ -375,7 +375,7 @@ transformed parameters{
 
 model{
   //priors
-  log_a ~ normal(0,2.5); //initial productivity - wide prior
+  log_a ~ gamma(3,1); //initial productivity - wide prior
   b0 ~ normal(-12,3); //covariates - reef
   
   //variance terms
@@ -390,9 +390,10 @@ model{
      real U_msy;
      vector[L] S_msy;
      
-    S_max = 1/b;
+    for(l in 1:L){ S_max[l] = 1/b[l];
+                   S_msy[l] = (1-lambert_w0(exp(1-log_a)))/b[l];
+    }
     U_msy = 1-lambert_w0(exp(1-log_a));
-    S_msy = (1-lambert_w0(exp(1-log_a)))/b;
     }
  "
   }
@@ -432,7 +433,7 @@ transformed parameters{
 
 model{
   //priors
-  log_a ~ normal(0,2.5); //initial productivity - wide prior
+  log_a ~ gamma(3,1); //initial productivity - wide prior
   b0 ~ normal(-12,3); //covariates - reef
   
   //variance terms
@@ -499,7 +500,7 @@ transformed parameters{
 
 model{
   //priors
-  log_a0 ~ normal(0,2.5); //initial productivity - wide prior
+  log_a0 ~ gamma(3,1); //initial productivity - wide prior
   log_b0 ~ normal(-12,3); //covariates - reef
   
   //variance terms
@@ -513,13 +514,14 @@ model{
   for(n in 1:N) R_S[n] ~ normal(log_a[ii[n]]-b[ii[n]]*S[n], sigma_e);
 }
  generated quantities{
-     real[L] S_max;
+     vector[L] S_max;
      vector[L] U_msy;
      vector[L] S_msy;
      
-    S_max = 1/b;
-    U_msy = 1-lambert_w0(exp(1-log_a));
-    S_msy = (1-lambert_w0(exp(1-log_a)))/b;
+   for(l in 1:L){ S_max[l] = 1/b[l];
+    U_msy[l] = 1-lambert_w0(exp(1-log_a[l]));
+    S_msy[l] = (1-lambert_w0(exp(1-log_a[l])))/b[l];
+   }
     }
 "
   }
@@ -563,7 +565,7 @@ transformed parameters{
 
 model{
   //priors
-  log_a0 ~ normal(0,2.5); //initial productivity - wide prior
+  log_a0 ~ gamma(3,1); //initial productivity - wide prior
   log_b0 ~ normal(-12,3); //covariates - reef
   
   //variance terms
@@ -620,12 +622,15 @@ simplex[K] A[K]; // transition probabilities
 // A[i][j] = p(z_t = j | z_{t-1} = i)
 // Continuous observation model
 ordered[K] log_a; // max. productivity
-real b; // rate capacity - fixed in this
+real log_b; // rate capacity - fixed in this
 real<lower=0> sigma; // observation standard deviations
 }
 
 transformed parameters {
 vector[K] logalpha[N];
+real b; //
+
+b=exp(log_b);
 
 { // Forward algorithm log p(z_t = j | y_{1:t})
 real accumulator1[K];
@@ -646,8 +651,8 @@ logalpha[t, j] = log_sum_exp(accumulator1);
 }
 model{
 sigma ~ gamma(2,3);
-log_a ~ normal(0,2.5);
-b ~ normal(1,3);
+log_a ~ gamma(3,1);
+log_b ~ normal(-12,3);
 
 pi1 ~ dirichlet(rep_vector(1, K));
 
@@ -732,10 +737,12 @@ zstar[N - t] = bpointer[N - t + 1, zstar[N - t + 1]];
 }
 }
 
+for(k in 1:K){
+U_msy[k] = 1-lambert_w0(exp(1-log_a[k]));
+S_msy[k] = (1-lambert_w0(exp(1-log_a[k])))/b;
+}
      
 S_max = 1/b;
-U_msy = 1-lambert_w0(exp(1-log_a));
-S_msy = (1-lambert_w0(exp(1-log_a)))/b;
 }
 "
   }
@@ -791,7 +798,7 @@ logalpha[t, j] = log_sum_exp(accumulator1);
 }
 model{
 sigma ~ gamma(2,3);
-log_a ~ normal(0,5);
+log_a ~ gamma(3,1);
 log_b ~ normal(-12,3);
 
 pi1 ~ dirichlet(rep_vector(1, K));
@@ -967,7 +974,7 @@ logalpha[t, j] = log_sum_exp(accumulator);
 }
 model{
 sigma ~ gamma(2,3);
-log_a ~ normal(0,2.5);
+log_a ~ gamma(3,1);
 log_b ~ normal(-12,3);
 
 pi1 ~ dirichlet(rep_vector(1, K));
@@ -1110,7 +1117,7 @@ logalpha[t, j] = log_sum_exp(accumulator);
 }
 model{
 sigma ~ gamma(2,3);
-log_a ~ normal(0,2.5);
+log_a ~ gamma(3,1);
 log_b ~ normal(-12,3);
 
 pi1 ~ dirichlet(rep_vector(1, K));
@@ -1289,7 +1296,7 @@ if(type=='hmm'&par=='both'){
     }
     model{
       sigma ~ gamma(2,3);
-      log_a ~ normal(0,2.5);
+      log_a ~ gamma(3,1);
       log_b ~ normal(-12,3);
       
       pi1 ~ dirichlet(rep_vector(1, K));
@@ -1310,9 +1317,9 @@ vector[K] loggamma[N];
 vector[K] beta[N]; //backward state probabilities
 vector[K] gamma[N]; //forward-backward state probabilities
 
-//refernece points
-real[K] S_max;
-real[K] U_msy;
+//reference points
+vector[K] S_max;
+vector[K] U_msy;
 vector[K] S_msy;
 
 { // Forward algortihm
@@ -1434,7 +1441,7 @@ logalpha[t, j] = log_sum_exp(accumulator);
 }
 model{
 sigma ~ gamma(2,3);
-log_a ~ normal(0,2.5);
+log_a ~ gamma(3,1);
 log_b ~ normal(-12,3);
 
 pi1 ~ dirichlet(rep_vector(1, K));
