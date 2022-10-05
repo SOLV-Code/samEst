@@ -1302,13 +1302,13 @@ if(type=='hmm'&par=='both'){
     }
 generated quantities {
 //HMM estimators
-int<lower=1, upper=K> zstar[N]; \\regime state sequence
+int<lower=1, upper=K> zstar[N]; //most-likely regime state sequence
 real logp_zstar;
-vector[K] alpha[N]; \\forward state probabilities
+vector[K] alpha[N]; //forward state probabilities
 vector[K] logbeta[N];
 vector[K] loggamma[N];
-vector[K] beta[N]; \\backward state probabilities
-vector[K] gamma[N]; \\forward-backward state probabilities
+vector[K] beta[N]; //backward state probabilities
+vector[K] gamma[N]; //forward-backward state probabilities
 
 //refernece points
 real[K] S_max;
