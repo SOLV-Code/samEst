@@ -7,6 +7,7 @@
 #' Find order of magnitude
 #'
 #' @param x a number. 
+#' @export
 #' 
 #' @returns order of magnitude
 #' 
