@@ -85,7 +85,7 @@ stan_lfo_cv=function(mod,type=c('static','tv','regime'),df,L=10,K=NULL){
     df_oos <- df[c(past, oos), , drop = FALSE]
     if(type=='static'){
       fit_past<- stan_refit(sm=mod,newdata=df_oos,oos=i+1)
-      ll=extract(fit_past,pars=c('log_lik_oos'))
+      ll=rstan::extract(fit_past,pars=c('log_lik_oos'))
       loglik_exact[,i+1]<- ll$log_lik_oos
       
     }
