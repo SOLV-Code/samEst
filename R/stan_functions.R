@@ -671,6 +671,9 @@ vector[K] loggamma[N];
 vector[K] beta[N];
 vector[K] gamma[N];
 
+vector[N] log_a_t;
+vector[N] log_a_wt;
+
 real S_max;
 vector[K] U_msy;
 vector[K] S_msy;
@@ -736,6 +739,9 @@ for (t in 1:(N - 1)) {
 zstar[N - t] = bpointer[N - t + 1, zstar[N - t + 1]];
 }
 }
+
+log_a_t=log_a[zstar];
+for(n in 1:N) log_a_wt[n]= sum(gamma[n,].*log_a);
 
 for(k in 1:K){
 U_msy[k] = 1-lambert_w0(exp(1-log_a[k]));
@@ -998,6 +1004,9 @@ real[K] S_max;
 real U_msy;
 vector[K] S_msy;
 
+vector[N] S_max_t; //Smax sequence
+vector[N] S_max_wt; //Smax sequence - weighted
+
 { // Forward algortihm
 for (t in 1:N)
 alpha[t] = softmax(logalpha[t]);
@@ -1058,6 +1067,9 @@ for (t in 1:(N - 1)) {
 zstar[N - t] = bpointer[N - t + 1, zstar[N - t + 1]];
 }
 }
+
+S_max_t=1/b[zstar];
+for(n in 1:N) S_max_wt[n]= 1/sum(gamma[n,].*beta);
 
 S_max = 1/b;
 U_msy = 1-lambert_w0(exp(1-log_a));
@@ -1158,7 +1170,6 @@ vector[K] b_5bw_k;
 real b_1bw;
 real b_3bw;
 real b_5bw;
-
 
 { // Forward algortihm
 for (t in 1:N)
@@ -1322,6 +1333,12 @@ vector[K] S_max;
 vector[K] U_msy;
 vector[K] S_msy;
 
+vector[N] log_a_t; //productivity sequence
+vector[N] log_a_wt; //productivity sequence - weighted
+vector[N] S_max_t; //Smax sequence
+vector[N] S_max_wt; //Smax sequence - weighted
+
+
 { // Forward algortihm
 for (t in 1:N)
 alpha[t] = softmax(logalpha[t]);
@@ -1383,6 +1400,12 @@ for (t in 1:(N - 1)) {
 zstar[N - t] = bpointer[N - t + 1, zstar[N - t + 1]];
 }
 }
+
+log_a_t=log_a[zstar];
+for(n in 1:N) log_a_wt[n]= sum(gamma[n,].*log_a);
+
+S_max_t=1/b[zstar];
+for(n in 1:N) S_max_wt[n]= 1/sum(gamma[n,].*beta);
 
 S_max = 1/b;
 U_msy = 1-lambert_w0(exp(1-log_a));
@@ -1594,9 +1617,10 @@ m2=rstan::stan_model(model_code = m)
 
 if(modelcode){
   return(m)  
-
+  
 }else{
   return(m2)  
+  
+}
+}
 
-}
-}
