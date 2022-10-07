@@ -165,7 +165,7 @@ Type objective_function<Type>::operator() ()
   int k_regime = lbeta.size();
   
   vector<Type> beta = beta_u/(1+exp(-lbeta));// when lbeta is negative infinity, beta=0; when lbeta is positive infinity, beta=beta_u
-  vector<Type> alpha(k_regime), Smsy(k_regime), umsy(k_regime);
+  vector<Type> alpha(k_regime), Smsy(k_regime), umsy(k_regime), Smax(k_regime);
 
 
   
@@ -173,6 +173,7 @@ Type objective_function<Type>::operator() ()
   
   for(int i = 1;i < k_regime;++i){
     alpha(i) = alpha(i-1) + (alpha_u-alpha(i-1))/(1+exp(-lalpha(i)));
+
   } // alpha(1) from alpha(0) to alpha_u
 
   Type sigma = sigma_u/(1+exp(-lsigma));
@@ -225,6 +226,7 @@ Type objective_function<Type>::operator() ()
    
     Smsy(j) = (1 - LambertW(exp(1-alpha(j))) ) / beta(j);
     umsy(j) = (1 - LambertW(exp(1-alpha(j))) ); 
+    Smax(j)= Type(1.0)/beta(j);
   }
  
  qij = exp(qij.array());
@@ -262,6 +264,7 @@ REPORT(pi1);
 REPORT(qij);
 REPORT(umsy);
 REPORT(Smsy);
+REPORT(Smax);
 REPORT(r_pred); 
 REPORT(nll);
 REPORT(pnll);  
@@ -273,6 +276,7 @@ REPORT(pnll);
 ADREPORT(alpha);
 ADREPORT(beta);
 ADREPORT(sigma);
+ADREPORT(Smax);
 ADREPORT(pi1);
 ADREPORT(qij);
 ADREPORT(umsy);
