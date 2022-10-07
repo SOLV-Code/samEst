@@ -673,10 +673,6 @@ vector[K] gamma[N];
 
 vector[N] log_a_t;
 vector[N] log_a_wt;
-vector[N] U_msy_t;
-vector[N] S_msy_t;
-vector[N] U_msy_wt;
-vector[N] S_msy_wt;
 
 real S_max;
 vector[K] U_msy;
@@ -745,14 +741,12 @@ zstar[N - t] = bpointer[N - t + 1, zstar[N - t + 1]];
 }
 
 S_max = 1/b;
+log_a_t=log_a[zstar];
+
 for(k in 1:K){
 U_msy[k] = 1-lambert_w0(exp(1-log_a[k]));
 S_msy[k] = (1-lambert_w0(exp(1-log_a[k])))/b;
 }
-
-log_a_t=log_a[zstar];
-U_msy_t=U_msy[zstar];
-S_msy_t=S_msy[zstar];
 
 for(n in 1:N){ 
  log_a_wt[n]= sum(gamma[n,].*log_a);
@@ -1011,14 +1005,12 @@ vector[K] loggamma[N];
 vector[K] beta[N];
 vector[K] gamma[N];
 
-vector[K] S_max;
+real[K] S_max;
 real U_msy;
 vector[K] S_msy;
 
 vector[N] S_max_t; //Smax sequence
 vector[N] S_max_wt; //Smax sequence - weighted
-vector[N] S_msy_t; //Smsy sequence
-vector[N] S_msy_wt; //Smsy sequence - weighted
 
 { // Forward algortihm
 for (t in 1:N)
@@ -1081,19 +1073,20 @@ zstar[N - t] = bpointer[N - t + 1, zstar[N - t + 1]];
 }
 }
 
-
-U_msy= 1-lambert_w0(exp(1-log_a));
+S_max = 1/b;
+S_max_t=1/b[zstar];
 
 for(k in 1:K){
-S_max[k] = 1/b[k];
-S_msy[k] = (1-lambert_w0(exp(1-log_a)))/b[k];
+U_msy[k] = 1-lambert_w0(exp(1-log_a[k]));
+S_msy[k] = (1-lambert_w0(exp(1-log_a[k])))/b;
 }
 
-S_max_t=S_max[zstar];
 S_msy_t=S_msy[zstar];
+U_msy_t=U_msy[zstar];
 
 for(n in 1:N){ 
  S_max_wt[n] = sum(gamma[n,].*S_max);
+ U_msy_wt[n] = sum(gamma[n,].*U_msy); 
  S_msy_wt[n] = sum(gamma[n,].*S_msy);
 }
 
@@ -1360,10 +1353,6 @@ vector[N] log_a_t; //productivity sequence
 vector[N] log_a_wt; //productivity sequence - weighted
 vector[N] S_max_t; //Smax sequence
 vector[N] S_max_wt; //Smax sequence - weighted
-vector[N] U_msy_t; //Umsy sequence
-vector[N] U_msy_wt; //Umsy sequence - weighted
-vector[N] S_msy_t; //Smsy sequence
-vector[N] S_msy_wt; //Smsy sequence - weighted
 
 
 { // Forward algortihm
@@ -1428,15 +1417,14 @@ zstar[N - t] = bpointer[N - t + 1, zstar[N - t + 1]];
 }
 }
 
+S_max = 1/b;
+log_a_t=log_a[zstar];
+S_max_t=1/b[zstar];
 
 for(k in 1:K){
-S_max[k] = 1/b[k];
 U_msy[k] = 1-lambert_w0(exp(1-log_a[k]));
-S_msy[k] = (1-lambert_w0(exp(1-log_a[k])))/b[k];
+S_msy[k] = (1-lambert_w0(exp(1-log_a[k])))/b;
 }
-
-log_a_t=log_a[zstar];
-S_max_t=S_max[zstar];
 S_msy_t=S_msy[zstar];
 U_msy_t=U_msy[zstar];
 

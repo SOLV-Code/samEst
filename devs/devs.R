@@ -82,11 +82,14 @@ sum(lfoalpha$last5paramavg)
 phmm <- ricker_hmm_TMB(data=harck, tv.par='both')
 phmm[1:8]
 
-pbhmm <- ricker_hmm_stan(data, par='both')
+pbhmm <- ricker_hmm_stan(data, par='b')
 
 pb <- rickerstan(data=harck,iter = 2000)
 
 
+
+phmmb <- ricker_hmm_TMB(data=harck, tv.par='b')
+phmmb[1:8]
 
 
 

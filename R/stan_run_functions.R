@@ -209,10 +209,10 @@ ricker_hmm_stan <- function(data, par=c('a','b','both'), k_regime=2,
   mc <- rstan::extract(fit, 
           inc_warmup=FALSE, permuted=FALSE)
     
-  mcmc<-reshape2::melt(mc, as.is=TRUE)
+  mcmc <- reshape2::melt(mc, as.is=TRUE)
     
-  aa<-rstan::summary(fit)
-  
+  aa <- rstan::summary(fit)
+
 #row.names(aa$summary)
 #[grep("^b\\[",row.names(aa$summary))]
 
@@ -220,23 +220,24 @@ ricker_hmm_stan <- function(data, par=c('a','b','both'), k_regime=2,
 # these are meaningless need to calc for each mcmc draw check with Dan
 #need regime and weighted alpha, beta, sigma  
    return(list(
-   alpha_regime=,
-   alpha_wgt=,
-   Smax_regime=,
-   Smax_wgt=,
-   Smsy_regime=,
-   Smsy_wgt=,
-   umsy_regime=,
-   umsy_wgt=,
-   alpha=aa$summary[grep("log_a",row.names(aa$summary)),"50%"],
-   beta=aa$summary[grep("^b\\[",row.names(aa$summary)),"50%"],
+
+   alpha_regime=ifelse(par=="a"|par=="both",aa$summary[grep("log_a_t",row.names(aa$summary)),"50%"],NA),
+   alpha_wgt=ifelse(par=="a"|par=="both",aa$summary[grep("log_a_wt",row.names(aa$summary)),"50%"],NA),
+   Smax_regime=ifelse(par=="b"|par=="both",aa$summary[grep("S_max_t",row.names(aa$summary)),"50%"],NA),
+   Smax_wgt=ifelse(par=="b"|par=="both",aa$summary[grep("S_max_t",row.names(aa$summary)),"50%"],NA),
+   Smsy_regime=aa$summary[grep("S_msy_t",row.names(aa$summary)),"50%"],
+   Smsy_wgt=aa$summary[grep("S_msy_wt",row.names(aa$summary)),"50%"],
+   umsy_regime=ifelse(par=="a"|par=="both",aa$summary[grep("U_msy_t",row.names(aa$summary)),"50%"],NA),
+   umsy_wgt=ifelse(par=="a"|par=="both",aa$summary[grep("U_msy_wt",row.names(aa$summary)),"50%"],NA),
+   alpha=ifelse(par=="a"|par=="both",aa$summary[grep("log_a\\[",row.names(aa$summary)),"50%"],aa$summary["log_a","50%"]),
+   beta=ifelse(par=="b"|par=="both",aa$summary[grep("b\\[",row.names(aa$summary)),"50%"],aa$summary["b","50%"]),
    sigobs=aa$summary["sigma","50%"],
    pi=aa$summary[grep("pi1",row.names(aa$summary)),"50%"],
    A=aa$summary[grep("A",row.names(aa$summary)),"50%"],
    probregime =matrix(aa$summary[grep("gamma\\[",row.names(aa$summary)),"50%"],ncol=k_regime, byrow=T),
-   regime = aa$summary[grep("zstar",row.names(aa$summary)),"50%"],
-   Smsy=aa$summary[grep("S_msy",row.names(aa$summary)),"50%"],
-   umsy=aa$summary[grep("U_msy",row.names(aa$summary)),"50%"],
+   regime = aa$summary[grep("^zstar",row.names(aa$summary)),"50%"],
+   Smsy=aa$summary[grep("S_msy\\[",row.names(aa$summary)),"50%"],
+   umsy=aa$summary[grep("U_msy\\[",row.names(aa$summary)),"50%"],
    stanfit=fit, 
    mcmcsummary=aa$summary,
    c_mcmcsummary=aa$c_summary, 
