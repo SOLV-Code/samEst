@@ -139,9 +139,9 @@ stan_lfo_cv=function(mod,type=c('static','tv','regime'),df,L=10,K=NULL){
 #' @export
 #' @examples
 #' model_weights(rbind(ll1,ll2))
-model_weights<- function(x) {
+model_weights<- function(x){
   #x = dataframe of pointwise log likelihoods
-  elpd_1=exp(apply(x,1,sum))
+  elpd_1=apply(x,1,sum) #
   elpd_2=NA
   w=NA
   se_elpd=NA
