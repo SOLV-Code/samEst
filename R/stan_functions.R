@@ -740,22 +740,20 @@ zstar[N - t] = bpointer[N - t + 1, zstar[N - t + 1]];
 }
 }
 
+S_max = 1/b;
 log_a_t=log_a[zstar];
-for(n in 1:N) log_a_wt[n]= sum(gamma[n,].*log_a);
 
 for(k in 1:K){
 U_msy[k] = 1-lambert_w0(exp(1-log_a[k]));
 S_msy[k] = (1-lambert_w0(exp(1-log_a[k])))/b;
 }
 
-S_msy_t=S_msy[zstar];
-U_msy_t=U_msy[zstar];
-
 for(n in 1:N){ 
-U_msy_tw[n]=sum(gamma[n,].*U_msy);
-S_msy_tw[n]=sum(gamma[n,].*S_msy);
-}  
-S_max = 1/b;
+ log_a_wt[n]= sum(gamma[n,].*log_a);
+ U_msy_wt[n] = sum(gamma[n,].*U_msy); 
+ S_msy_wt[n] = sum(gamma[n,].*S_msy);
+}
+
 }
 "
   }
@@ -1075,20 +1073,23 @@ zstar[N - t] = bpointer[N - t + 1, zstar[N - t + 1]];
 }
 }
 
-S_max_t=1/b[zstar];
-for(n in 1:N) S_max_wt[n]= 1/sum(gamma[n,].*beta);
-
 S_max = 1/b;
-U_msy = 1-lambert_w0(exp(1-log_a));
-S_msy = (1-lambert_w0(exp(1-log_a)))/b;
+S_max_t=1/b[zstar];
+
+for(k in 1:K){
+U_msy[k] = 1-lambert_w0(exp(1-log_a[k]));
+S_msy[k] = (1-lambert_w0(exp(1-log_a[k])))/b;
+}
 
 S_msy_t=S_msy[zstar];
 U_msy_t=U_msy[zstar];
 
 for(n in 1:N){ 
-U_msy_tw[n]=sum(gamma[n,].*U_msy);
-S_msy_tw[n]=sum(gamma[n,].*S_msy);
-}  
+ S_max_wt[n] = sum(gamma[n,].*S_max);
+ U_msy_wt[n] = sum(gamma[n,].*U_msy); 
+ S_msy_wt[n] = sum(gamma[n,].*S_msy);
+}
+
 }
 
 "
@@ -1416,16 +1417,26 @@ zstar[N - t] = bpointer[N - t + 1, zstar[N - t + 1]];
 }
 }
 
-log_a_t=log_a[zstar];
-for(n in 1:N) log_a_wt[n]= sum(gamma[n,].*log_a);
-
-S_max_t=1/b[zstar];
-for(n in 1:N) S_max_wt[n]= 1/sum(gamma[n,].*beta);
-
 S_max = 1/b;
-U_msy = 1-lambert_w0(exp(1-log_a));
-S_msy = (1-lambert_w0(exp(1-log_a)))/b;
+log_a_t=log_a[zstar];
+S_max_t=1/b[zstar];
+
+for(k in 1:K){
+U_msy[k] = 1-lambert_w0(exp(1-log_a[k]));
+S_msy[k] = (1-lambert_w0(exp(1-log_a[k])))/b;
 }
+S_msy_t=S_msy[zstar];
+U_msy_t=U_msy[zstar];
+
+for(n in 1:N){
+ log_a_wt[n]= sum(gamma[n,].*log_a);
+ S_max_wt[n] = sum(gamma[n,].*S_max);
+ U_msy_wt[n] = sum(gamma[n,].*U_msy); 
+ S_msy_wt[n] = sum(gamma[n,].*S_msy);
+}
+
+}
+
 "
   }
 if(loglik==TRUE){
