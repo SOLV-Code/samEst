@@ -747,7 +747,14 @@ for(k in 1:K){
 U_msy[k] = 1-lambert_w0(exp(1-log_a[k]));
 S_msy[k] = (1-lambert_w0(exp(1-log_a[k])))/b;
 }
-     
+
+S_msy_t=S_msy[zstar];
+U_msy_t=U_msy[zstar];
+
+for(n in 1:N){ 
+U_msy_tw[n]=sum(gamma[n,].*U_msy);
+S_msy_tw[n]=sum(gamma[n,].*S_msy);
+}  
 S_max = 1/b;
 }
 "
@@ -1074,6 +1081,14 @@ for(n in 1:N) S_max_wt[n]= 1/sum(gamma[n,].*beta);
 S_max = 1/b;
 U_msy = 1-lambert_w0(exp(1-log_a));
 S_msy = (1-lambert_w0(exp(1-log_a)))/b;
+
+S_msy_t=S_msy[zstar];
+U_msy_t=U_msy[zstar];
+
+for(n in 1:N){ 
+U_msy_tw[n]=sum(gamma[n,].*U_msy);
+S_msy_tw[n]=sum(gamma[n,].*S_msy);
+}  
 }
 
 "
