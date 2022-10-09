@@ -12,7 +12,8 @@ ricker_hmm_stan(
   warmup = 300,
   chains = 6,
   iter = 1000,
-  ...
+  ...,
+  sm_ext = NULL
 )
 }
 \arguments{
@@ -31,6 +32,8 @@ chain. The default is 200.}
 (including warmup). The default is 1000.}
 
 \item{...}{Anything else that would be passed to rstan::sampling}
+
+\item{sm_ext}{Default is null, external stan hmm model. Implemented to speed up simulation evaluation, use with caution.}
 }
 \value{
 a list containing the

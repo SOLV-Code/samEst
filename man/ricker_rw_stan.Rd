@@ -8,6 +8,7 @@ ricker_rw_stan(
   data,
   par = c("a", "b", "both"),
   control = stancontrol(),
+  sm_ext = NULL,
   warmup = 300,
   chains = 6,
   iter = 1000,
@@ -20,6 +21,8 @@ ricker_rw_stan(
 \item{par}{Which parameter should vary? Either productivity (intercept, a), capacity (slope, b) or both parameters}
 
 \item{control}{output of stancontrol}
+
+\item{sm_ext}{Default is null, external stan rw model. Implemented to speed up simulation evaluation, use with caution.}
 
 \item{warmup}{To be passed to rstan::sampling. A positive integer specifying the number of warmup (aka burnin) iterations per
 chain. The default is 200.}

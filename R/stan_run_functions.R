@@ -38,9 +38,15 @@
 #' data(harck)
 #' rickerstan(data=harck)
 #' 
-ricker_stan <- function(data,  AC=FALSE, control = stancontrol(), warmup=300,  chains = 6, iter = 1000,...) {
+ricker_stan <- function(data,  AC=FALSE, control = stancontrol(), sm_ext=NULL, warmup=300,  chains = 6, iter = 1000,...) {
  
-  sm <- sr_mod(type='static',ac=AC,par='n',loglik=FALSE,modelcode=TRUE)
+
+ if(is.null(sm_ext)){
+   sm <- sr_mod(type='static', ac=AC, par='n', loglik=FALSE, modelcode=TRUE)
+  }else{
+    sm <-sm_ext
+  }
+  
 
   if(AC){
     datm = list(N=nrow(data),
@@ -98,7 +104,7 @@ ricker_stan <- function(data,  AC=FALSE, control = stancontrol(), warmup=300,  c
 #' @param iter To be passed to rstan::sampling. A positive integer specifying the number of iterations for each chain 
 #' (including warmup). The default is 1000.
 #' @param ... Anything else that would be passed to rstan::sampling
-#' 
+#' @param sm_ext Default is null, external stan rw model. Implemented to speed up simulation evaluation, use with caution.
 #' 
 #' @returns a list containing the 
 #' * alpha - median estimates for the alpha parameter vector
@@ -119,9 +125,14 @@ ricker_stan <- function(data,  AC=FALSE, control = stancontrol(), warmup=300,  c
 #' data(harck)
 #' ricker_rw_stan(data=harck)
 #' 
-ricker_rw_stan <- function(data, par=c('a','b','both'),  control = stancontrol(), warmup=300,  chains = 6, iter = 1000,...) {
+ricker_rw_stan <- function(data, par=c('a','b','both'),  control = stancontrol(), sm_ext=NULL,
+  warmup=300,  chains = 6, iter = 1000,...) {
   #par='b'
-  sm <- sr_mod(type='rw',ac=FALSE,par=par,loglik=FALSE, modelcode=TRUE)
+  if(is.null(sm_ext)){
+    sm <- sr_mod(type='rw',ac=FALSE,par=par,loglik=FALSE, modelcode=TRUE)
+  }else{
+    sm <-sm_ext
+  }
 
   
   fit <- rstan::stan(model_code = sm, 
@@ -169,7 +180,7 @@ ricker_rw_stan <- function(data, par=c('a','b','both'),  control = stancontrol()
 #' @param iter To be passed to rstan::sampling. A positive integer specifying the number of iterations for each chain 
 #' (including warmup). The default is 1000.
 #' @param ... Anything else that would be passed to rstan::sampling
-#' 
+#' @param sm_ext Default is null, external stan hmm model. Implemented to speed up simulation evaluation, use with caution.
 #' 
 #' @returns a list containing the 
 #' * alpha - median estimates for the alpha parameter vector
@@ -178,7 +189,7 @@ ricker_rw_stan <- function(data, par=c('a','b','both'),  control = stancontrol()
 #' * stanfit - a stanfit model object
 #' * mcmcsummary - summary over kept samples
 #' * c_mcmcsummary - chain specific summary 
-#' * list of samples
+#' * list of samples 
 #' 
 #' 
 #' @importFrom rstan stan extract summary 
@@ -191,9 +202,13 @@ ricker_rw_stan <- function(data, par=c('a','b','both'),  control = stancontrol()
 #' ricker_hmm_stan(data=harck)
 #' 
 ricker_hmm_stan <- function(data, par=c('a','b','both'), k_regime=2, 
-  control = stancontrol(), warmup=300,  chains = 6, iter = 1000,...) {
+  control = stancontrol(), warmup=300,  chains = 6, iter = 1000,..., sm_ext=NULL) {
   #par='both'
-  sm <- sr_mod(type='hmm',ac=FALSE,par=par,loglik=FALSE, modelcode=TRUE)
+  if(is.null(sm_ext)){
+    sm <- sr_mod(type='hmm',ac=FALSE,par=par,loglik=FALSE, modelcode=TRUE)
+  }else{
+    sm <- sm_ext
+  }
 
   
   fit <- rstan::stan(model_code = sm, 
@@ -221,16 +236,17 @@ ricker_hmm_stan <- function(data, par=c('a','b','both'), k_regime=2,
 #need regime and weighted alpha, beta, sigma  
    return(list(
 
-   alpha_regime=ifelse(par=="a"|par=="both",aa$summary[grep("log_a_t",row.names(aa$summary)),"50%"],NA),
-   alpha_wgt=ifelse(par=="a"|par=="both",aa$summary[grep("log_a_wt",row.names(aa$summary)),"50%"],NA),
-   Smax_regime=ifelse(par=="b"|par=="both",aa$summary[grep("S_max_t",row.names(aa$summary)),"50%"],NA),
-   Smax_wgt=ifelse(par=="b"|par=="both",aa$summary[grep("S_max_t",row.names(aa$summary)),"50%"],NA),
+   alpha_regime=ifelse(rep(par=="a"|par=="both",nrow(data)),as.vector(aa$summary[grep("log_a_t",row.names(aa$summary)),"50%"]),NA),
+   alpha_wgt=ifelse(rep(par=="a"|par=="both",nrow(data)),aa$summary[grep("log_a_wt",row.names(aa$summary)),"50%"],NA),
+   Smax_regime=ifelse(rep(par=="b"|par=="both",nrow(data)),aa$summary[grep("S_max_t",row.names(aa$summary)),"50%"],NA),
+   Smax_wgt=ifelse(rep(par=="b"|par=="both",nrow(data)),aa$summary[grep("S_max_t",row.names(aa$summary)),"50%"],NA),
    Smsy_regime=aa$summary[grep("S_msy_t",row.names(aa$summary)),"50%"],
    Smsy_wgt=aa$summary[grep("S_msy_wt",row.names(aa$summary)),"50%"],
-   umsy_regime=ifelse(par=="a"|par=="both",aa$summary[grep("U_msy_t",row.names(aa$summary)),"50%"],NA),
-   umsy_wgt=ifelse(par=="a"|par=="both",aa$summary[grep("U_msy_wt",row.names(aa$summary)),"50%"],NA),
-   alpha=ifelse(par=="a"|par=="both",aa$summary[grep("log_a\\[",row.names(aa$summary)),"50%"],aa$summary["log_a","50%"]),
-   beta=ifelse(par=="b"|par=="both",aa$summary[grep("b\\[",row.names(aa$summary)),"50%"],aa$summary["b","50%"]),
+   umsy_regime=ifelse(rep(par=="a"|par=="both",nrow(data)),aa$summary[grep("U_msy_t",row.names(aa$summary)),"50%"],NA),
+   umsy_wgt=ifelse(rep(par=="a"|par=="both",nrow(data)),aa$summary[grep("U_msy_wt",row.names(aa$summary)),"50%"],NA),
+   alpha=ifelse(par=="a"|par=="both",list(aa$summary[grep("log_a\\[",row.names(aa$summary)),"50%"]),aa$summary["log_a","50%"])[[1]],
+   beta=ifelse(par=="b"|par=="both",list(aa$summary[grep("b\\[",row.names(aa$summary)),"50%"]),aa$summary["b","50%"])[[1]],
+   Smax=ifelse(par=="b"|par=="both",list(aa$summary[grep("S_max\\[",row.names(aa$summary)),"50%"]),aa$summary["S_max","50%"])[[1]],
    sigobs=aa$summary["sigma","50%"],
    pi=aa$summary[grep("pi1",row.names(aa$summary)),"50%"],
    A=aa$summary[grep("A",row.names(aa$summary)),"50%"],
