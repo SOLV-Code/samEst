@@ -1015,6 +1015,8 @@ vector[K] S_max;
 real U_msy;
 vector[K] S_msy;
 
+vector[N] b_t; //Smax sequence
+vector[N] b_wt; //Smax sequence - weighted
 vector[N] S_max_t; //Smax sequence
 vector[N] S_max_wt; //Smax sequence - weighted
 vector[N] S_msy_t; //Smsy sequence
@@ -1090,10 +1092,12 @@ S_msy[k] = (1-lambert_w0(exp(1-log_a)))/b[k];
 }
 
 S_max_t=S_max[zstar];
+b_t=b[zstar];
 S_msy_t=S_msy[zstar];
 
 for(n in 1:N){ 
  S_max_wt[n] = sum(gamma[n,].*S_max);
+ b_wt[n] = sum(gamma[n,].*b);
  S_msy_wt[n] = sum(gamma[n,].*S_msy);
 }
 
@@ -1358,6 +1362,8 @@ vector[K] S_msy;
 
 vector[N] log_a_t; //productivity sequence
 vector[N] log_a_wt; //productivity sequence - weighted
+vector[N] b_t; //capacity b sequence
+vector[N] b_wt; //capacity b sequence - weighted
 vector[N] S_max_t; //Smax sequence
 vector[N] S_max_wt; //Smax sequence - weighted
 vector[N] U_msy_t; //Umsy sequence
@@ -1436,12 +1442,14 @@ S_msy[k] = (1-lambert_w0(exp(1-log_a[k])))/b[k];
 }
 
 log_a_t=log_a[zstar];
+b_t=b[zstar];
 S_max_t=S_max[zstar];
 S_msy_t=S_msy[zstar];
 U_msy_t=U_msy[zstar];
 
 for(n in 1:N){
  log_a_wt[n]= sum(gamma[n,].*log_a);
+ b_wt[n]= sum(gamma[n,].*b);
  S_max_wt[n] = sum(gamma[n,].*S_max);
  U_msy_wt[n] = sum(gamma[n,].*U_msy); 
  S_msy_wt[n] = sum(gamma[n,].*S_msy);
