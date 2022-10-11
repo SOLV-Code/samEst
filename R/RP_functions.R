@@ -107,3 +107,77 @@ umsySolver <- function(a) {
 
   return(umsy)
 }
+
+#' Compute reference points from parameters of Hidden Markov Model (regime shift) Stan model
+#'
+#' @param m estimated fit for rstan model
+#' @returns Estimates for Smax, Smsy, and Umsy over time, either unweighted (ie. returns parameters for the most likely regime sequence) or weighted (ie. probability of each regime x regime parameters) 
+#' 
+#' 
+#' 
+stan_regime_rps<- function(m,par=c('a','b','both')){
+  d=extract(m)
+  if(par=='a'){
+    log_a=apply(d$log_a,2,median)
+    beta=median(d$b)
+    S_max=median(d$S_max)
+    U_msy=apply(d$U_msy,2,median)
+    S_msy=apply(d$S_msy,2,median)
+    gamma=cbind(apply(d$gamma[,,1],2,median),apply(d$gamma[,,2],2,median))
+    zstar=apply(d$zstar,2,median)
+    
+    #Most likely sequence of parameters:
+    log_a_t=log_a[zstar]
+    U_msy_t=U_msy[zstar]
+    S_msy_t=S_msy[zstar]
+    #Weighted parameters (probability of regime state X regime parameter)
+    log_a_wt=gamma%*%log_a
+    U_msy_wt = gamma%*%U_msy
+    S_msy_wt = gamma%*%S_msy
+  }
+  if(par=='b'){
+    log_a=median(d$log_a)
+    beta=apply(d$b,2,median)
+    S_max=apply(d$S_max,2,median)
+    U_msy=median(d$U_msy)
+    S_msy=apply(d$S_msy,2,median)
+    gamma=cbind(apply(d$gamma[,,1],2,median),apply(d$gamma[,,2],2,median))
+    zstar=apply(d$zstar,2,median)
+    
+    #Most likely sequence of parameters:
+    beta_t=beta[zstar]
+    S_max_t=S_max[zstar]
+    S_msy_t=S_msy[zstar]
+    #Weighted parameters (probability of regime state X regime parameter)
+    beta_wt=gamma%*%beta
+    S_max_wt = gamma%*%S_max
+    S_msy_wt = gamma%*%S_msy
+  }
+  if(par=='both'){
+    log_a=apply(d$log_a,2,median)
+    beta=apply(d$b,2,median)
+    S_max=apply(d$S_max,2,median)
+    U_msy=apply(d$U_msy,2,median)
+    S_msy=apply(d$S_msy,2,median)
+    gamma=cbind(apply(d$gamma[,,1],2,median),apply(d$gamma[,,2],2,median))
+    zstar=apply(d$zstar,2,median)
+    
+    #Most likely sequence of parameters:
+    log_a_t=log_a[zstar]
+    beta_t=beta[zstar]
+    S_max_t=S_max[zstar]
+    U_msy_t=U_msy[zstar]
+    S_msy_t=S_msy[zstar]
+    #Weighted parameters (probability of regime state X regime parameter)
+    log_a_wt=gamma%*%log_a
+    beta_wt=gamma%*%beta
+    S_max_wt = gamma%*%S_max
+    U_msy_wt = gamma%*%U_msy
+    S_msy_wt = gamma%*%S_msy
+    return(data.frame(log_a_t,log_a_wt,beta_t,beta_wt,S_max_t,S_max_wt,U_msy_t,U_msy_wt,S_msy_t,S_msy_wt))
+  }
+    
+  
+}
+
+

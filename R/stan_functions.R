@@ -1,17 +1,3 @@
-#' sr_mod function
-#'
-#' This function generates a stock-recruitment (S-R) model for rstan based on user inputs.
-#' @param type Specify whether to generate a 'static' S-R model, where parameters are time-invariant, 
-#' a time-varying 'tv' model, or a regime shift model 'regime'
-#' @param ac TRUE or FALSE statement to include autocorrelated residuals. Only compatible with static model
-#' @param par For time-varying or regime S-R models, what parameter should vary? Either productivity (intercept, a), capacity (slope, b) or both parameters
-#' @param loglik TRUE or FALSE statement that dictates whether model is being used for out-of-sample log-likelihood estimation
-#' @param modelcode Logical indicating whether to output model_code or a stan_model object (FALSE, the default)  
-#' @return returns the compiled rstan code for a given S-R model
-#' @importFrom rstan stan_model
-#' @export
-#' @examples
-#' m2=sr_mod(type='static',ac = TRUE,par='n',loglik=T)
 sr_mod<- function(type=c('static','rw','regime'),ac=FALSE,par=c('n','a','b','both'),loglik=FALSE, modelcode=FALSE){
   
   #M1: Static S-R####
@@ -671,13 +657,6 @@ vector[K] loggamma[N];
 vector[K] beta[N];
 vector[K] gamma[N];
 
-vector[N] log_a_t;
-vector[N] log_a_wt;
-vector[N] U_msy_t;
-vector[N] S_msy_t;
-vector[N] U_msy_wt;
-vector[N] S_msy_wt;
-
 real S_max;
 vector[K] U_msy;
 vector[K] S_msy;
@@ -748,16 +727,6 @@ S_max = 1/b;
 for(k in 1:K){
 U_msy[k] = 1-lambert_w0(exp(1-log_a[k]));
 S_msy[k] = (1-lambert_w0(exp(1-log_a[k])))/b;
-}
-
-log_a_t=log_a[zstar];
-U_msy_t=U_msy[zstar];
-S_msy_t=S_msy[zstar];
-
-for(n in 1:N){ 
- log_a_wt[n]= sum(gamma[n,].*log_a);
- U_msy_wt[n] = sum(gamma[n,].*U_msy); 
- S_msy_wt[n] = sum(gamma[n,].*S_msy);
 }
 
 }
@@ -1015,13 +984,6 @@ vector[K] S_max;
 real U_msy;
 vector[K] S_msy;
 
-vector[N] b_t; //Smax sequence
-vector[N] b_wt; //Smax sequence - weighted
-vector[N] S_max_t; //Smax sequence
-vector[N] S_max_wt; //Smax sequence - weighted
-vector[N] S_msy_t; //Smsy sequence
-vector[N] S_msy_wt; //Smsy sequence - weighted
-
 { // Forward algortihm
 for (t in 1:N)
 alpha[t] = softmax(logalpha[t]);
@@ -1089,16 +1051,6 @@ U_msy= 1-lambert_w0(exp(1-log_a));
 for(k in 1:K){
 S_max[k] = 1/b[k];
 S_msy[k] = (1-lambert_w0(exp(1-log_a)))/b[k];
-}
-
-S_max_t=S_max[zstar];
-b_t=b[zstar];
-S_msy_t=S_msy[zstar];
-
-for(n in 1:N){ 
- S_max_wt[n] = sum(gamma[n,].*S_max);
- b_wt[n] = sum(gamma[n,].*b);
- S_msy_wt[n] = sum(gamma[n,].*S_msy);
 }
 
 }
@@ -1360,18 +1312,6 @@ vector[K] S_max;
 vector[K] U_msy;
 vector[K] S_msy;
 
-vector[N] log_a_t; //productivity sequence
-vector[N] log_a_wt; //productivity sequence - weighted
-vector[N] b_t; //capacity b sequence
-vector[N] b_wt; //capacity b sequence - weighted
-vector[N] S_max_t; //Smax sequence
-vector[N] S_max_wt; //Smax sequence - weighted
-vector[N] U_msy_t; //Umsy sequence
-vector[N] U_msy_wt; //Umsy sequence - weighted
-vector[N] S_msy_t; //Smsy sequence
-vector[N] S_msy_wt; //Smsy sequence - weighted
-
-
 { // Forward algortihm
 for (t in 1:N)
 alpha[t] = softmax(logalpha[t]);
@@ -1434,25 +1374,10 @@ zstar[N - t] = bpointer[N - t + 1, zstar[N - t + 1]];
 }
 }
 
-
 for(k in 1:K){
 S_max[k] = 1/b[k];
 U_msy[k] = 1-lambert_w0(exp(1-log_a[k]));
 S_msy[k] = (1-lambert_w0(exp(1-log_a[k])))/b[k];
-}
-
-log_a_t=log_a[zstar];
-b_t=b[zstar];
-S_max_t=S_max[zstar];
-S_msy_t=S_msy[zstar];
-U_msy_t=U_msy[zstar];
-
-for(n in 1:N){
- log_a_wt[n]= sum(gamma[n,].*log_a);
- b_wt[n]= sum(gamma[n,].*b);
- S_max_wt[n] = sum(gamma[n,].*S_max);
- U_msy_wt[n] = sum(gamma[n,].*U_msy); 
- S_msy_wt[n] = sum(gamma[n,].*S_msy);
 }
 
 }
@@ -1669,4 +1594,3 @@ if(modelcode){
   
 }
 }
-
