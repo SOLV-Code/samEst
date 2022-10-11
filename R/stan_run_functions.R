@@ -228,6 +228,9 @@ ricker_hmm_stan <- function(data, par=c('a','b','both'), k_regime=2,
     
   aa <- rstan::summary(fit)
 
+  #extract time-series of parameters
+  parts <-stan_regime_rps(m=fit,par="a")
+
 #row.names(aa$summary)
 #[grep("^b\\[",row.names(aa$summary))]
 
@@ -236,14 +239,14 @@ ricker_hmm_stan <- function(data, par=c('a','b','both'), k_regime=2,
 #need regime and weighted alpha, beta, sigma  
    return(list(
 
-   alpha_regime=ifelse(rep(par=="a"|par=="both",nrow(data)),as.vector(aa$summary[grep("log_a_t",row.names(aa$summary)),"50%"]),NA),
-   alpha_wgt=ifelse(rep(par=="a"|par=="both",nrow(data)),aa$summary[grep("log_a_wt",row.names(aa$summary)),"50%"],NA),
-   Smax_regime=ifelse(rep(par=="b"|par=="both",nrow(data)),aa$summary[grep("S_max_t",row.names(aa$summary)),"50%"],NA),
-   Smax_wgt=ifelse(rep(par=="b"|par=="both",nrow(data)),aa$summary[grep("S_max_t",row.names(aa$summary)),"50%"],NA),
-   Smsy_regime=aa$summary[grep("S_msy_t",row.names(aa$summary)),"50%"],
-   Smsy_wgt=aa$summary[grep("S_msy_wt",row.names(aa$summary)),"50%"],
-   umsy_regime=ifelse(rep(par=="a"|par=="both",nrow(data)),aa$summary[grep("U_msy_t",row.names(aa$summary)),"50%"],NA),
-   umsy_wgt=ifelse(rep(par=="a"|par=="both",nrow(data)),aa$summary[grep("U_msy_wt",row.names(aa$summary)),"50%"],NA),
+   alpha_regime=ifelse(rep(par=="a"|par=="both",nrow(data)),parts$log_a_t,NA),
+   alpha_wgt=ifelse(rep(par=="a"|par=="both",nrow(data)),parts$log_a_wt,NA),
+   Smax_regime=ifelse(rep(par=="b"|par=="both",nrow(data)),parts$S_max_t,NA),
+   Smax_wgt=ifelse(rep(par=="b"|par=="both",nrow(data)),parts$S_max_wt,NA),
+   Smsy_regime=parts$S_msy_t,
+   Smsy_wgt=parts$S_msy_wt,
+   umsy_regime=ifelse(rep(par=="a"|par=="both",nrow(data)),parts$U_msy_t,NA),
+   umsy_wgt=ifelse(rep(par=="a"|par=="both",nrow(data)),parts$U_msy_wt,NA),
    alpha=ifelse(par=="a"|par=="both",list(aa$summary[grep("log_a\\[",row.names(aa$summary)),"50%"]),aa$summary["log_a","50%"])[[1]],
    beta=ifelse(par=="b"|par=="both",list(aa$summary[grep("b\\[",row.names(aa$summary)),"50%"]),aa$summary["b","50%"])[[1]],
    Smax=ifelse(par=="b"|par=="both",list(aa$summary[grep("S_max\\[",row.names(aa$summary)),"50%"]),aa$summary["S_max","50%"])[[1]],
