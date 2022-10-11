@@ -5,9 +5,10 @@
 \title{sr_mod function}
 \usage{
 sr_mod(
-  type = c("static", "rw", "regime"),
+  type = c("static", "rw", "hmm"),
   ac = FALSE,
   par = c("n", "a", "b", "both"),
+  caphigh = FALSE,
   loglik = FALSE,
   modelcode = FALSE
 )
@@ -19,6 +20,8 @@ a time-varying 'tv' model, or a regime shift model 'regime'}
 \item{ac}{TRUE or FALSE statement to include autocorrelated residuals. Only compatible with static model}
 
 \item{par}{For time-varying or regime S-R models, what parameter should vary? Either productivity (intercept, a), capacity (slope, b) or both parameters}
+
+\item{caphigh}{TRUE or FALSE statement to indicate whether you are specifying that high stock capacity or low capacity coincides with a high productivity regime. Only compatible with regime (hmm) model where both alpha and beta are varying (both).}
 
 \item{loglik}{TRUE or FALSE statement that dictates whether model is being used for out-of-sample log-likelihood estimation}
 

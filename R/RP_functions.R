@@ -134,6 +134,7 @@ stan_regime_rps<- function(m,par=c('a','b','both')){
     log_a_wt=gamma%*%log_a
     U_msy_wt = gamma%*%U_msy
     S_msy_wt = gamma%*%S_msy
+    return(data.frame(log_a_t,log_a_wt,U_msy_t,U_msy_wt,S_msy_t,S_msy_wt))
   }
   if(par=='b'){
     log_a=median(d$log_a)
@@ -152,6 +153,7 @@ stan_regime_rps<- function(m,par=c('a','b','both')){
     beta_wt=gamma%*%beta
     S_max_wt = gamma%*%S_max
     S_msy_wt = gamma%*%S_msy
+    return(data.frame(beta_t,beta_wt,S_max_t,S_max_wt,S_msy_t,S_msy_wt))
   }
   if(par=='both'){
     log_a=apply(d$log_a,2,median)
