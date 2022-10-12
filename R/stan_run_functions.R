@@ -70,7 +70,7 @@ ricker_stan <- function(data,  AC=FALSE, control = stancontrol(), sm_ext=NULL, w
   mc <- rstan::extract(fit, 
                 inc_warmup=FALSE, permuted=FALSE)
     
-  mcmc <- reshape2::melt(mc, as.is=TRUE)
+  #mcmc <- reshape2::melt(mc, as.is=TRUE)
     
   aa <- rstan::summary(fit)
   
@@ -85,7 +85,7 @@ ricker_stan <- function(data,  AC=FALSE, control = stancontrol(), sm_ext=NULL, w
    stanfit=fit, 
    mcmcsummary=aa$summary,
    c_mcmcsummary=aa$c_summary, 
-   samples=mcmc ) )
+   samples=mc ) )
 
 }
 
@@ -146,7 +146,7 @@ ricker_rw_stan <- function(data, par=c('a','b','both'),  control = stancontrol()
     mc <- rstan::extract(fit, 
                 inc_warmup=FALSE, permuted=FALSE)
     
-    mcmc <- reshape2::melt(mc, as.is=TRUE)
+    #mcmc <- reshape2::melt(mc, as.is=TRUE)
     
     aa <- rstan::summary(fit)
   
@@ -163,7 +163,7 @@ ricker_rw_stan <- function(data, par=c('a','b','both'),  control = stancontrol()
    stanfit=fit, 
    mcmcsummary=aa$summary,
    c_mcmcsummary=aa$c_summary, 
-   samples=mcmc ) )
+   samples=mc ) )
 
 }
 
@@ -224,12 +224,12 @@ ricker_hmm_stan <- function(data, par=c('a','b','both'), k_regime=2,
   mc <- rstan::extract(fit, 
           inc_warmup=FALSE, permuted=FALSE)
     
-  mcmc <- reshape2::melt(mc, as.is=TRUE)
+  #mcmc <- reshape2::melt(mc, as.is=TRUE)
     
   aa <- rstan::summary(fit)
 
   #extract time-series of parameters
-  parts <-stan_regime_rps(m=fit,par="a")
+  parts <-stan_regime_rps(m=fit,par=par)
 
 #row.names(aa$summary)
 #[grep("^b\\[",row.names(aa$summary))]
@@ -260,7 +260,7 @@ ricker_hmm_stan <- function(data, par=c('a','b','both'), k_regime=2,
    stanfit=fit, 
    mcmcsummary=aa$summary,
    c_mcmcsummary=aa$c_summary, 
-   samples=mcmc ) )
+   samples=mc ) )
 
 }
 
