@@ -35,8 +35,30 @@ find_linit <- function(U, L, initpar) {
     return( linitpar)
 }
 
+#'log sum of exponentials
+#'
+#' @param x a vector 
+#' @export
+#' 
+#' @returns log sum of exponentials
+#' 
+#' 
+log_sum_exp <- function(x) {
+  max_x <- max(x)  
+  max_x + log(sum(exp(x - max_x)))
+}
 
-
+#' mean of log-sum-exp
+#'
+#' @param x a vector 
+#' @export
+#' 
+#' @returns mean of exponentials
+#' 
+#' 
+log_mean_exp <- function(x) {
+  log_sum_exp(x) - log(length(x))
+}
 
 
 
