@@ -244,7 +244,8 @@ Type objective_function<Type>::operator() ()
     for(int j = 0;j < k_regime;++j){
       pi_prior(j) = Type(1.0);
       Type logbeta = log(beta(j));
-      pnll -= dnorm(alpha(j),Type(0.0),Type(2.5),true);
+      //pnll -= dnorm(alpha(j),Type(0.0),Type(2.5),true);
+      pnll -= dgamma(alpha(j),Type(3.0),Type(1.0),true);
       pnll -= dnorm(logbeta,Type(-12.0),Type(3.0),true);
     
       vector<Type> qijtmp = qij.row(j);

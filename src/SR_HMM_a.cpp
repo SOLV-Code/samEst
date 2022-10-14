@@ -225,8 +225,8 @@ Type objective_function<Type>::operator() ()
    
     for(int j = 0;j < k_regime;++j){
       pi_prior(j) = Type(1.0);
-      pnll -= dnorm(alpha(j),Type(0.0),Type(2.5),true);
-        
+      //pnll -= dnorm(alpha(j),Type(0.0),Type(2.5),true);
+      pnll -= dgamma(alpha(j),Type(3.0),Type(1.0),true);  
       vector<Type> qijtmp = qij.row(j);
       pnll -= ddirichlet(qijtmp,alpha_dirichlet,true);   
     }

@@ -104,7 +104,8 @@ Type objective_function<Type>::operator() ()
   Type ans= Type(0);
 
   if(priors == 1){
-    ans -=dnorm(alphao,Type(0.0),Type(2.5),true);
+    //ans -=dnorm(alphao,Type(0.0),Type(2.5),true);
+    ans -=dgamma(alphao,Type(3.0),Type(1.0),true);
     ans -=dnorm(logbeta,Type(-12.0),Type(3.0),true); 
     //ans -= dnorm(logsigobs,Type(0.0),Type(2.0),true);
     //ans -= dnorm(logsiga,Type(0.0),Type(2.0),true);

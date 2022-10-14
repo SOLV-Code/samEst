@@ -64,7 +64,8 @@ Type objective_function<Type>::operator() ()
 
 
   if(priors == 1){
-    ans -=dnorm(alpha,Type(0.0),Type(2.5),true);
+    //ans -=dnorm(alpha,Type(0.0),Type(2.5),true);
+    ans -=dgamma(alpha,Type(3.0),Type(1.0),true);
     ans -=dnorm(logbeta,Type(-12.0),Type(3.0),true);  
     ans -= dgamma(sigobs,Type(2.0),Type(1.0)/Type(3.0),true);
   }

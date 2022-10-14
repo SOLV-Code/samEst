@@ -120,7 +120,8 @@ Type objective_function<Type>::operator() ()
 
   if(priors == 1){
     //prior on parameters
-    ans -=dnorm(alphao,Type(0.0),Type(2.5),true);
+    //ans -=dnorm(alphao,Type(0.0),Type(2.5),true);
+    ans -=dgamma(alphao,Type(3.0),Type(1.0),true);
     ans -=dnorm(logbetao,Type(-12.0),Type(3.0),true);
     //prior on observation and process variance ratio
     //Type ans= -dbeta(rho,prbeta1,prbeta2,true); 
