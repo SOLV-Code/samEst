@@ -11,7 +11,7 @@
 
 #' compute Sgen likelihood function
 #'
-#' @param S Spawner numbers set to the interval between 0 and Smsy in sGenSolver.
+#' @param S Spawner numbers set to the interval between 0 and Smsy in sGenCalc.
 #' @param a alpha parameter in Ricker function: R=S*exp(a-b*S)
 #' @param b beta parameter in Ricker function: R=S*exp(a-b*S)
 #' @param Smsy estimate of Smsy based on the alpha and beta parameters above.
@@ -48,7 +48,7 @@ Sgencompute <- function(S, a,b, Smsy ) {
 #' 
 #' 
 #' 
-sGenSolver <- function(a,b, Smsy) {
+sGenCalc <- function(a,b, Smsy) {
   #gives the min Ricker log-likelihood
   if(a>0){
     fnSGen <- function(S, a, b, Smsy) -1.0 * Sgencompute(S, a, b, Smsy)$nSS
@@ -79,7 +79,7 @@ sGenSolver <- function(a,b, Smsy) {
 #' 
 #' 
 #' 
-smsySolver <- function(a,b) {
+smsyCalc <- function(a,b) {
   #gives the min Ricker log-likelihood
   Smsy <- (1 - gsl::lambert_W0(exp(1 - a))) /b
 
@@ -101,7 +101,7 @@ smsySolver <- function(a,b) {
 #' 
 #' 
 #' 
-umsySolver <- function(a) {
+umsyCalc <- function(a) {
   #gives the min Ricker log-likelihood
   umsy <- (1 - gsl::lambert_W0(exp(1 - a)))
 
