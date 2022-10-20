@@ -30,7 +30,7 @@
 #' 
 #' 
 #' @importFrom rstan stan extract summary 
-#' @importFrom reshape2 melt 
+#' 
 #' 
 #' @export
 #' 
@@ -70,7 +70,6 @@ ricker_stan <- function(data,  AC=FALSE, control = stancontrol(), sm_ext=NULL, w
   mc <- rstan::extract(fit, 
                 inc_warmup=FALSE, permuted=FALSE)
     
-  #mcmc <- reshape2::melt(mc, as.is=TRUE)
     
   aa <- rstan::summary(fit)
   
@@ -117,7 +116,7 @@ ricker_stan <- function(data,  AC=FALSE, control = stancontrol(), sm_ext=NULL, w
 #' 
 #' 
 #' @importFrom rstan stan extract summary 
-#' @importFrom reshape2 melt 
+#' 
 #' 
 #' @export
 #' 
@@ -146,7 +145,6 @@ ricker_rw_stan <- function(data, par=c('a','b','both'),  control = stancontrol()
     mc <- rstan::extract(fit, 
                 inc_warmup=FALSE, permuted=FALSE)
     
-    #mcmc <- reshape2::melt(mc, as.is=TRUE)
     
     aa <- rstan::summary(fit)
   
@@ -193,7 +191,7 @@ ricker_rw_stan <- function(data, par=c('a','b','both'),  control = stancontrol()
 #' 
 #' 
 #' @importFrom rstan stan extract summary 
-#' @importFrom reshape2 melt 
+#'
 #' 
 #' @export
 #' 
@@ -224,8 +222,7 @@ ricker_hmm_stan <- function(data, par=c('a','b','both'), k_regime=2,
   mc <- rstan::extract(fit, 
           inc_warmup=FALSE, permuted=FALSE)
     
-  #mcmc <- reshape2::melt(mc, as.is=TRUE)
-    
+
   aa <- rstan::summary(fit)
 
   #extract time-series of parameters
