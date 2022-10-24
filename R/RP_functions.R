@@ -16,7 +16,7 @@
 #' @param b beta parameter in Ricker function: R=S*exp(a-b*S)
 #' @param Smsy estimate of Smsy based on the alpha and beta parameters above.
 #' 
-#' 
+#' @export
 #' 
 #' @returns Sgen likelihood 
 #' 
@@ -42,7 +42,7 @@ Sgencompute <- function(S, a,b, Smsy ) {
 #' @param b beta parameter in Ricker function: R=S*exp(a-b*S)
 #' @param Smsy estimate of Smsy based on the alpha and beta parameters above.
 #' 
-#' 
+#' @export
 #' 
 #' @returns Sgen estimate 
 #' 
@@ -77,7 +77,7 @@ sGenCalc <- function(a,b, Smsy) {
 #' 
 #' @returns Smsy estimate 
 #' 
-#' 
+#' @export
 #' 
 smsyCalc <- function(a,b) {
   #gives the min Ricker log-likelihood
@@ -99,7 +99,7 @@ smsyCalc <- function(a,b) {
 #' 
 #' @returns Smsy estimate 
 #' 
-#' 
+#' @export
 #' 
 umsyCalc <- function(a) {
   #gives the min Ricker log-likelihood
@@ -113,7 +113,7 @@ umsyCalc <- function(a) {
 #' @param m estimated fit for rstan model
 #' @returns Estimates for Smax, Smsy, and Umsy over time, either unweighted (ie. returns parameters for the most likely regime sequence) or weighted (ie. probability of each regime x regime parameters) 
 #' 
-#' 
+#' @export
 #' 
 stan_regime_rps<- function(m,par=c('a','b','both')){
   d=extract(m)

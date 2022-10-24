@@ -4,7 +4,7 @@
 #August 2022
 #============================================
 
-here::here()
+
 devtools::document()
 devtools::load_all()
 
