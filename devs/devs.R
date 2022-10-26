@@ -16,15 +16,15 @@ devtools::load_all()
 #use Harrison as an example
 
 
-sr <- read.csv("C:/Users/worc/Documents/timevarproject/simeval/data/samsimHarCk/HARSR.csv")
+#sr <- read.csv("C:/Users/worc/Documents/timevarproject/simeval/data/samsimHarCk/HARSR.csv")
 
-head(sr)
+#head(sr)
 
 
-har<-data.frame(by=sr$Brood.Year,
-	S=sr$Sum.Total.Spawners,
-	R=sr$AEQ_Recruitment..age.2.5.,
-	logRS=log(sr$AEQ_Recruitment..age.2.5./sr$Sum.Total.Spawners))
+#har<-data.frame(by=sr$Brood.Year,
+#	S=sr$Sum.Total.Spawners,
+#	R=sr$AEQ_Recruitment..age.2.5.,
+#	logRS=log(sr$AEQ_Recruitment..age.2.5./sr$Sum.Total.Spawners))
 
 
 #harck<-har[!is.na(har$S),]
@@ -132,6 +132,7 @@ phmmb2<-ricker_HMMb_TMB(data=harck)
 phmmb2[1:5]
 #stan functions
 
+#lfo tmb testing
 lfostatic<-tmb_mod_lfo_cv(data=harck,model='static', L=round((2/3)*nrow(harck)))
 lfoac <- tmb_mod_lfo_cv(data=harck,model='staticAC', L=round((2/3)*nrow(harck)))
 lfoalpha <- tmb_mod_lfo_cv(data=harck,model='rw_a', siglfo="obs", L=round((2/3)*nrow(harck)))

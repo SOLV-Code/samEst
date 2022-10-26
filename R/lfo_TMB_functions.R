@@ -238,7 +238,8 @@ tmb_mod_lfo_cv=function(data, model=c('static','staticAC','rw_a','rw_b','rw_both
       last5regime_pick=exact_elpds_5k,
       lastregime_average=exact_elpds_wk,
       last3regime_average=exact_elpds_3wk,
-      last5regime_average=exact_elpds_5wk))
+      last5regime_average=exact_elpds_5wk,
+      conv_problem=conv_problem))
 
     }else if(model=='HMM_a'){
     #stop("not defined")
@@ -268,11 +269,11 @@ tmb_mod_lfo_cv=function(data, model=c('static','staticAC','rw_a','rw_b','rw_both
       rs_pred_1k=alpha[i]-beta*df_oos$S[i + 1]
       rs_pred_wk=alphaw[i]-betaw*df_oos$S[i + 1]
       
-      rs_pred_3k=mean(alpha[(i-2):i])-mean(beta[(i-2):i])*df_oos$S[i + 1]
-      rs_pred_5k=mean(alpha[(i-4):i])-mean(beta[(i-4):i])*df_oos$S[i + 1]
+      rs_pred_3k=mean(alpha[(i-2):i])-mean(beta)*df_oos$S[i + 1]
+      rs_pred_5k=mean(alpha[(i-4):i])-mean(beta)*df_oos$S[i + 1]
       
-      rs_pred_3wk=mean(alphaw[(i-2):i])-mean(betaw[(i-2):i])*df_oos$S[i + 1]
-      rs_pred_5wk=mean(alphaw[(i-4):i])-mean(betaw[(i-4):i])*df_oos$S[i + 1]
+      rs_pred_3wk=mean(alphaw[(i-2):i])-mean(betaw)*df_oos$S[i + 1]
+      rs_pred_5wk=mean(alphaw[(i-4):i])-mean(betaw)*df_oos$S[i + 1]
 
       
       exact_elpds_1k[i+1] <- log(dnorm(df_oos$logRS[i+1],mean=rs_pred_1k,sd=sigma))
@@ -326,11 +327,11 @@ tmb_mod_lfo_cv=function(data, model=c('static','staticAC','rw_a','rw_b','rw_both
       rs_pred_1k<-alpha-beta[i]*df_oos$S[i + 1]
       rs_pred_wk<-alphaw-betaw[i]*df_oos$S[i + 1]
 
-      rs_pred_3k=mean(alpha[(i-2):i])-mean(beta[(i-2):i])*df_oos$S[i + 1]
-      rs_pred_5k=mean(alpha[(i-4):i])-mean(beta[(i-4):i])*df_oos$S[i + 1]
+      rs_pred_3k=mean(alpha)-mean(beta[(i-2):i])*df_oos$S[i + 1]
+      rs_pred_5k=mean(alpha)-mean(beta[(i-4):i])*df_oos$S[i + 1]
       
-      rs_pred_3wk=mean(alphaw[(i-2):i])-mean(betaw[(i-2):i])*df_oos$S[i + 1]
-      rs_pred_5wk=mean(alphaw[(i-4):i])-mean(betaw[(i-4):i])*df_oos$S[i + 1]
+      rs_pred_3wk=mean(alphaw)-mean(betaw[(i-2):i])*df_oos$S[i + 1]
+      rs_pred_5wk=mean(alphaw)-mean(betaw[(i-4):i])*df_oos$S[i + 1]
       
       
       exact_elpds_1k[i+1] <- log(dnorm(df_oos$logRS[i+1],mean=rs_pred_1k,sd=sigma))
