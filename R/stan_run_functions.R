@@ -255,7 +255,7 @@ ricker_rw_stan <- function(data, par=c('a','b','both'),  control = stancontrol()
 #' ricker_hmm_stan(data=harck)
 #' 
 ricker_hmm_stan <- function(data, par=c('a','b','both'), k_regime=2, 
-  control = stancontrol(), warmup=300,  chains = 6, iter = 1000,..., sm_ext=NULL) {
+  control = stancontrol(), warmup=300,  chains = 6, iter = 1000,..., mod=NULL) {
   #par='both'
   
   if(is.null(mod)){
