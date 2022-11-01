@@ -5,7 +5,6 @@
 #============================================
 
 
-
 devtools::document()
 devtools::load_all()
 
@@ -17,15 +16,15 @@ devtools::load_all()
 #use Harrison as an example
 
 
-sr <- read.csv("C:/Users/worc/Documents/timevarproject/simeval/data/samsimHarCk/HARSR.csv")
+#sr <- read.csv("C:/Users/worc/Documents/timevarproject/simeval/data/samsimHarCk/HARSR.csv")
 
-head(sr)
+#head(sr)
 
 
-har<-data.frame(by=sr$Brood.Year,
-	S=sr$Sum.Total.Spawners,
-	R=sr$AEQ_Recruitment..age.2.5.,
-	logRS=log(sr$AEQ_Recruitment..age.2.5./sr$Sum.Total.Spawners))
+#har<-data.frame(by=sr$Brood.Year,
+#	S=sr$Sum.Total.Spawners,
+#	R=sr$AEQ_Recruitment..age.2.5.,
+#	logRS=log(sr$AEQ_Recruitment..age.2.5./sr$Sum.Total.Spawners))
 
 
 #harck<-har[!is.na(har$S),]
@@ -44,7 +43,10 @@ pnp <- ricker_TMB(data=harck,prior=0)
 
 pb <- ricker_stan(data=harck,iter = 2000)
 
+mymod <- compile_code(type='static',ac=TRUE,par='n',caphigh=FALSE)
+pb2 <- ricker_stan(data=harck,iter = 2000,AC=TRUE, mod = mymod)
 
+names(pb)
 p$alpha
 pb$alpha
 
@@ -83,8 +85,6 @@ phmm <- ricker_hmm_TMB(data=harck, tv.par='both')
 phmm[1:8]
 
 pbhmm <- ricker_hmm_stan(data, par='b')
-
-pb <- rickerstan(data=harck,iter = 2000)
 
 
 
@@ -132,6 +132,16 @@ phmmb[1:5]
 phmmb2<-ricker_HMMb_TMB(data=harck)
 phmmb2[1:5]
 #stan functions
+
+#lfo tmb testing
+lfostatic<-tmb_mod_lfo_cv(data=harck,model='static', L=round((2/3)*nrow(harck)))
+lfoac <- tmb_mod_lfo_cv(data=harck,model='staticAC', L=round((2/3)*nrow(harck)))
+lfoalpha <- tmb_mod_lfo_cv(data=harck,model='rw_a', siglfo="obs", L=round((2/3)*nrow(harck)))
+lfobeta <- tmb_mod_lfo_cv(data=harck,model='rw_b', siglfo="obs", L=round((2/3)*nrow(harck)))
+lfoalphabeta <- tmb_mod_lfo_cv(data=harck,model='rw_both', siglfo="obs", L=round((2/3)*nrow(harck)))
+lfohmma <- tmb_mod_lfo_cv(data=harck,model='HMM_a', L=round((2/3)*nrow(harck)))
+lfohmmb <- tmb_mod_lfo_cv(data=harck,model='HMM_b', L=round((2/3)*nrow(harck)))
+lfohmm <- tmb_mod_lfo_cv(data=harck,model='HMM', L=round((2/3)*nrow(harck)))
 
 
 

@@ -8,7 +8,7 @@ ricker_rw_stan(
   data,
   par = c("a", "b", "both"),
   control = stancontrol(),
-  sm_ext = NULL,
+  mod = NULL,
   warmup = 300,
   chains = 6,
   iter = 1000,
@@ -22,8 +22,6 @@ ricker_rw_stan(
 
 \item{control}{output of stancontrol}
 
-\item{sm_ext}{Default is null, external stan rw model. Implemented to speed up simulation evaluation, use with caution.}
-
 \item{warmup}{To be passed to rstan::sampling. A positive integer specifying the number of warmup (aka burnin) iterations per
 chain. The default is 200.}
 
@@ -33,6 +31,8 @@ chain. The default is 200.}
 (including warmup). The default is 1000.}
 
 \item{...}{Anything else that would be passed to rstan::sampling}
+
+\item{sm_ext}{Default is null, external stan rw model. Implemented to speed up simulation evaluation, use with caution.}
 }
 \value{
 a list containing the

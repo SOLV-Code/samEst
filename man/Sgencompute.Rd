@@ -7,7 +7,7 @@
 Sgencompute(S, a, b, Smsy)
 }
 \arguments{
-\item{S}{Spawner numbers set to the interval between 0 and Smsy in sGenSolver.}
+\item{S}{Spawner numbers set to the interval between 0 and Smsy in sGenCalc.}
 
 \item{a}{alpha parameter in Ricker function: R=S\emph{exp(a-b}S)}
 
