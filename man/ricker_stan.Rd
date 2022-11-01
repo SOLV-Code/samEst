@@ -8,7 +8,7 @@ ricker_stan(
   data,
   AC = FALSE,
   control = stancontrol(),
-  sm_ext = NULL,
+  mod = NULL,
   warmup = 300,
   chains = 6,
   iter = 1000,

@@ -43,7 +43,10 @@ pnp <- ricker_TMB(data=harck,prior=0)
 
 pb <- ricker_stan(data=harck,iter = 2000)
 
+mymod <- compile_code(type='static',ac=TRUE,par='n',caphigh=FALSE)
+pb2 <- ricker_stan(data=harck,iter = 2000,AC=TRUE, mod = mymod)
 
+names(pb)
 p$alpha
 pb$alpha
 
@@ -82,8 +85,6 @@ phmm <- ricker_hmm_TMB(data=harck, tv.par='both')
 phmm[1:8]
 
 pbhmm <- ricker_hmm_stan(data, par='b')
-
-pb <- rickerstan(data=harck,iter = 2000)
 
 
 

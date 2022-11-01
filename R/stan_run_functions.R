@@ -6,6 +6,50 @@
 
 
 
+
+
+
+#' compile stan models
+#'
+#' @param data A list or data frame containing Spawners (S) and log(Recruits/Spawners) (logRS) time series. 
+#' @param AC Logical. Are residuals autocorrelated? Default is FALSE
+#' @param control output of stancontrol
+#' @param warmup To be passed to rstan::sampling. A positive integer specifying the number of warmup (aka burnin) iterations per
+#'  chain. The default is 200.
+#' @param chains To be passed to rstan::sampling. A positive integer specifying the number of Markov chains. The default is 6.
+#' @param iter To be passed to rstan::sampling. A positive integer specifying the number of iterations for each chain 
+#' (including warmup). The default is 1000.
+#' @param ... Anything else that would be passed to rstan::sampling
+#' 
+#' 
+#' @returns a list containing the 
+#' * alpha - median estimates for the alpha parameter vector
+#' * beta - median estimates for the beta parameter 
+#' * sigobs - median estimates for the observation error sigma         
+#' * stanfit - a stanfit model object
+#' * mcmcsummary - summary over kept samples
+#' * c_mcmcsummary - chain specific summary 
+#' * list of samples
+#' 
+#' 
+#' @importFrom rstan stan extract summary 
+#' 
+#' 
+#' @export
+#' 
+#' @examples
+#' data(harck)
+#' rickerstan(data=harck)
+#' 
+compile_code<-function(type=c('static','rw','hmm'), ac=FALSE, par=c('n','a','b','both'), caphigh=FALSE) {
+ 
+   sm <- sr_mod(type=type, ac=ac, par=par, caphigh=caphigh, loglik=FALSE, modelcode=TRUE)
+  
+   mod <- stan_model(model_name="stanmod",model_code=sm)
+
+   return(mod)
+}
+
 #' Simple Ricker model estimated with stan
 #'
 #' @param data A list or data frame containing Spawners (S) and log(Recruits/Spawners) (logRS) time series. 
@@ -38,13 +82,13 @@
 #' data(harck)
 #' rickerstan(data=harck)
 #' 
-ricker_stan <- function(data,  AC=FALSE, control = stancontrol(), sm_ext=NULL, warmup=300,  chains = 6, iter = 1000,...) {
+ricker_stan <- function(data,  AC=FALSE, control = stancontrol(), mod=NULL, warmup=300,  chains = 6, iter = 1000,...) {
  
 
- if(is.null(sm_ext)){
-   sm <- sr_mod(type='static', ac=AC, par='n', loglik=FALSE, modelcode=TRUE)
+ if(is.null(mod)){
+   sm <- compile_code(type='static',ac=AC,par='n',caphigh=FALSE)
   }else{
-    sm <-sm_ext
+   sm <-mod
   }
   
 
@@ -61,11 +105,14 @@ ricker_stan <- function(data,  AC=FALSE, control = stancontrol(), sm_ext=NULL, w
   
 
   }
-
-  fit <- rstan::stan(model_code = sm, 
-                        data = datm,
-                        control = control, warmup = warmup, chains = chains, iter = iter)
   
+  fit<-rstan::sampling(sm, data=datm,
+                      control = control, warmup = warmup, 
+                      chains = chains, iter = iter )
+  #fit <- rstan::stan(model_code = sm, 
+  #                      data = datm,
+  #                      control = control, warmup = warmup, chains = chains, iter = iter)
+  #
   
   mc <- rstan::extract(fit, 
                 inc_warmup=FALSE, permuted=FALSE)
@@ -87,6 +134,9 @@ ricker_stan <- function(data,  AC=FALSE, control = stancontrol(), sm_ext=NULL, w
    samples=mc ) )
 
 }
+
+
+
 
 
 
@@ -124,29 +174,34 @@ ricker_stan <- function(data,  AC=FALSE, control = stancontrol(), sm_ext=NULL, w
 #' data(harck)
 #' ricker_rw_stan(data=harck)
 #' 
-ricker_rw_stan <- function(data, par=c('a','b','both'),  control = stancontrol(), sm_ext=NULL,
+ricker_rw_stan <- function(data, par=c('a','b','both'),  control = stancontrol(), mod=NULL,
   warmup=300,  chains = 6, iter = 1000,...) {
   #par='b'
-  if(is.null(sm_ext)){
-    sm <- sr_mod(type='rw',ac=FALSE,par=par,loglik=FALSE, modelcode=TRUE)
+
+  if(is.null(mod)){
+   sm <- compile_code(type='rw',ac=FALSE,par=par,caphigh=FALSE)
   }else{
-    sm <-sm_ext
+   sm <- mod
   }
+  #if(is.null(sm_ext)){
+  #  sm <- sr_mod(type='rw',ac=FALSE,par=par,loglik=FALSE, modelcode=TRUE)
+  #}else{
+  #  sm <-sm_ext
+  #}
 
   
-  fit <- rstan::stan(model_code = sm, 
-                        data = list(N=nrow(data),
+  fit <- rstan::sampling(sm, data = list(N=nrow(data),
                                     L=nrow(data),
                                     ii=seq_along(data$logRS),
                                     R_S =data$logRS,
                                     S=data$S),
                         control = control, warmup = warmup, chains = chains, iter = iter)
   
-    mc <- rstan::extract(fit, 
+  mc <- rstan::extract(fit, 
                 inc_warmup=FALSE, permuted=FALSE)
     
     
-    aa <- rstan::summary(fit)
+  aa <- rstan::summary(fit)
   
 
 
@@ -202,14 +257,20 @@ ricker_rw_stan <- function(data, par=c('a','b','both'),  control = stancontrol()
 ricker_hmm_stan <- function(data, par=c('a','b','both'), k_regime=2, 
   control = stancontrol(), warmup=300,  chains = 6, iter = 1000,..., sm_ext=NULL) {
   #par='both'
-  if(is.null(sm_ext)){
-    sm <- sr_mod(type='hmm',ac=FALSE,par=par,loglik=FALSE, modelcode=TRUE)
+  
+  if(is.null(mod)){
+   sm <- compile_code(type='hmm',ac=FALSE,par=par,caphigh=FALSE)
   }else{
-    sm <- sm_ext
+   sm <-mod
   }
+  #if(is.null(sm_ext)){
+  #  sm <- sr_mod(type='hmm',ac=FALSE,par=par,loglik=FALSE, modelcode=TRUE)
+  #}else{
+  #  sm <- sm_ext
+  #}
 
   
-  fit <- rstan::stan(model_code = sm, 
+  fit <- rstan::sampling(sm, 
                         data = list(N=nrow(data),
                                     R_S =data$logRS,
                                     S=data$S,
