@@ -110,14 +110,16 @@ stan_lfo_cv=function(mod,type=c('static','tv','regime'),df,L=10,K=NULL){
   
   if(type=='static'){
     exact_elpds<- apply(loglik_exact, 2, log_mean_exp); exact_elpds=exact_elpds[-(1:L)]
-    return(exact_elpds)
+    r=exact_elpds
+    rownames(r)=paste(mod,rownames(r),sep='_')
   }
   if(type=='tv'){
     exact_elpds_1b <- apply(loglik_exact_1b, 2, log_mean_exp); exact_elpds_1b=exact_elpds_1b[-(1:L)]
     exact_elpds_3b <- apply(loglik_exact_3b, 2, log_mean_exp); exact_elpds_3b=exact_elpds_3b[-(1:L)]
     exact_elpds_5b <- apply(loglik_exact_5b, 2, log_mean_exp); exact_elpds_5b=exact_elpds_5b[-(1:L)]
     
-    return(rbind(exact_elpds_1b,exact_elpds_3b,exact_elpds_5b))
+    r=rbind(exact_elpds_1b,exact_elpds_3b,exact_elpds_5b)
+    rownames(r)=paste(mod,rownames(r),sep='_')
   }
   if(type=='regime'){
     exact_elpds_1b <- apply(loglik_exact_1b, 2, log_mean_exp); exact_elpds_1b=exact_elpds_1b[-(1:L)]
@@ -127,8 +129,10 @@ stan_lfo_cv=function(mod,type=c('static','tv','regime'),df,L=10,K=NULL){
     exact_elpds_3bw <- apply(loglik_exact_3bw, 2, log_mean_exp); exact_elpds_3bw=exact_elpds_3bw[-(1:L)]
     exact_elpds_5bw <- apply(loglik_exact_5bw, 2, log_mean_exp); exact_elpds_5bw=exact_elpds_5bw[-(1:L)]
     
-    return(rbind(exact_elpds_1b,exact_elpds_3b,exact_elpds_5b,exact_elpds_1bw,exact_elpds_3bw,exact_elpds_5bw))
+    r=rbind(exact_elpds_1b,exact_elpds_3b,exact_elpds_5b,exact_elpds_1bw,exact_elpds_3bw,exact_elpds_5bw)
+    rownames(r)=paste(mod,rownames(r),sep='_')
   }
+  return(r)
 }
 
 #' model_weights function
