@@ -25,20 +25,20 @@ stan_refit<- function(sm,newdata,oos,regime=FALSE,K=NULL){
                                     L=max(newdata$by)-min(newdata$by)+1,
                                     ii=newdata$by-min(newdata$by)+1,
                                     R_S =newdata$logRS,
-                                    S=newdata$s,
+                                    S=newdata$S,
                                     y_oos=oosdata$logRS,
-                                    x_oos=oosdata$s),
+                                    x_oos=oosdata$S),
                         control = list(adapt_delta = 0.99), warmup = 200, chains = 6, iter = 700)
   }
   if(regime==TRUE){
     r = rstan::sampling(sm, 
                         data = list(N=nrow(newdata),
                                     R_S=newdata$logRS,
-                                    S=newdata$s,
+                                    S=newdata$S,
                                     K=K,
                                     alpha_dirichlet=rep(1,K),
                                     y_oos=oosdata$logRS,
-                                    x_oos=oosdata$s), #prior for state transition probabilities (this makes them equal)
+                                    x_oos=oosdata$S), #prior for state transition probabilities (this makes them equal)
                         control = list(adapt_delta = 0.99), warmup = 200, chains = 6, iter = 700)
   }
   
