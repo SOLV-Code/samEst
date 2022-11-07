@@ -273,7 +273,7 @@ ricker_hmm_stan <- function(data, par=c('a','b','both'), k_regime=2,
   fit <- rstan::sampling(sm, 
                         data = list(N=nrow(data),
                                     R_S =data$logRS,
-                                    S=data$s,
+                                    S=data$S,
                                     K=k_regime,
                                     alpha_dirichlet=rep(1,k_regime)
                                     ),
