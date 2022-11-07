@@ -22,23 +22,23 @@ stan_refit<- function(sm,newdata,oos,regime=FALSE,K=NULL){
   if(regime==FALSE){
     r = rstan::sampling(sm, 
                         data = list(N=nrow(newdata),
-                                    L=max(newdata$broodyear)-min(newdata$broodyear)+1,
-                                    ii=newdata$broodyear-min(newdata$broodyear)+1,
-                                    R_S =newdata$logR_S,
-                                    S=newdata$spawners,
-                                    y_oos=oosdata$logR_S,
-                                    x_oos=oosdata$spawners),
+                                    L=max(newdata$by)-min(newdata$by)+1,
+                                    ii=newdata$by-min(newdata$by)+1,
+                                    R_S =newdata$logRS,
+                                    S=newdata$s,
+                                    y_oos=oosdata$logRS,
+                                    x_oos=oosdata$s),
                         control = list(adapt_delta = 0.99), warmup = 200, chains = 6, iter = 700)
   }
   if(regime==TRUE){
     r = rstan::sampling(sm, 
                         data = list(N=nrow(newdata),
-                                    R_S=newdata$logR_S,
-                                    S=newdata$spawners,
+                                    R_S=newdata$logRS,
+                                    S=newdata$s,
                                     K=K,
                                     alpha_dirichlet=rep(1,K),
-                                    y_oos=oosdata$logR_S,
-                                    x_oos=oosdata$spawners), #prior for state transition probabilities (this makes them equal)
+                                    y_oos=oosdata$logRS,
+                                    x_oos=oosdata$s), #prior for state transition probabilities (this makes them equal)
                         control = list(adapt_delta = 0.99), warmup = 200, chains = 6, iter = 700)
   }
   

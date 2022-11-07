@@ -60,8 +60,20 @@ log_mean_exp <- function(x) {
   log_sum_exp(x) - log(length(x))
 }
 
-
-
+#' Function to format the names for a stock-recruitment dataset to avoid compatibility problems with other samEst functions
+#'
+#' @param S a vector of spawners
+#' @param R a vector of recruits
+#' @param R a vector of years for each cohort
+#' @export
+#' 
+#' @returns mean of exponentials
+#' 
+#' 
+sr_format<- function(S,R,by){
+  x=data.frame(S=S,R=R,by=by,logRS=log(R/S))
+  return(x)
+}
 
 
 
