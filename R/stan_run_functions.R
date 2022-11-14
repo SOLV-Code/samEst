@@ -94,7 +94,7 @@ ricker_stan <- function(data,  AC=FALSE, control = stancontrol(), mod=NULL, warm
 
   if(AC){
     datm = list(N=nrow(data),
-                L=nrow(data),
+                L=max(data$by)-min(data$by)+1,
                 ii=seq_len(nrow(data)),
                 R_S =data$logRS,
                 S=data$S)
@@ -144,7 +144,7 @@ ricker_stan <- function(data,  AC=FALSE, control = stancontrol(), mod=NULL, warm
 
 #' random walks Ricker model estimated with stan
 #'
-#' @param data A list or data frame containing Spawners (S) and log(Recruits/Spawners) (logRS) time series. 
+#' @param data A data frame containing Spawners (S) and log(Recruits/Spawners) (R_S) time series. Use sr_format for the correct column names. 
 #' @param par Which parameter should vary? Either productivity (intercept, a), capacity (slope, b) or both parameters
 #' @param control output of stancontrol
 #' @param warmup To be passed to rstan::sampling. A positive integer specifying the number of warmup (aka burnin) iterations per
@@ -191,7 +191,7 @@ ricker_rw_stan <- function(data, par=c('a','b','both'),  control = stancontrol()
 
   
   fit <- rstan::sampling(sm, data = list(N=nrow(data),
-                                    L=nrow(data),
+                                    L=max(data$by)-min(data$by)+1,
                                     ii=seq_along(data$logRS),
                                     R_S =data$logRS,
                                     S=data$S),

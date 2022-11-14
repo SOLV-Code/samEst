@@ -22,24 +22,24 @@ stan_refit<- function(sm,newdata,oos,regime=FALSE,K=NULL){
   if(regime==FALSE){
     r = rstan::sampling(sm, 
                         data = list(N=nrow(newdata),
-                                    L=max(newdata$broodyear)-min(newdata$broodyear)+1,
-                                    ii=newdata$broodyear-min(newdata$broodyear)+1,
-                                    R_S =newdata$logR_S,
-                                    S=newdata$spawners,
-                                    y_oos=oosdata$logR_S,
-                                    x_oos=oosdata$spawners),
-                        control = list(adapt_delta = 0.99), warmup = 200, chains = 6, iter = 700)
+                                    L=max(newdata$by)-min(newdata$by)+1,
+                                    ii=newdata$by-min(newdata$by)+1,
+                                    R_S =newdata$logRS,
+                                    S=newdata$S,
+                                    y_oos=oosdata$logRS,
+                                    x_oos=oosdata$S),
+                        control = list(adapt_delta = 0.99,max_treedepth=15), warmup = 200, chains = 6, iter = 700)
   }
   if(regime==TRUE){
     r = rstan::sampling(sm, 
                         data = list(N=nrow(newdata),
-                                    R_S=newdata$logR_S,
-                                    S=newdata$spawners,
+                                    R_S=newdata$logRS,
+                                    S=newdata$S,
                                     K=K,
                                     alpha_dirichlet=rep(1,K),
-                                    y_oos=oosdata$logR_S,
-                                    x_oos=oosdata$spawners), #prior for state transition probabilities (this makes them equal)
-                        control = list(adapt_delta = 0.99), warmup = 200, chains = 6, iter = 700)
+                                    y_oos=oosdata$logRS,
+                                    x_oos=oosdata$S), #prior for state transition probabilities (this makes them equal)
+                        control = list(adapt_delta = 0.99,max_treedepth=15), warmup = 200, chains = 6, iter = 700)
   }
   
   return(r)
@@ -91,14 +91,14 @@ stan_lfo_cv=function(mod,type=c('static','tv','regime'),df,L=10,K=NULL){
     }
     if(type=='tv'){
       fit_past<- stan_refit(sm=mod,newdata=df_oos,oos=i+1)
-      ll=extract(fit_past,pars=c('log_lik_oos_1b','log_lik_oos_3b','log_lik_oos_5b'))
+      ll=rstan::extract(fit_past,pars=c('log_lik_oos_1b','log_lik_oos_3b','log_lik_oos_5b'))
       loglik_exact_1b[, i + 1] <-ll$log_lik_oos_1b
       loglik_exact_3b[, i + 1] <-ll$log_lik_oos_3b
       loglik_exact_5b[, i + 1] <-ll$log_lik_oos_5b
     }
     if(type=='regime'){
       fit_past<- stan_refit(sm=mod,newdata=df_oos,oos=i+1,regime=TRUE,K=K)
-      ll=extract(fit_past,pars=c('log_lik_oos_1b','log_lik_oos_3b','log_lik_oos_5b','log_lik_oos_1bw','log_lik_oos_3bw','log_lik_oos_5bw'))
+      ll=rstan::extract(fit_past,pars=c('log_lik_oos_1b','log_lik_oos_3b','log_lik_oos_5b','log_lik_oos_1bw','log_lik_oos_3bw','log_lik_oos_5bw'))
       loglik_exact_1b[, i + 1] <- ll$log_lik_oos_1b
       loglik_exact_3b[, i + 1] <- ll$log_lik_oos_3b
       loglik_exact_5b[, i + 1] <- ll$log_lik_oos_5b
@@ -110,14 +110,14 @@ stan_lfo_cv=function(mod,type=c('static','tv','regime'),df,L=10,K=NULL){
   
   if(type=='static'){
     exact_elpds<- apply(loglik_exact, 2, log_mean_exp); exact_elpds=exact_elpds[-(1:L)]
-    return(exact_elpds)
+    r=exact_elpds
   }
   if(type=='tv'){
     exact_elpds_1b <- apply(loglik_exact_1b, 2, log_mean_exp); exact_elpds_1b=exact_elpds_1b[-(1:L)]
     exact_elpds_3b <- apply(loglik_exact_3b, 2, log_mean_exp); exact_elpds_3b=exact_elpds_3b[-(1:L)]
     exact_elpds_5b <- apply(loglik_exact_5b, 2, log_mean_exp); exact_elpds_5b=exact_elpds_5b[-(1:L)]
     
-    return(list(exact_elpds_1b,exact_elpds_3b,exact_elpds_5b))
+    r=rbind(exact_elpds_1b,exact_elpds_3b,exact_elpds_5b)
   }
   if(type=='regime'){
     exact_elpds_1b <- apply(loglik_exact_1b, 2, log_mean_exp); exact_elpds_1b=exact_elpds_1b[-(1:L)]
@@ -127,8 +127,9 @@ stan_lfo_cv=function(mod,type=c('static','tv','regime'),df,L=10,K=NULL){
     exact_elpds_3bw <- apply(loglik_exact_3bw, 2, log_mean_exp); exact_elpds_3bw=exact_elpds_3bw[-(1:L)]
     exact_elpds_5bw <- apply(loglik_exact_5bw, 2, log_mean_exp); exact_elpds_5bw=exact_elpds_5bw[-(1:L)]
     
-    return(list(exact_elpds_1b,exact_elpds_3b,exact_elpds_5b,exact_elpds_1bw,exact_elpds_3bw,exact_elpds_5bw))
+    r=rbind(exact_elpds_1b,exact_elpds_3b,exact_elpds_5b,exact_elpds_1bw,exact_elpds_3bw,exact_elpds_5bw)
   }
+  return(r)
 }
 
 #' model_weights function
