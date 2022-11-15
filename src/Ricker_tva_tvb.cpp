@@ -74,8 +74,7 @@ Type objective_function<Type>::operator() ()
   DATA_VECTOR(obs_S);    // observed  Spawner
   DATA_VECTOR(obs_logRS);   // observed recruitment
   DATA_INTEGER(priors);
-  
-  
+   
   PARAMETER(logbetao);
   PARAMETER(alphao);
   
@@ -116,13 +115,15 @@ Type objective_function<Type>::operator() ()
   vector<Type> Srep(timeSteps), beta(timeSteps), Smax(timeSteps), umsy(timeSteps);
 
   
-  Type ans= Type(0); 
+  //Type ans= Type(0); 
+  Type nll = Type(0.0);
+  Type pnll = Type(0.0);
 
   if(priors == 1){
     //prior on parameters
     //ans -=dnorm(alphao,Type(0.0),Type(2.5),true);
-    ans -=dgamma(alphao,Type(3.0),Type(1.0),true);
-    ans -=dnorm(logbetao,Type(-12.0),Type(3.0),true);
+    pnll -=dgamma(alphao,Type(3.0),Type(1.0),true);
+    pnll -=dnorm(logbetao,Type(-12.0),Type(3.0),true);
     //prior on observation and process variance ratio
     //Type ans= -dbeta(rho,prbeta1,prbeta2,true); 
     //ans= -dbeta(kappa,prbeta3,prbeta4,true);  
@@ -134,21 +135,21 @@ Type objective_function<Type>::operator() ()
     //ans -= dnorm(siga,Type(0.0),Type(2.0),true);
     //ans -= dnorm(sigb,Type(0.0),Type(2.0),true);
 
-    ans -= dgamma(sigobs,Type(2.0),Type(1.0)/Type(3.0),true);
-    ans -= dgamma(sigb,Type(2.0),Type(1.0)/Type(3.0),true);
-    ans -= dgamma(siga,Type(2.0),Type(1.0)/Type(3.0),true);
+    pnll -= dgamma(sigobs,Type(2.0),Type(1.0)/Type(3.0),true);
+    pnll -= dgamma(sigb,Type(2.0),Type(1.0)/Type(3.0),true);
+    pnll -= dgamma(siga,Type(2.0),Type(1.0)/Type(3.0),true);
   }
    
-  ans+= -dnorm(alpha(0),alphao,siga,true);
-  ans+= -dnorm(logbeta(0),logbetao,sigb,true);
+  nll+= -dnorm(alpha(0),alphao,siga,true);
+  nll+= -dnorm(logbeta(0),logbetao,sigb,true);
 
   // Use the Hilborn approximations for Smsy and umsy  
 
   
   for(int i=1;i<timeSteps;i++){
   
-    ans+= -dnorm(alpha(i),alpha(i-1),siga,true);
-    ans+= -dnorm(logbeta(i),logbeta(i-1),sigb,true);
+    nll+= -dnorm(alpha(i),alpha(i-1),siga,true);
+    nll+= -dnorm(logbeta(i),logbeta(i-1),sigb,true);
   
   }
 
@@ -167,10 +168,10 @@ Type objective_function<Type>::operator() ()
       Smax(i) = Type(1.0)/ beta(i);
      
       residuals(i) = obs_logRS(i) - pred_logRS(i);
-      ans+=-dnorm(obs_logRS(i),pred_logRS(i),sigobs,true);
+      nll+=-dnorm(obs_logRS(i),pred_logRS(i),sigobs,true);
     }
-  
   }
+  Type ans = nll + pnll;
 
   REPORT(pred_logRS)
   REPORT(alpha)
@@ -186,6 +187,8 @@ Type objective_function<Type>::operator() ()
   REPORT(umsy)
   REPORT(Smsy)
   REPORT(Srep)
+  REPORT(nll);
+  REPORT(pnll);  
 
   ADREPORT(alpha);
   ADREPORT(beta);

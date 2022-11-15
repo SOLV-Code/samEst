@@ -39,6 +39,11 @@ plot(harck$S,harck$R)
 ##testing functions
 
 p <- ricker_TMB(data=harck)
+
+
+
+
+
 pnp <- ricker_TMB(data=harck,prior=0)
 
 pb <- ricker_stan(data=harck,iter = 2000)
@@ -92,12 +97,7 @@ phmmb <- ricker_hmm_TMB(data=harck, tv.par='b')
 phmmb[1:8]
 
 
-
-
-
 ptvb <- ricker_rw_TMB(data=harck,tv.par="b")
-
-
 
 ptvab <- ricker_rw_TMB(data=harck,tv.par="both")
 
@@ -109,11 +109,9 @@ sum(lfohmm$regime_pick,na.rm=T)
 sum(lfohmm$regime_average)
 
 
-phmma <- ricker_HMM_TMB(data=harck, tv.par='a')
+phmma <- ricker_hmm_TMB(data=harck, tv.par='a')
 phmma[1:5]
 
-phmma2<-ricker_HMMa_TMB(data=harck)
-phmma2[1:5]
 lfohmma <- tmb_mod_lfo_cv(data=harck,tv.par='HMM_a')
 
 sum(lfohmma$regime_pick)
@@ -125,12 +123,12 @@ sum(lfohmmb$regime_pick,na.rm=T)
 sum(lfohmmb$regime_average)
 
 
-phmmb <- ricker_HMM_TMB(data=harck, tv.par='b')
+phmmb <- ricker_hmm_TMB(data=harck, tv.par='b')
 phmmb[1:5]
 
 
-phmmb2<-ricker_HMMb_TMB(data=harck)
-phmmb2[1:5]
+
+
 #stan functions
 
 #lfo tmb testing
@@ -144,9 +142,24 @@ lfohmmb <- tmb_mod_lfo_cv(data=harck,model='HMM_b', L=round((2/3)*nrow(harck)))
 lfohmm <- tmb_mod_lfo_cv(data=harck,model='HMM', L=round((2/3)*nrow(harck)))
 
 
+p <- ricker_TMB(data=harck)
+pac<-ricker_TMB(data=harck, AC=TRUE)
+ptva<- ricker_rw_TMB(data=harck,tv.par="a")
+ptvb <- ricker_rw_TMB(data=harck,tv.par="b")
+ptvab <- ricker_rw_TMB(data=harck,tv.par="both")
+phmma <- ricker_hmm_TMB(data=harck, tv.par='a')
+phmmb <- ricker_hmm_TMB(data=harck, tv.par='b')
+phmm <- ricker_hmm_TMB(data=harck, tv.par='both')
 
 
 
 
-
-
+c(
+p$AICc
+pac$AICc
+ptva$AICc
+ptvb$AICc 
+ptvab$AICc,
+phmma$AICc,
+phmmb$AICc,
+phmm$AICc)

@@ -122,29 +122,29 @@ Type objective_function<Type>::operator() ()
   //prior on observation and process variance ratio
   //Type ans= -dbeta(rho,prbeta1,prbeta2,true);  
   //priors on parameters
-  Type ans= Type(0);
+  //Type ans= Type(0);
+  Type nll = Type(0.0);
+  Type pnll = Type(0.0);
 
   if(priors == 1){
     //ans -= dnorm(alpha,Type(0.0),Type(2.5),true);
-    ans -= dgamma(alpha,Type(3.0),Type(1.0),true);
-    ans -= dnorm(logbetao,Type(-12.0),Type(3.0),true);
+    pnll -= dgamma(alpha,Type(3.0),Type(1.0),true);
+    pnll -= dnorm(logbetao,Type(-12.0),Type(3.0),true);
     //ans -= dnorm(logsigobs,Type(0.0),Type(2.0),true);
     //ans -= dnorm(logsigb,Type(0.0),Type(2.0),true);
     //ans -= dnorm(sigobs,Type(0.0),Type(2.0),true);
     //ans -= dnorm(sigb,Type(0.0),Type(2.0),true);
     //ans -= sigobs;
     //ans -= sigb;
-    ans -= dgamma(sigobs,Type(2.0),Type(1.0)/Type(3.0),true);
-    ans -= dgamma(sigb,Type(2.0),Type(1.0)/Type(3.0),true);
+    pnll -= dgamma(sigobs,Type(2.0),Type(1.0)/Type(3.0),true);
+    pnll -= dgamma(sigb,Type(2.0),Type(1.0)/Type(3.0),true);
   }
   
-  ans+= -dnorm(logbeta(0),logbetao,sigb,true);
+  nll+= -dnorm(logbeta(0),logbetao,sigb,true);
   
   
-  for(int i=1;i<timeSteps;i++){
-  
-    ans+= -dnorm(logbeta(i),logbeta(i-1),sigb,true);
-  
+  for(int i=1;i<timeSteps;i++){  
+    nll+= -dnorm(logbeta(i),logbeta(i-1),sigb,true);  
   }
 
   for(int i=0;i<timeSteps;i++){
@@ -160,14 +160,14 @@ Type objective_function<Type>::operator() ()
       Smsy(i) = (1 - LambertW(exp(Type(1)-alpha)) ) / beta(i);
 
       residuals(i) = obs_logRS(i) - pred_logRS(i);
-      ans+=-dnorm(obs_logRS(i),pred_logRS(i),sigobs,true);
+      nll+=-dnorm(obs_logRS(i),pred_logRS(i),sigobs,true);
     }
-  
   }
    // Use the Hilborn approximations for Smsy and umsy
   //Type umsy  = Type(.5) * alpha - Type(0.07) * (alpha * alpha);
   Type umsy  = (Type(1) - LambertW(exp(1-alpha)) ); 
  
+  Type ans = nll + pnll;
 
   REPORT(pred_logRS)
   REPORT(alpha)
@@ -179,6 +179,8 @@ Type objective_function<Type>::operator() ()
   REPORT(umsy)
   REPORT(Smsy)
   REPORT(Srep)
+  REPORT(nll);
+  REPORT(pnll);  
 
   ADREPORT(alpha);
   ADREPORT(beta);

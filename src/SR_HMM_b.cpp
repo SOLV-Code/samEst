@@ -252,6 +252,8 @@ REPORT(r_pred);
 REPORT(Smax);    
 REPORT(umsy);
 REPORT(Smsy);
+REPORT(nll);
+REPORT(pnll);  
 
 ADREPORT(alpha);
 ADREPORT(beta);

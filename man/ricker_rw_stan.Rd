@@ -16,7 +16,7 @@ ricker_rw_stan(
 )
 }
 \arguments{
-\item{data}{A list or data frame containing Spawners (S) and log(Recruits/Spawners) (logRS) time series.}
+\item{data}{A data frame containing Spawners (S) and log(Recruits/Spawners) (R_S) time series. Use sr_format for the correct column names.}
 
 \item{par}{Which parameter should vary? Either productivity (intercept, a), capacity (slope, b) or both parameters}
 

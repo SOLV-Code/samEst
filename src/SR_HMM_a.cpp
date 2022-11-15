@@ -243,7 +243,9 @@ REPORT(qij);
 REPORT(r_pred); 
 REPORT(umsy);
 REPORT(Smsy);  
-REPORT(Smax);   
+REPORT(Smax);  
+REPORT(nll);
+REPORT(pnll);   
 
 
 ADREPORT(alpha);

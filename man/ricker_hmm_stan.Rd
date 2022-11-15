@@ -13,7 +13,7 @@ ricker_hmm_stan(
   chains = 6,
   iter = 1000,
   ...,
-  sm_ext = NULL
+  mod = NULL
 )
 }
 \arguments{

@@ -55,19 +55,20 @@ Type objective_function<Type>::operator() ()
   int timeSteps=obs_logRS.size();
 
   //priors - based on evaluation done with the prior predictive check
-  Type ans= Type(0);
+  //Type ans= Type(0);
+  Type nll= Type(0);
+  Type pnll = Type(0.0);
   
   //model
   Type beta = exp(logbeta);
   Type sigobs = exp(logsigobs);
   Type Smax  = Type(1.0)/beta;
 
-
   if(priors == 1){
     //ans -=dnorm(alpha,Type(0.0),Type(2.5),true);
-    ans -=dgamma(alpha,Type(3.0),Type(1.0),true);
-    ans -=dnorm(logbeta,Type(-12.0),Type(3.0),true);  
-    ans -= dgamma(sigobs,Type(2.0),Type(1.0)/Type(3.0),true);
+    pnll -=dgamma(alpha,Type(3.0),Type(1.0),true);
+    pnll -=dnorm(logbeta,Type(-12.0),Type(3.0),true);  
+    pnll -= dgamma(sigobs,Type(2.0),Type(1.0)/Type(3.0),true);
   }
   //ans -= dnorm(logsigobs,Type(0.0),Type(2.0),true);
   //ans -= dexp(sigobs,Type(2.0),true);
@@ -81,7 +82,7 @@ Type objective_function<Type>::operator() ()
       pred_logRS(i) = alpha - beta * obs_S(i) ; 
       pred_logR(i) = pred_logRS(i) + log(obs_S(i));
       residuals(i) = obs_logRS(i) - pred_logRS(i);
-      ans+=-dnorm(obs_logRS(i),pred_logRS(i),sigobs,true);
+      nll+=-dnorm(obs_logRS(i),pred_logRS(i),sigobs,true);
     }
   
   }
@@ -89,7 +90,7 @@ Type objective_function<Type>::operator() ()
   //Type Smsy = alpha/beta * (Type(0.5) -Type(0.07) * alpha);
   Type umsy = (Type(1) - LambertW(exp(1-alpha)));
   Type Smsy = (Type(1) - LambertW(exp(1-alpha))) / beta;
-
+  Type ans= nll + pnll;
 
 
   SIMULATE {
@@ -109,6 +110,8 @@ Type objective_function<Type>::operator() ()
   REPORT(Smax)
   REPORT(umsy)
   REPORT(Smsy)
+  REPORT(nll);
+  REPORT(pnll);  
 
   ADREPORT(alpha);
   ADREPORT(beta);

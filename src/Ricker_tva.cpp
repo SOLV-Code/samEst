@@ -101,24 +101,24 @@ Type objective_function<Type>::operator() ()
  
   //priors on parameters
  
-  Type ans= Type(0);
+  //Type ans= Type(0);
+  Type nll = Type(0);
+  Type pnll = Type(0.0);
 
   if(priors == 1){
     //ans -=dnorm(alphao,Type(0.0),Type(2.5),true);
-    ans -=dgamma(alphao,Type(3.0),Type(1.0),true);
-    ans -=dnorm(logbeta,Type(-12.0),Type(3.0),true); 
+    pnll -=dgamma(alphao,Type(3.0),Type(1.0),true);
+    pnll -=dnorm(logbeta,Type(-12.0),Type(3.0),true); 
     //ans -= dnorm(logsigobs,Type(0.0),Type(2.0),true);
     //ans -= dnorm(logsiga,Type(0.0),Type(2.0),true);
-    ans -= dgamma(sigobs,Type(2.0),Type(1.0)/Type(3.0),true);  
-    ans -= dgamma(siga,Type(2.0),Type(1.0)/Type(3.0),true);
+    pnll  -= dgamma(sigobs,Type(2.0),Type(1.0)/Type(3.0),true);  
+    pnll  -= dgamma(siga,Type(2.0),Type(1.0)/Type(3.0),true);
   }
   
-  ans+= -dnorm(alpha(0),alphao,siga,true);
+  nll+= -dnorm(alpha(0),alphao,siga,true);
   
-  for(int i=1;i<timeSteps;i++){
-  
-    ans+= -dnorm(alpha(i),alpha(i-1),siga,true);
-  
+  for(int i=1;i<timeSteps;i++){  
+    nll+= -dnorm(alpha(i),alpha(i-1),siga,true);
   }
 
   for(int i=0;i<timeSteps;i++){
@@ -135,10 +135,11 @@ Type objective_function<Type>::operator() ()
       umsy(i) = (Type(1) - LambertW(exp(1-alpha(i))) ); 
 
       residuals(i) = obs_logRS(i) - pred_logRS(i);
-      ans+=-dnorm(obs_logRS(i),pred_logRS(i),sigobs,true);
+      nll+=-dnorm(obs_logRS(i),pred_logRS(i),sigobs,true);
     }
-  
   }
+
+  Type ans= nll + pnll;
 
   REPORT(alpha)
   REPORT(beta)
@@ -151,6 +152,8 @@ Type objective_function<Type>::operator() ()
   REPORT(umsy)
   REPORT(Smsy)
   REPORT(Srep)
+  REPORT(nll);
+  REPORT(pnll);  
 
   ADREPORT(alpha);
   ADREPORT(beta);

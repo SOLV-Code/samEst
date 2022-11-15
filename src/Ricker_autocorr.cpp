@@ -84,14 +84,16 @@ Type objective_function<Type>::operator() ()
 
   
   //priors - based on evaluation done with the prior predictive check
-  Type ans = Type(0);
+  //Type ans = Type(0);
+  Type nll= Type(0);
+  Type pnll = Type(0.0);
 
   if(priors == 1){
     //ans -=dnorm(alpha,Type(0.0),Type(2.5),true);
-    ans -=dgamma(alpha,Type(3.0),Type(1.0),true);
-    ans -=dnorm(logbeta,Type(-12.0),Type(3.0),true); 
+    pnll -=dgamma(alpha,Type(3.0),Type(1.0),true);
+    pnll -=dnorm(logbeta,Type(-12.0),Type(3.0),true); 
     //ans -= dnorm(logsigobs,Type(0.0),Type(2.0),true);
-    ans -= dgamma(sigobs,Type(2.0),Type(1.0)/Type(3.0),true);
+    pnll -= dgamma(sigobs,Type(2.0),Type(1.0)/Type(3.0),true);
   }
   
   vector<Type> pred_logRS(timeSteps), pred_logR(timeSteps), residuals(timeSteps) ;
@@ -100,14 +102,14 @@ Type objective_function<Type>::operator() ()
   pred_logR(0) = pred_logRS(0) + log(obs_S(0));
   residuals(0) = obs_logRS(0) - pred_logRS(0);
     
-  ans+= -dnorm(obs_logRS(0),pred_logRS(0),sigobs,true);
+  nll+= -dnorm(obs_logRS(0),pred_logRS(0),sigobs,true);
 
   for(int i=1;i<timeSteps;i++){
     if(!isNA(obs_logRS(i))){
       pred_logRS(i) = alpha - beta * obs_S(i) + residuals(i-1) * rhoo ;
       pred_logR(i) = pred_logRS(i) + log(obs_S(i));
       residuals(i) = obs_logRS(i) - pred_logRS(i);     
-      ans+=-dnorm(obs_logRS(i),pred_logRS(i),sigAR,true);      
+      nll+=-dnorm(obs_logRS(i),pred_logRS(i),sigAR,true);      
     } 
   }
   
@@ -117,6 +119,7 @@ Type objective_function<Type>::operator() ()
   Type umsy = (Type(1) - LambertW(exp(1-alpha)));
   Type Smsy = (Type(1) - LambertW(exp(1-alpha))) / beta;
   
+  Type ans = nll + pnll;
 
   REPORT(alpha)
   REPORT(beta)
@@ -128,6 +131,8 @@ Type objective_function<Type>::operator() ()
   REPORT(Smax)
   REPORT(umsy)
   REPORT(Smsy)
+  REPORT(nll);
+  REPORT(pnll);  
  
   ADREPORT(alpha);
   ADREPORT(beta);
