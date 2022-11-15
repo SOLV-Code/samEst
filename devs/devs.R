@@ -155,11 +155,21 @@ phmm <- ricker_hmm_TMB(data=harck, tv.par='both')
 
 
 c(
-p$AICc
-pac$AICc
-ptva$AICc
-ptvb$AICc 
+p$AICc,
+pac$AICc,
+ptva$AICc,
+ptvb$AICc, 
 ptvab$AICc,
 phmma$AICc,
 phmmb$AICc,
 phmm$AICc)
+
+c(
+p$BIC,
+pac$BIC,
+ptva$BIC,
+ptvb$BIC, 
+ptvab$BIC,
+phmma$BIC,
+phmmb$BIC,
+phmm$BIC)
