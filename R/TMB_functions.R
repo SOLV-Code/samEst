@@ -232,7 +232,7 @@ ricker_rw_TMB <- function(data, tv.par=c('a','b','both'), silent = FALSE,
     if(is.null(ini_param)){
      
       tmb_params <- list(logbetao = ifelse(initlm$coefficients[[2]]>0,
-                                           log(1/max(data$S)),
+                                           magS,
                                            log(-initlm$coefficients[[2]])),
                         alpha   = max(initlm$coefficients[[1]],.5),                 
                         logsigobs = log(.5),
@@ -270,10 +270,10 @@ ricker_rw_TMB <- function(data, tv.par=c('a','b','both'), silent = FALSE,
                         alphao   = max(initlm$coefficients[[1]],.5),                 
                         logsigobs = log(.5),
                         logsiga = log(.5),
-                        logsigb = log(.5),
-                        alpha = rep(initlm$coefficients[[1]],length(tmb_data$obs_S)),
+                        logsigb = log(.2),
+                        alpha = rep(1,length(tmb_data$obs_S)),
                         logbeta=log(rep(ifelse(initlm$coefficients[[2]]>0,
-                                               log(1e-06),
+                                               log(magS),
                                                -initlm$coefficients[[2]]),
                                         length(data$S)))      
      )

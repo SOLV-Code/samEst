@@ -102,7 +102,7 @@ Type objective_function<Type>::operator() ()
   //priors on parameters
  
   //Type ans= Type(0);
-  Type nll = Type(0);
+  Type nll = Type(0.0);
   Type pnll = Type(0.0);
 
   if(priors == 1){
