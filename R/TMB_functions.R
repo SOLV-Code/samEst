@@ -105,6 +105,8 @@ ricker_TMB <- function(data,  silent = FALSE, control = TMBcontrol(),
  
   AICc  <- 2*nll + 2*npar +(2*npar*(npar+1)/(nrow(data)-npar-1))
   BIC  <- 2*nll + npar*log(nrow(data))
+
+  
   
   structure(list(
     alpha      = tmb_obj$report()$alpha,

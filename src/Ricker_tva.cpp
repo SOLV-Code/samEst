@@ -103,6 +103,7 @@ Type objective_function<Type>::operator() ()
  
   //Type ans= Type(0);
   Type nll = Type(0.0);
+  Type renll = Type(0.0);
   Type pnll = Type(0.0);
 
   if(priors == 1){
@@ -115,10 +116,10 @@ Type objective_function<Type>::operator() ()
     pnll  -= dgamma(siga,Type(2.0),Type(1.0)/Type(3.0),true);
   }
   
-  nll+= -dnorm(alpha(0),alphao,siga,true);
+  renll+= -dnorm(alpha(0),alphao,siga,true);
   
   for(int i=1;i<timeSteps;i++){  
-    nll+= -dnorm(alpha(i),alpha(i-1),siga,true);
+    renll+= -dnorm(alpha(i),alpha(i-1),siga,true);
   }
 
   for(int i=0;i<timeSteps;i++){
@@ -139,7 +140,7 @@ Type objective_function<Type>::operator() ()
     }
   }
 
-  Type ans= nll + pnll;
+  Type ans= nll + renll + pnll;
 
   REPORT(alpha)
   REPORT(beta)

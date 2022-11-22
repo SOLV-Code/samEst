@@ -41,9 +41,6 @@ plot(harck$S,harck$R)
 p <- ricker_TMB(data=harck)
 
 
-
-
-
 pnp <- ricker_TMB(data=harck,prior=0)
 
 pb <- ricker_stan(data=harck,iter = 2000)
@@ -73,6 +70,7 @@ names(p)
 
 ptva<- ricker_rw_TMB(data=harck,tv.par="a")
 ptva[1:6]
+pac$tmb_obj$report()$nll
 
 pkfa<- ricker_kf_TMB(data=harck)
 pkfa[1:6]

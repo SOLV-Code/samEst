@@ -56,7 +56,7 @@ Type objective_function<Type>::operator() ()
 
   //priors - based on evaluation done with the prior predictive check
   //Type ans= Type(0);
-  Type nll= Type(0);
+  Type nll= Type(0.0);
   Type pnll = Type(0.0);
   
   //model
@@ -83,6 +83,7 @@ Type objective_function<Type>::operator() ()
       pred_logR(i) = pred_logRS(i) + log(obs_S(i));
       residuals(i) = obs_logRS(i) - pred_logRS(i);
       nll+=-dnorm(obs_logRS(i),pred_logRS(i),sigobs,true);
+      
     }
   
   }

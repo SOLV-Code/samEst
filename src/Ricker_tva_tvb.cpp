@@ -118,6 +118,7 @@ Type objective_function<Type>::operator() ()
   //Type ans= Type(0); 
   Type nll = Type(0.0);
   Type pnll = Type(0.0);
+  Type renll = Type(0.0);
 
   if(priors == 1){
     //prior on parameters
@@ -140,16 +141,16 @@ Type objective_function<Type>::operator() ()
     pnll -= dgamma(siga,Type(2.0),Type(1.0)/Type(3.0),true);
   }
    
-  nll+= -dnorm(alpha(0),alphao,siga,true);
-  nll+= -dnorm(logbeta(0),logbetao,sigb,true);
+  renll+= -dnorm(alpha(0),alphao,siga,true);
+  renll+= -dnorm(logbeta(0),logbetao,sigb,true);
 
   // Use the Hilborn approximations for Smsy and umsy  
 
   
   for(int i=1;i<timeSteps;i++){
   
-    nll+= -dnorm(alpha(i),alpha(i-1),siga,true);
-    nll+= -dnorm(logbeta(i),logbeta(i-1),sigb,true);
+    renll+= -dnorm(alpha(i),alpha(i-1),siga,true);
+    renll+= -dnorm(logbeta(i),logbeta(i-1),sigb,true);
   
   }
 
@@ -171,7 +172,7 @@ Type objective_function<Type>::operator() ()
       nll+=-dnorm(obs_logRS(i),pred_logRS(i),sigobs,true);
     }
   }
-  Type ans = nll + pnll;
+  Type ans = nll + renll + pnll;
 
   REPORT(pred_logRS)
   REPORT(alpha)
