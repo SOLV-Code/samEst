@@ -41,9 +41,9 @@
 #' data(harck)
 #' rickerstan(data=harck)
 #' 
-compile_code<-function(type=c('static','rw','hmm'), ac=FALSE, par=c('n','a','b','both'), caphigh=FALSE) {
+compile_code<-function(type=c('static','rw','hmm'), ac=FALSE, par=c('n','a','b','both')) {
  
-   sm <- sr_mod(type=type, ac=ac, par=par, caphigh=caphigh, loglik=FALSE, modelcode=TRUE)
+   sm <- sr_mod(type=type, ac=ac, par=par, lfo=FALSE, modelcode=TRUE)
   
    mod <- stan_model(model_name="stanmod",model_code=sm)
 
@@ -86,7 +86,7 @@ ricker_stan <- function(data,  AC=FALSE, control = stancontrol(), mod=NULL, warm
  
 
  if(is.null(mod)){
-   sm <- compile_code(type='static',ac=AC,par='n',caphigh=FALSE)
+   sm <- compile_code(type='static',ac=AC,par='n')
   }else{
    sm <-mod
   }
@@ -179,7 +179,7 @@ ricker_rw_stan <- function(data, par=c('a','b','both'),  control = stancontrol()
   #par='b'
 
   if(is.null(mod)){
-   sm <- compile_code(type='rw',ac=FALSE,par=par,caphigh=FALSE)
+   sm <- compile_code(type='rw',ac=FALSE,par=par)
   }else{
    sm <- mod
   }
@@ -259,7 +259,7 @@ ricker_hmm_stan <- function(data, par=c('a','b','both'), k_regime=2,
   #par='both'
   
   if(is.null(mod)){
-   sm <- compile_code(type='hmm',ac=FALSE,par=par,caphigh=FALSE)
+   sm <- compile_code(type='hmm',ac=FALSE,par=par)
   }else{
    sm <-mod
   }
