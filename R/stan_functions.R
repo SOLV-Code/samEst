@@ -759,7 +759,7 @@ S_msy[k] = (1-lambert_w0(exp(1-log_a[k])))/b;
 }
 "
   }
-if(loglik==TRUE){
+if(lfo==TRUE){
   m="functions {
 vector normalize(vector x) {
 return x / sum(x);
