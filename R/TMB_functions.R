@@ -273,11 +273,11 @@ ricker_rw_TMB <- function(data, tv.par=c('a','b','both'), silent = FALSE,
                         logsigobs = log(.5),
                         logsiga = log(.5),
                         logsigb = log(.2),
-                        alpha = rep(1,length(tmb_data$obs_S)),
                         logbeta=log(rep(ifelse(initlm$coefficients[[2]]>0,
                                                log(magS),
                                                -initlm$coefficients[[2]]),
-                                        length(data$S)))      
+                                        length(data$S))),
+                        alpha = rep(1,length(tmb_data$obs_S))      
      )
 
     }else{
