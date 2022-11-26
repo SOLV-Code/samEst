@@ -52,7 +52,7 @@ sr_mod<- function(type=c('static','rw','hmm'),ac=FALSE,par=c('n','a','b','both')
      real U_msy;
      real S_msy;
      
-     log_lik = normal_lpdf(R_S|log_a - S*b, sigma_e);
+     for(n in 1:N) log_lik[n] = normal_lpdf(R_S|log_a[n] - S[n]*b, sigma_e);
      
     S_max = 1/b;
     U_msy = 1-lambert_w0(exp(1-log_a));
@@ -748,7 +748,7 @@ zstar[N - t] = bpointer[N - t + 1, zstar[N - t + 1]];
 }
 
 
-for(n in 1:N)log_lik[n] = normal_lpdf(R_S[n]|log_a[zstar[n]] - S[n]*b, sigma_e);
+for(n in 1:N)log_lik[n] = normal_lpdf(R_S[n]|log_a[zstar[n]] - S[n]*b, sigma);
    
 S_max = 1/b;
 for(k in 1:K){
@@ -1048,7 +1048,7 @@ zstar[N - t] = bpointer[N - t + 1, zstar[N - t + 1]];
 }
 }
 
-for(n in 1:N)log_lik[n] = normal_lpdf(R_S[n]|log_a - S[n]*b[zstar[n]], sigma_e);
+for(n in 1:N)log_lik[n] = normal_lpdf(R_S[n]|log_a - S[n]*b[zstar[n]], sigma);
 
 U_msy= 1-lambert_w0(exp(1-log_a));
 
@@ -1355,7 +1355,7 @@ zstar[N - t] = bpointer[N - t + 1, zstar[N - t + 1]];
 }
 }
 
-for(n in 1:N) log_lik[n] = normal_lpdf(R_S[n]|log_a[zstar[n]] - S[n]*b[zstar[n]], sigma_e);
+for(n in 1:N) log_lik[n] = normal_lpdf(R_S[n]|log_a[zstar[n]] - S[n]*b[zstar[n]], sigma);
 
 for(k in 1:K){
 S_max[k] = 1/b[k];
