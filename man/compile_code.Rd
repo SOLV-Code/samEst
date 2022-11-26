@@ -7,8 +7,7 @@
 compile_code(
   type = c("static", "rw", "hmm"),
   ac = FALSE,
-  par = c("n", "a", "b", "both"),
-  caphigh = FALSE
+  par = c("n", "a", "b", "both")
 )
 }
 \arguments{

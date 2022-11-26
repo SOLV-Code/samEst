@@ -4,16 +4,20 @@
 \alias{model_weights}
 \title{model_weights function}
 \usage{
-model_weights(x)
+model_weights(x, form = c("PBMA", "AIC"), type = c("full", "d90", "d80"))
 }
 \arguments{
 \item{x}{a dataframe of pointwise out-of-sample loglikelihoods, where each row represents model likelihood predictions - these can be estimated with the stan_lfo_cv function}
+
+\item{form}{option for either pseudo-Bayesian model averaging weight (PBMA) or AIC/BIC weights (AIC)}
+
+\item{type}{option on what observations to include: full = entire out of sample years, d90 = excluding the 10\% of years with the lowest likelihood among all models, d80 = excluding the 20\% of years with the lowest likelihood among all models.}
 }
 \value{
 returns the relative weights for each of the included models
 }
 \description{
-This function implements estimates Pseudo Bayesian Model Averaging (Pseudo-BMA) weights based on Yao et al. 2018  (eq. 8, see http://www.stat.columbia.edu/~gelman/research/published/stacking_paper_discussion_rejoinder.pdf)
+This function implements estimates Pseudo Bayesian Model Averaging (Pseudo-BMA) weights based on Yao et al. 2018  (eq. 8, see http://www.stat.columbia.edu/~gelman/research/published/stacking_paper_discussion_rejoinder.pdf), or AIC/BIC weights.
 }
 \examples{
 model_weights(rbind(ll1,ll2))
