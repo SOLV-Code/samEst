@@ -8,8 +8,7 @@ sr_mod(
   type = c("static", "rw", "hmm"),
   ac = FALSE,
   par = c("n", "a", "b", "both"),
-  caphigh = FALSE,
-  loglik = FALSE,
+  lfo = FALSE,
   modelcode = FALSE
 )
 }
@@ -21,11 +20,11 @@ a time-varying 'tv' model, or a regime shift model 'regime'}
 
 \item{par}{For time-varying or regime S-R models, what parameter should vary? Either productivity (intercept, a), capacity (slope, b) or both parameters}
 
-\item{caphigh}{TRUE or FALSE statement to indicate whether you are specifying that high stock capacity or low capacity coincides with a high productivity regime. Only compatible with regime (hmm) model where both alpha and beta are varying (both).}
-
-\item{loglik}{TRUE or FALSE statement that dictates whether model is being used for out-of-sample log-likelihood estimation}
+\item{lfo}{TRUE or FALSE statement that dictates whether model is being used for out-of-sample log-likelihood estimation}
 
 \item{modelcode}{Logical indicating whether to output model_code or a stan_model object (FALSE, the default)}
+
+\item{caphigh}{TRUE or FALSE statement to indicate whether you are specifying that high stock capacity or low capacity coincides with a high productivity regime. Only compatible with regime (hmm) model where both alpha and beta are varying (both).}
 }
 \value{
 returns the compiled rstan code for a given S-R model
