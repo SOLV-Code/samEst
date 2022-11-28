@@ -52,7 +52,7 @@ sr_mod<- function(type=c('static','rw','hmm'),ac=FALSE,par=c('n','a','b','both')
      real U_msy;
      real S_msy;
      
-     for(n in 1:N) log_lik[n] = normal_lpdf(R_S|log_a[n] - S[n]*b, sigma_e);
+     for(n in 1:N) log_lik[n] = normal_lpdf(R_S[n]|log_a - S[n]*b, sigma_e);
      
     S_max = 1/b;
     U_msy = 1-lambert_w0(exp(1-log_a));
@@ -153,7 +153,7 @@ for(t in 2:N) R_S[t] ~ normal(mu[t], sigma_AR);
      real S_msy;
     
     log_lik[1] = normal_lpdf(R_S[1]|mu[1], sigma_e);
-    for(n in 1:N) log_lik[n] = normal_lpdf(R_S|mu[n], sigma_AR);
+    for(n in 1:N) log_lik[n] = normal_lpdf(R_S[n]|mu[n], sigma_AR);
      
     S_max = 1/b;
     U_msy = 1-lambert_w0(exp(1-log_a));
@@ -272,7 +272,7 @@ model{
      vector[L] U_msy;
      vector[L] S_msy;
      
-    for(n in 1:N) log_lik[n] = normal_lpdf(R_S[n]|log_a[n] - S[n]*b, sigma_e);
+    for(n in 1:N) log_lik[n] = normal_lpdf(R_S[n]|log_a[ii[n]] - S[n]*b, sigma_e);
    
     S_max = 1/b;
     U_msy = 1-lambert_w0(exp(1-log_a));
@@ -393,7 +393,7 @@ model{
      real U_msy;
      vector[L] S_msy;
      
-    for(n in 1:N)log_lik[n] = normal_lpdf(R_S[n]|log_a - S[n]*b[n], sigma_e);
+    for(n in 1:N)log_lik[n] = normal_lpdf(R_S[n]|log_a - S[n]*b[ii[n]], sigma_e);
    
      
     for(l in 1:L){ S_max[l] = 1/b[l];
@@ -525,7 +525,7 @@ model{
      vector[L] U_msy;
      vector[L] S_msy;
      
-   for(n in 1:N) log_lik[n] = normal_lpdf(R_S[n]|log_a[n] - S[n]*b[n], sigma_e);
+   for(n in 1:N) log_lik[n] = normal_lpdf(R_S[n]|log_a[ii[n]] - S[n]*b[ii[n]], sigma_e);
    
    for(l in 1:L){ S_max[l] = 1/b[l];
     U_msy[l] = 1-lambert_w0(exp(1-log_a[l]));

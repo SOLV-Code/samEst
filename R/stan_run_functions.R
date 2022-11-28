@@ -45,7 +45,7 @@ compile_code<-function(type=c('static','rw','hmm'), ac=FALSE, par=c('n','a','b',
  
    sm <- sr_mod(type=type, ac=ac, par=par, lfo=FALSE, modelcode=TRUE)
   
-   mod <- stan_model(model_name="stanmod",model_code=sm)
+   mod <- rstan::stan_model(model_name="stanmod",model_code=sm)
 
    return(mod)
 }
