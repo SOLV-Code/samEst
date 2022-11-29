@@ -432,19 +432,19 @@ ricker_hmm_TMB <- function(data,
   #===================================
   
   tmb_data<-list(yt=data$logRS,
-  st=data$S, 
-  alpha_u= alpha_limits[2],
-  alpha_l=alpha_limits[1],
-  beta_u=beta_upper,
-  sigma_u = sigma_upper,
-  alpha_dirichlet=rep(1,k_regime),
-  priors=priors  
+    st=data$S, 
+    alpha_u= alpha_limits[2],
+    alpha_l=alpha_limits[1],
+    beta_u=beta_upper,
+    sigma_u = sigma_upper,
+    alpha_dirichlet=rep(1,k_regime),
+    priors=priors  
   )
 
   if(is.null(ini_param)){
     magS <- 1/log10_ceiling(max(data$S))
     initlm<-lm(logRS~S, data=data)
-    bguess<-ifelse(initlm$coefficients[[2]]>0,(magS),initlm$coefficients[[2]])
+    bguess<-ifelse(initlm$coefficients[[2]]>0,(-magS),initlm$coefficients[[2]])
   }
 
   if(tv.par == "a"){
@@ -513,10 +513,9 @@ ricker_hmm_TMB <- function(data,
     stop(paste("tv.par",tv.par,"not recognized."))
   }  
 
-  
   tmb_opt <- stats::nlminb(
     start = tmb_obj$par, objective = tmb_obj$fn, gradient = tmb_obj$gr,
-    control = control)#,
+    control = control)
     
   sd_report <- TMB::sdreport(tmb_obj)
   conv <- get_convergence_diagnostics(sd_report)

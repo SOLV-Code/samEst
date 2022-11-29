@@ -50,9 +50,18 @@ tmb_mod_lfo_cv=function(data, model=c('static','staticAC','rw_a','rw_b','rw_both
       df_oos <- data[c(past, oos), , drop = FALSE]
       
       fit_past_tmb<- ricker_TMB(data=df_past)
+      fit_past_tmb <-tryCatch({ricker_TMB(data=df_past, AC=TRUE)},
+                                  error=function(cond){
+                                    message(cond)
+                                    return(list(conv_problem=1))}
+                                  )
       conv_problem[i-(L-1)] <- fit_past_tmb$conv_problem
-      rs_pred_1b=fit_past_tmb$alpha-fit_past_tmb$beta*df_oos$S[i + 1]
-      exact_elpds_1b[i+1] <- log(dnorm(df_oos$logRS[i+1],mean=rs_pred_1b,sd=fit_past_tmb$sig))
+      if(conv_problem[i-(L-1)]==0){
+        rs_pred_1b=fit_past_tmb$alpha-fit_past_tmb$beta*df_oos$S[i + 1]
+        exact_elpds_1b[i+1] <- log(dnorm(df_oos$logRS[i+1],mean=rs_pred_1b,sd=fit_past_tmb$sig))
+      }else{
+        exact_elpds_1b[i+1] <- NA
+      }
     }
     exact_elpds_1b=exact_elpds_1b[-(1:L)]
     return(list(lastparam=exact_elpds_1b,
@@ -66,10 +75,20 @@ tmb_mod_lfo_cv=function(data, model=c('static','staticAC','rw_a','rw_b','rw_both
       df_past <- data[past, , drop = FALSE]
       df_oos <- data[c(past, oos), , drop = FALSE]
       
-      fit_past_tmb<- ricker_TMB(data=df_past,AC=TRUE)
+      #fit_past_tmb<- ricker_TMB(data=df_past,AC=TRUE)
+      fit_past_tmb <- tryCatch({ricker_TMB(data=df_past, AC=TRUE)},
+                                  error=function(cond){
+                                    message(cond)
+                                    return(list(conv_problem=1))}
+                                  )
+
       conv_problem[i-(L-1)] <- fit_past_tmb$conv_problem
-      rs_pred_1b<-fit_past_tmb$alpha-fit_past_tmb$beta*df_oos$S[i + 1] + fit_past_tmb$residuals[i] * fit_past_tmb$rho
-      exact_elpds_1b[i+1] <- log(dnorm(df_oos$logRS[i+1],mean=rs_pred_1b,sd=fit_past_tmb$sigar))
+      if(conv_problem[i-(L-1)]==0){
+        rs_pred_1b<-fit_past_tmb$alpha-fit_past_tmb$beta*df_oos$S[i + 1] + fit_past_tmb$residuals[i] * fit_past_tmb$rho
+        exact_elpds_1b[i+1] <- log(dnorm(df_oos$logRS[i+1],mean=rs_pred_1b,sd=fit_past_tmb$sigar))
+      }else{
+        exact_elpds_1b[i+1] <- NA
+      }
     }
     exact_elpds_1b=exact_elpds_1b[-(1:L)]
     return(list(lastparam=exact_elpds_1b,
@@ -85,27 +104,36 @@ tmb_mod_lfo_cv=function(data, model=c('static','staticAC','rw_a','rw_b','rw_both
       df_past <- data[past, , drop = FALSE]
       df_oos <- data[c(past, oos), , drop = FALSE]
       
-      fit_past_tv_a_tmb<- ricker_rw_TMB(data=df_past,tv.par='a')
+      fit_past_tv_a_tmb <- tryCatch({ricker_rw_TMB(data=df_past,tv.par='a')},
+                                  error=function(cond){
+                                    message(cond)
+                                    return(list(conv_problem=1))}
+                                  )
       conv_problem[i-(L-1)] <- fit_past_tv_a_tmb$conv_problem
       
-      rs_pred_1b=fit_past_tv_a_tmb$alpha[i]-fit_past_tv_a_tmb$beta*df_oos$S[i + 1]
-      rs_pred_3b=mean(fit_past_tv_a_tmb$alpha[(i-2):i])-fit_past_tv_a_tmb$beta*df_oos$S[i + 1]
-      rs_pred_5b=mean(fit_past_tv_a_tmb$alpha[(i-4):i])-fit_past_tv_a_tmb$beta*df_oos$S[i + 1]
-      
-      if(siglfo=="obs"){
-        exact_elpds_1b[i+1] <- log(dnorm(df_oos$logRS[i+1],mean=rs_pred_1b,sd=fit_past_tv_a_tmb$sig))
-        exact_elpds_3b[i+1] <- log(dnorm(df_oos$logRS[i+1],mean=rs_pred_3b,sd=fit_past_tv_a_tmb$sig))
-        exact_elpds_5b[i+1] <- log(dnorm(df_oos$logRS[i+1],mean=rs_pred_5b,sd=fit_past_tv_a_tmb$sig))
-      }else if(siglfo=="total"){
+      if(conv_problem[i-(L-1)]==0){ 
+        rs_pred_1b=fit_past_tv_a_tmb$alpha[i]-fit_past_tv_a_tmb$beta*df_oos$S[i + 1]
+        rs_pred_3b=mean(fit_past_tv_a_tmb$alpha[(i-2):i])-fit_past_tv_a_tmb$beta*df_oos$S[i + 1]
+        rs_pred_5b=mean(fit_past_tv_a_tmb$alpha[(i-4):i])-fit_past_tv_a_tmb$beta*df_oos$S[i + 1]
         
-        sigtot <-sqrt(fit_past_tv_a_tmb$sig^2+fit_past_tv_a_tmb$siga^2)
-        exact_elpds_1b[i+1] <- log(dnorm(df_oos$logRS[i+1],mean=rs_pred_1b,sd=sigtot))
-        exact_elpds_3b[i+1] <- log(dnorm(df_oos$logRS[i+1],mean=rs_pred_3b,sd=sigtot))
-        exact_elpds_5b[i+1] <- log(dnorm(df_oos$logRS[i+1],mean=rs_pred_5b,sd=sigtot))
+        if(siglfo=="obs"){
+          exact_elpds_1b[i+1] <- log(dnorm(df_oos$logRS[i+1],mean=rs_pred_1b,sd=fit_past_tv_a_tmb$sig))
+          exact_elpds_3b[i+1] <- log(dnorm(df_oos$logRS[i+1],mean=rs_pred_3b,sd=fit_past_tv_a_tmb$sig))
+          exact_elpds_5b[i+1] <- log(dnorm(df_oos$logRS[i+1],mean=rs_pred_5b,sd=fit_past_tv_a_tmb$sig))
+        }else if(siglfo=="total"){
+          
+          sigtot <-sqrt(fit_past_tv_a_tmb$sig^2+fit_past_tv_a_tmb$siga^2)
+          exact_elpds_1b[i+1] <- log(dnorm(df_oos$logRS[i+1],mean=rs_pred_1b,sd=sigtot))
+          exact_elpds_3b[i+1] <- log(dnorm(df_oos$logRS[i+1],mean=rs_pred_3b,sd=sigtot))
+          exact_elpds_5b[i+1] <- log(dnorm(df_oos$logRS[i+1],mean=rs_pred_5b,sd=sigtot))
+        }else{
+          stop("siglfo incorrectly defined options are `total` or `obs`")
+        }
       }else{
-        stop("siglfo incorrectly defined options are `total` or `obs`")
+        exact_elpds_1b[i+1] <- NA
+        exact_elpds_3b[i+1] <- NA
+        exact_elpds_5b[i+1] <- NA
       }
-      
     }
     exact_elpds_1b=exact_elpds_1b[-(1:L)]
     exact_elpds_3b=exact_elpds_3b[-(1:L)]
@@ -125,25 +153,35 @@ tmb_mod_lfo_cv=function(data, model=c('static','staticAC','rw_a','rw_b','rw_both
       df_past <- data[past, , drop = FALSE]
       df_oos <- data[c(past, oos), , drop = FALSE]
       
-      fit_past_tv_b_tmb<- ricker_rw_TMB(data=df_past,tv.par='b')
+      fit_past_tv_b_tmb <- tryCatch({ricker_rw_TMB(data=df_past,tv.par='b')},
+                                  error=function(cond){
+                                    message(cond)
+                                    return(list(conv_problem=1))}
+                                  )
       conv_problem[i-(L-1)] <- fit_past_tv_b_tmb$conv_problem
       
-      rs_pred_1b=fit_past_tv_b_tmb$alpha-fit_past_tv_b_tmb$beta[i]*df_oos$S[i + 1]
-      rs_pred_3b=fit_past_tv_b_tmb$alpha-mean(fit_past_tv_b_tmb$beta[(i-2):i])*df_oos$S[i + 1]
-      rs_pred_5b=fit_past_tv_b_tmb$alpha-mean(fit_past_tv_b_tmb$beta[(i-4):i])*df_oos$S[i + 1]
-      
-      if(siglfo=="obs"){
-        exact_elpds_1b[i+1] <- log(dnorm(df_oos$logRS[i+1],mean=rs_pred_1b,sd=fit_past_tv_b_tmb$sig))
-        exact_elpds_3b[i+1] <- log(dnorm(df_oos$logRS[i+1],mean=rs_pred_3b,sd=fit_past_tv_b_tmb$sig))
-        exact_elpds_5b[i+1] <- log(dnorm(df_oos$logRS[i+1],mean=rs_pred_5b,sd=fit_past_tv_b_tmb$sig))
-      }else if(siglfo=="total"){
+      if(conv_problem[i-(L-1)]==0){ 
+        rs_pred_1b=fit_past_tv_b_tmb$alpha-fit_past_tv_b_tmb$beta[i]*df_oos$S[i + 1]
+        rs_pred_3b=fit_past_tv_b_tmb$alpha-mean(fit_past_tv_b_tmb$beta[(i-2):i])*df_oos$S[i + 1]
+        rs_pred_5b=fit_past_tv_b_tmb$alpha-mean(fit_past_tv_b_tmb$beta[(i-4):i])*df_oos$S[i + 1]
         
-        sigtot <-sqrt(fit_past_tv_b_tmb$sig^2+fit_past_tv_b_tmb$sigb^2)
-        exact_elpds_1b[i+1] <- log(dnorm(df_oos$logRS[i+1],mean=rs_pred_1b,sd=sigtot))
-        exact_elpds_3b[i+1] <- log(dnorm(df_oos$logRS[i+1],mean=rs_pred_3b,sd=sigtot))
-        exact_elpds_5b[i+1] <- log(dnorm(df_oos$logRS[i+1],mean=rs_pred_5b,sd=sigtot))
+        if(siglfo=="obs"){
+          exact_elpds_1b[i+1] <- log(dnorm(df_oos$logRS[i+1],mean=rs_pred_1b,sd=fit_past_tv_b_tmb$sig))
+          exact_elpds_3b[i+1] <- log(dnorm(df_oos$logRS[i+1],mean=rs_pred_3b,sd=fit_past_tv_b_tmb$sig))
+          exact_elpds_5b[i+1] <- log(dnorm(df_oos$logRS[i+1],mean=rs_pred_5b,sd=fit_past_tv_b_tmb$sig))
+        }else if(siglfo=="total"){
+          
+          sigtot <-sqrt(fit_past_tv_b_tmb$sig^2+fit_past_tv_b_tmb$sigb^2)
+          exact_elpds_1b[i+1] <- log(dnorm(df_oos$logRS[i+1],mean=rs_pred_1b,sd=sigtot))
+          exact_elpds_3b[i+1] <- log(dnorm(df_oos$logRS[i+1],mean=rs_pred_3b,sd=sigtot))
+          exact_elpds_5b[i+1] <- log(dnorm(df_oos$logRS[i+1],mean=rs_pred_5b,sd=sigtot))
+        }else{
+          stop("siglfo incorrectly defined options are `total` or `obs`")
+        }
       }else{
-        stop("siglfo incorrectly defined options are `total` or `obs`")
+        exact_elpds_1b[i+1] <- NA
+        exact_elpds_3b[i+1] <- NA
+        exact_elpds_5b[i+1] <- NA
       }
       
       
@@ -166,16 +204,27 @@ tmb_mod_lfo_cv=function(data, model=c('static','staticAC','rw_a','rw_b','rw_both
       df_past <- data[past, , drop = FALSE]
       df_oos <- data[c(past, oos), , drop = FALSE]
       
-      fit_past_tv_ab_tmb<- ricker_rw_TMB(data=df_past,tv.par='both')
+     
+      fit_past_tv_ab_tmb <- tryCatch({ricker_rw_TMB(data=df_past,tv.par='both')},
+                                  error=function(cond){
+                                    message(cond)
+                                    return(list(conv_problem=1))}
+                                  )
       conv_problem[i-(L-1)] <- fit_past_tv_ab_tmb$conv_problem
-      
-      rs_pred_1b=fit_past_tv_ab_tmb$alpha[i]-fit_past_tv_ab_tmb$beta[i]*df_oos$S[i + 1]
-      rs_pred_3b=mean(fit_past_tv_ab_tmb$alpha[(i-2):i])-mean(fit_past_tv_ab_tmb$beta[(i-2):i])*df_oos$S[i + 1]
-      rs_pred_5b=mean(fit_past_tv_ab_tmb$alpha[(i-4):i])-mean(fit_past_tv_ab_tmb$beta[(i-4):i])*df_oos$S[i + 1]
-      
-      exact_elpds_1b[i+1] <- log(dnorm(df_oos$logRS[i],mean=rs_pred_1b,sd=exp(fit_past_tv_ab_tmb$sig)))
-      exact_elpds_3b[i+1] <- log(dnorm(df_oos$logRS[i],mean=rs_pred_3b,sd=exp(fit_past_tv_ab_tmb$sig)))
-      exact_elpds_5b[i+1] <- log(dnorm(df_oos$logRS[i],mean=rs_pred_5b,sd=exp(fit_past_tv_ab_tmb$sig)))
+    
+      if(conv_problem[i-(L-1)]==0){ 
+        rs_pred_1b=fit_past_tv_ab_tmb$alpha[i]-fit_past_tv_ab_tmb$beta[i]*df_oos$S[i + 1]
+        rs_pred_3b=mean(fit_past_tv_ab_tmb$alpha[(i-2):i])-mean(fit_past_tv_ab_tmb$beta[(i-2):i])*df_oos$S[i + 1]
+        rs_pred_5b=mean(fit_past_tv_ab_tmb$alpha[(i-4):i])-mean(fit_past_tv_ab_tmb$beta[(i-4):i])*df_oos$S[i + 1]
+        
+        exact_elpds_1b[i+1] <- log(dnorm(df_oos$logRS[i],mean=rs_pred_1b,sd=exp(fit_past_tv_ab_tmb$sig)))
+        exact_elpds_3b[i+1] <- log(dnorm(df_oos$logRS[i],mean=rs_pred_3b,sd=exp(fit_past_tv_ab_tmb$sig)))
+        exact_elpds_5b[i+1] <- log(dnorm(df_oos$logRS[i],mean=rs_pred_5b,sd=exp(fit_past_tv_ab_tmb$sig)))
+      }else{
+        exact_elpds_1b[i+1] <- NA
+        exact_elpds_3b[i+1] <- NA
+        exact_elpds_5b[i+1] <- NA
+      }
     }
     exact_elpds_1b=exact_elpds_1b[-(1:L)]
     exact_elpds_3b=exact_elpds_3b[-(1:L)]
@@ -197,22 +246,32 @@ tmb_mod_lfo_cv=function(data, model=c('static','staticAC','rw_a','rw_b','rw_both
       df_past <- data[past, , drop = FALSE]
       df_oos <- data[c(past, oos), , drop = FALSE]
       
-      fit_past_hmm_tmb<- ricker_hmm_TMB(data=df_past,tv.par='both')
+      
+      fit_past_hmm_tmb <- tryCatch({ricker_hmm_TMB(data=df_past,tv.par='both')},
+                                  error=function(cond){
+                                    message(cond)
+                                    return(list(conv_problem=1))}
+                                  )
       conv_problem[i-(L-1)] <- fit_past_hmm_tmb$conv_problem
       
-      alpha <- fit_past_hmm_tmb$alpha[fit_past_hmm_tmb$regime]
-      beta <- fit_past_hmm_tmb$beta[fit_past_hmm_tmb$regime]
-      sigma <- fit_past_hmm_tmb$sigma
-      #sigmaw <- sqrt((fit_past_hmm_tmb$sigma^2)%*%fit_past_hmm_tmb$probregime)
+      if(conv_problem[i-(L-1)]==0){
+        alpha <- fit_past_hmm_tmb$alpha[fit_past_hmm_tmb$regime]
+        beta <- fit_past_hmm_tmb$beta[fit_past_hmm_tmb$regime]
+        sigma <- fit_past_hmm_tmb$sigma
       
-      rs_pred_1k=alpha[i]-beta[i]*df_oos$S[i + 1]
-      rs_pred_3k=mean(alpha[(i-2):i])-mean(beta[(i-2):i])*df_oos$S[i + 1]
-      rs_pred_5k=mean(alpha[(i-4):i])-mean(beta[(i-4):i])*df_oos$S[i + 1]
+        rs_pred_1k=alpha[i]-beta[i]*df_oos$S[i + 1]
+        rs_pred_3k=mean(alpha[(i-2):i])-mean(beta[(i-2):i])*df_oos$S[i + 1]
+        rs_pred_5k=mean(alpha[(i-4):i])-mean(beta[(i-4):i])*df_oos$S[i + 1]
       
       
-      exact_elpds_1k[i+1] <- log(dnorm(df_oos$logRS[i+1],mean=rs_pred_1k,sd=sigma))
-      exact_elpds_3k[i+1] <- log(dnorm(df_oos$logRS[i+1],mean=rs_pred_3k,sd=sigma))
-      exact_elpds_5k[i+1] <- log(dnorm(df_oos$logRS[i+1],mean=rs_pred_5k,sd=sigma))
+        exact_elpds_1k[i+1] <- log(dnorm(df_oos$logRS[i+1],mean=rs_pred_1k,sd=sigma))
+        exact_elpds_3k[i+1] <- log(dnorm(df_oos$logRS[i+1],mean=rs_pred_3k,sd=sigma))
+        exact_elpds_5k[i+1] <- log(dnorm(df_oos$logRS[i+1],mean=rs_pred_5k,sd=sigma))
+      }else{
+        exact_elpds_1k[i+1] <- NA
+        exact_elpds_3k[i+1] <- NA
+        exact_elpds_5k[i+1] <- NA
+      }
     }
     exact_elpds_1k=exact_elpds_1k[-(1:L)]
     exact_elpds_3k=exact_elpds_3k[-(1:L)]
@@ -235,21 +294,31 @@ tmb_mod_lfo_cv=function(data, model=c('static','staticAC','rw_a','rw_b','rw_both
       df_past <- data[past, , drop = FALSE]
       df_oos <- data[c(past, oos), , drop = FALSE]
       
-      fit_past_hmm_tmb<- ricker_hmm_TMB(data=df_past,tv.par='a')
+      fit_past_hmm_tmb<- tryCatch({ricker_hmm_TMB(data=df_past,tv.par='a')},
+                                  error=function(cond){
+                                    message(cond)
+                                    return(list(conv_problem=1))}
+                                  )
       conv_problem[i-(L-1)] <- fit_past_hmm_tmb$conv_problem
       
-      alpha <- fit_past_hmm_tmb$alpha[fit_past_hmm_tmb$regime]
-      beta <- fit_past_hmm_tmb$beta
-      sigma <- fit_past_hmm_tmb$sigma
-      #sigmaw <- sqrt((fit_past_hmm_tmb$sigma^2)%*%fit_past_hmm_tmb$probregime)
+      if(conv_problem[i-(L-1)]==0){
+        alpha <- fit_past_hmm_tmb$alpha[fit_past_hmm_tmb$regime]
+        beta <- fit_past_hmm_tmb$beta
+        sigma <- fit_past_hmm_tmb$sigma
       
-      rs_pred_1k=alpha[i]-beta*df_oos$S[i + 1]
-      rs_pred_3k=mean(alpha[(i-2):i])-mean(beta)*df_oos$S[i + 1]
-      rs_pred_5k=mean(alpha[(i-4):i])-mean(beta)*df_oos$S[i + 1]
+        rs_pred_1k=alpha[i]-beta*df_oos$S[i + 1]
+        rs_pred_3k=mean(alpha[(i-2):i])-mean(beta)*df_oos$S[i + 1]
+        rs_pred_5k=mean(alpha[(i-4):i])-mean(beta)*df_oos$S[i + 1]
       
-      exact_elpds_1k[i+1] <- log(dnorm(df_oos$logRS[i+1],mean=rs_pred_1k,sd=sigma))
-      exact_elpds_3k[i+1] <- log(dnorm(df_oos$logRS[i+1],mean=rs_pred_3k,sd=sigma))
-      exact_elpds_5k[i+1] <- log(dnorm(df_oos$logRS[i+1],mean=rs_pred_5k,sd=sigma))
+        exact_elpds_1k[i+1] <- log(dnorm(df_oos$logRS[i+1],mean=rs_pred_1k,sd=sigma))
+        exact_elpds_3k[i+1] <- log(dnorm(df_oos$logRS[i+1],mean=rs_pred_3k,sd=sigma))
+        exact_elpds_5k[i+1] <- log(dnorm(df_oos$logRS[i+1],mean=rs_pred_5k,sd=sigma))
+      }else{
+        exact_elpds_1k[i+1] <- NA
+        exact_elpds_3k[i+1] <- NA
+        exact_elpds_5k[i+1] <- NA
+      }
+      
     }
     exact_elpds_1k=exact_elpds_1k[-(1:L)]
     exact_elpds_3k=exact_elpds_3k[-(1:L)]
@@ -272,21 +341,31 @@ tmb_mod_lfo_cv=function(data, model=c('static','staticAC','rw_a','rw_b','rw_both
       df_past <- data[past, , drop = FALSE]
       df_oos <- data[c(past, oos), , drop = FALSE]
       
-      fit_past_hmm_tmb<- ricker_hmm_TMB(data=df_past,tv.par='b')
+      fit_past_hmm_tmb <- tryCatch({ricker_hmm_TMB(data=df_past,tv.par='b')},
+                                  error=function(cond){
+                                    message(cond)
+                                    return(list(conv_problem=1))}
+                                  )
+
       fit_past_hmm_tmb$conv_problem
       
-      alpha <- fit_past_hmm_tmb$alpha
-      beta <- fit_past_hmm_tmb$beta[fit_past_hmm_tmb$regime]
-      sigma <- fit_past_hmm_tmb$sigma
-      #sigmaw <- sqrt((fit_past_hmm_tmb$sigma^2)%*%fit_past_hmm_tmb$probregime)
+      if(conv_problem[i-(L-1)]==0){
+        alpha <- fit_past_hmm_tmb$alpha
+        beta <- fit_past_hmm_tmb$beta[fit_past_hmm_tmb$regime]
+        sigma <- fit_past_hmm_tmb$sigma
       
-      rs_pred_1k<-alpha-beta[i]*df_oos$S[i + 1]
-      rs_pred_3k=mean(alpha)-mean(beta[(i-2):i])*df_oos$S[i + 1]
-      rs_pred_5k=mean(alpha)-mean(beta[(i-4):i])*df_oos$S[i + 1]
-      
-      exact_elpds_1k[i+1] <- log(dnorm(df_oos$logRS[i+1],mean=rs_pred_1k,sd=sigma))
-      exact_elpds_3k[i+1] <- log(dnorm(df_oos$logRS[i+1],mean=rs_pred_3k,sd=sigma))
-      exact_elpds_5k[i+1] <- log(dnorm(df_oos$logRS[i+1],mean=rs_pred_5k,sd=sigma))
+        rs_pred_1k<-alpha-beta[i]*df_oos$S[i + 1]
+        rs_pred_3k=mean(alpha)-mean(beta[(i-2):i])*df_oos$S[i + 1]
+        rs_pred_5k=mean(alpha)-mean(beta[(i-4):i])*df_oos$S[i + 1]
+        
+        exact_elpds_1k[i+1] <- log(dnorm(df_oos$logRS[i+1],mean=rs_pred_1k,sd=sigma))
+        exact_elpds_3k[i+1] <- log(dnorm(df_oos$logRS[i+1],mean=rs_pred_3k,sd=sigma))
+        exact_elpds_5k[i+1] <- log(dnorm(df_oos$logRS[i+1],mean=rs_pred_5k,sd=sigma))
+      }else{
+        exact_elpds_1k[i+1] <- NA
+        exact_elpds_3k[i+1] <- NA
+        exact_elpds_5k[i+1] <- NA
+      }
     }
     exact_elpds_1k=exact_elpds_1k[-(1:L)]
     exact_elpds_3k=exact_elpds_3k[-(1:L)]
