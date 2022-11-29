@@ -14,7 +14,7 @@ sr_mod(
 }
 \arguments{
 \item{type}{Specify whether to generate a 'static' S-R model, where parameters are time-invariant,
-a time-varying 'tv' model, or a regime shift model 'regime'}
+a time-varying 'rw' model, or a regime shift hidden Markov model 'hmm'}
 
 \item{ac}{TRUE or FALSE statement to include autocorrelated residuals. Only compatible with static model}
 
@@ -23,8 +23,6 @@ a time-varying 'tv' model, or a regime shift model 'regime'}
 \item{lfo}{TRUE or FALSE statement that dictates whether model is being used for out-of-sample log-likelihood estimation}
 
 \item{modelcode}{Logical indicating whether to output model_code or a stan_model object (FALSE, the default)}
-
-\item{caphigh}{TRUE or FALSE statement to indicate whether you are specifying that high stock capacity or low capacity coincides with a high productivity regime. Only compatible with regime (hmm) model where both alpha and beta are varying (both).}
 }
 \value{
 returns the compiled rstan code for a given S-R model
@@ -33,5 +31,5 @@ returns the compiled rstan code for a given S-R model
 This function generates a stock-recruitment (S-R) model for rstan based on user inputs.
 }
 \examples{
-m2=sr_mod(type='static',ac = TRUE,par='n',loglik=T)
+m2=sr_mod(type='static',ac = TRUE,par='n',lfo=T)
 }
