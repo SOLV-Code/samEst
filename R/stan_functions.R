@@ -2,17 +2,16 @@
 #'
 #' This function generates a stock-recruitment (S-R) model for rstan based on user inputs.
 #' @param type Specify whether to generate a 'static' S-R model, where parameters are time-invariant, 
-#' a time-varying 'tv' model, or a regime shift model 'regime'
+#' a time-varying 'rw' model, or a regime shift hidden Markov model 'hmm'
 #' @param ac TRUE or FALSE statement to include autocorrelated residuals. Only compatible with static model
 #' @param par For time-varying or regime S-R models, what parameter should vary? Either productivity (intercept, a), capacity (slope, b) or both parameters
-#' @param caphigh TRUE or FALSE statement to indicate whether you are specifying that high stock capacity or low capacity coincides with a high productivity regime. Only compatible with regime (hmm) model where both alpha and beta are varying (both). 
 #' @param lfo TRUE or FALSE statement that dictates whether model is being used for out-of-sample log-likelihood estimation
 #' @param modelcode Logical indicating whether to output model_code or a stan_model object (FALSE, the default)  
 #' @return returns the compiled rstan code for a given S-R model
 #' @importFrom rstan stan_model
 #' @export
 #' @examples
-#' m2=sr_mod(type='static',ac = TRUE,par='n',loglik=T)
+#' m2=sr_mod(type='static',ac = TRUE,par='n',lfo=T)
 sr_mod<- function(type=c('static','rw','hmm'),ac=FALSE,par=c('n','a','b','both'),lfo=FALSE, modelcode=FALSE){
   
   #M1: Static S-R####
