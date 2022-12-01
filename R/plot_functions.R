@@ -28,6 +28,7 @@ sr_plot=function(df,mod,title,make.pdf=FALSE,path,type=c('static','rw','hmm'),pa
       geom_line(data=pred_df,aes(x=x_new,y=pred),linewidth=1.3)+
       geom_point(aes(colour = by),size=2.5) +
       scale_colour_viridis_c(name='Year')+
+      ggtitle(title)+
       xlab("Spawners") + 
       ylab("Recruits")+
       theme(panel.background = element_blank(),strip.background = element_rect(colour=NA, fill=NA),panel.border = element_rect(fill = NA, color = "black"),
