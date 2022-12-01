@@ -17,7 +17,7 @@
 #'  See details for priors documentation
 #' 
 #' @details Priors: Weakly informative priors are included for the main parameterst of the model:
-#' alpha ~ N(0,2.5)
+#' alpha ~ gamma(3,1)
 #' logbeta ~ N(-12,3)
 #' sigobs ~ gamma(2,1/3) 
 #' 
@@ -151,7 +151,7 @@ ricker_TMB <- function(data,  silent = FALSE, control = TMBcontrol(),
 #'  See details for priors documentation
 #' 
 #' @details Priors: Weakly informative priors are included for the main parameterst of the model:
-#' alpha ~ N(0,2.5)
+#' alpha ~ gamma(3,1)
 #' logbeta ~ N(-12,3)
 #' sigobs ~ gamma(2,1/3)
 #' siga ~ gamma(2,1/3) 
@@ -257,7 +257,7 @@ ricker_rw_TMB <- function(data, tv.par=c('a','b','both'), silent = FALSE,
       DLL = "Ricker_tvlogb", 
       silent = silent)
 
-    lowlimit <- c(-20,0.1,log(0.01),log(0.01))
+    lowlimit <- c(-20,0.0,log(0.01),log(0.01))
     hightlimit <- c(-4,20,log(2),log(2))
 
     clss <- "Ricker_tvlogb"
@@ -292,7 +292,7 @@ ricker_rw_TMB <- function(data, tv.par=c('a','b','both'), silent = FALSE,
       DLL = "Ricker_tva_tvb", 
       silent = silent)
   
-    lowlimit <- c(-20,0.1,log(0.01),log(0.01),log(0.01))
+    lowlimit <- c(-20,0.0,log(0.0),log(0.01),log(0.01))
     hightlimit <- c(-4,20,log(2),log(2),log(2))
     
     clss <- "Ricker_tva_tvb"
@@ -381,7 +381,7 @@ ricker_rw_TMB <- function(data, tv.par=c('a','b','both'), silent = FALSE,
 #' The code for this model was a contribution by Xiaozhuo Tang. 
 #' 
 #' Priors: Weakly informative priors are included for the main parameterst of the model:
-#' alpha ~ N(0,2.5)
+#' alpha ~ gamma(3,1)
 #' logbeta ~ N(-12,3)
 #' sigobs ~ gamma(2,1/3)
 #' qi ~ gamma(2,1/3) 
