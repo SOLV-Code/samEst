@@ -241,7 +241,7 @@ parameters{
 }
 transformed parameters{
   real b;
-  vector[L] log_a; //a in each year (on log scale)
+  vector<lower=0>[L] log_a; //a in each year (on log scale)
   
   b=exp(log_b);
   
@@ -364,7 +364,7 @@ parameters {
 }
 
 transformed parameters{
-  vector[L] log_b; //b in each year
+  vector<upper = 0>[L] log_b; //b in each year
   vector[L] b; //b in each year
   
   log_b[1] = b0;
@@ -392,7 +392,7 @@ model{
      real U_msy;
      vector[L] S_msy;
      
-    for(n in 1:N)log_lik[n] = normal_lpdf(R_S[n]|log_a - S[n]*b[ii[n]], sigma_e);
+    for(n in 1:N) log_lik[n] = normal_lpdf(R_S[n]|log_a - b[ii[n]]*S[n], sigma_e);
    
      
     for(l in 1:L){ S_max[l] = 1/b[l];
@@ -490,8 +490,8 @@ parameters {
 }
 
 transformed parameters{
-  vector[L] log_a; //a in each year (log scale)
-  vector[L] log_b; //b in each year (log scale)
+  vector<lower=0>[L] log_a; //a in each year (log scale)
+  vector<upper = 0>[L] log_b; //b in each year (log scale)
   vector[L] b; //b in each year
   
   log_a[1] = log_a0;
@@ -558,8 +558,8 @@ parameters {
 }
 
 transformed parameters{
-  vector[L] log_a; //a in each year (log scale)
-  vector[L] log_b; //b in each year (log scale)
+  vector<lower = 0>[L] log_a; //a in each year (log scale)
+  vector<upper = 0>[L] log_b; //b in each year (log scale)
   vector[L] b; //b in each year
   
   log_a[1] = log_a0;
