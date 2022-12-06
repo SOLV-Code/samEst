@@ -78,7 +78,7 @@ This model was published in Tang et al. 2021 Identification of recruitment regim
 The code for this model was a contribution by Xiaozhuo Tang.
 
 Priors: Weakly informative priors are included for the main parameterst of the model:
-alpha ~ N(0,2.5)
+alpha ~ gamma(3,1)
 logbeta ~ N(-12,3)
 sigobs ~ gamma(2,1/3)
 qi ~ gamma(2,1/3)

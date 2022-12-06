@@ -49,7 +49,7 @@ tmb_mod_lfo_cv=function(data, model=c('static','staticAC','rw_a','rw_b','rw_both
       df_past <- data[past, , drop = FALSE]
       df_oos <- data[c(past, oos), , drop = FALSE]
       
-      fit_past_tmb<- ricker_TMB(data=df_past)
+      
       fit_past_tmb <-tryCatch({ricker_TMB(data=df_past, AC=TRUE)},
                                   error=function(cond){
                                     message(cond)

@@ -59,7 +59,7 @@ Ricker model with random walk in alpha parameter with TMB
 }
 \details{
 Priors: Weakly informative priors are included for the main parameterst of the model:
-alpha ~ N(0,2.5)
+alpha ~ gamma(3,1)
 logbeta ~ N(-12,3)
 sigobs ~ gamma(2,1/3)
 siga ~ gamma(2,1/3)
