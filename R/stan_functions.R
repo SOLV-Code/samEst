@@ -241,7 +241,7 @@ parameters{
 }
 transformed parameters{
   real b;
-  vector<lower=0>[L] log_a; //a in each year (on log scale)
+  vector[L] log_a; //a in each year (on log scale)
   
   b=exp(log_b);
   
@@ -364,7 +364,7 @@ parameters {
 }
 
 transformed parameters{
-  vector<upper = 0>[L] log_b; //b in each year
+  vector[L] log_b; //b in each year
   vector[L] b; //b in each year
   
   log_b[1] = b0;
@@ -490,8 +490,8 @@ parameters {
 }
 
 transformed parameters{
-  vector<lower=0>[L] log_a; //a in each year (log scale)
-  vector<upper = 0>[L] log_b; //b in each year (log scale)
+  vector[L] log_a; //a in each year (log scale)
+  vector[L] log_b; //b in each year (log scale)
   vector[L] b; //b in each year
   
   log_a[1] = log_a0;

@@ -13,16 +13,16 @@
 #' @examples
 #' sr_plot(type='static',df=df,form='stan',df=df,mod=f1,pdf=FALSE)
 
-sr_plot=function(df,mod,title,make.pdf=FALSE,path,type=c('static','rw','hmm'),par=c('a','b','both'),form=c('stan','tmb')){
+sr_plot=function(df,mod,title,make.pdf=FALSE,path,type=c('static','rw','hmm'),par=c('a','b','both'),form=c('stan','tmb'),sr_only=FALSE){
   if(type=='static'){ #static====
     x_new=seq(min(df$S),max(df$S),length.out=200)
 
     if(form=='stan'){
       post=rstan::extract(mod)
-      pred_df=data.frame(pred=exp(median(post$log_a)-median(post$b)*x_new)*x_new)
+      pred_df=data.frame(pred=exp(median(post$log_a)-median(post$b)*x_new)*x_new,x_new=x_new)
       }
     if(form=='tmb'){
-      pred_df=data.frame(pred=exp(mod$alpha-mod$beta*x_new)*x_new)
+      pred_df=data.frame(pred=exp(mod$alpha-mod$beta*x_new)*x_new,x_new=x_new)
     }
     plot=ggplot2::ggplot(df, aes(S, R)) +
       geom_line(data=pred_df,aes(x=x_new,y=pred),linewidth=1.3)+
@@ -31,6 +31,8 @@ sr_plot=function(df,mod,title,make.pdf=FALSE,path,type=c('static','rw','hmm'),pa
       ggtitle(title)+
       xlab("Spawners") + 
       ylab("Recruits")+
+      xlim(0, max(df$S))+
+      ylim(0, max(df$R))+
       theme(panel.background = element_blank(),strip.background = element_rect(colour=NA, fill=NA),panel.border = element_rect(fill = NA, color = "black"),
             strip.text = element_text(face="bold", size=12),
             axis.text=element_text(face="bold"),axis.title = element_text(face="bold"),plot.title = element_text(face = "bold", hjust = 0.5,size=15))
@@ -107,6 +109,8 @@ sr_plot=function(df,mod,title,make.pdf=FALSE,path,type=c('static','rw','hmm'),pa
           ggtitle(title)+
           xlab("Spawners") + 
           ylab("Recruits")+
+          xlim(0, max(df$S))+
+          ylim(0, max(df$R))+
           theme_classic(14)+
           theme(panel.background = element_blank(),strip.background = element_rect(colour=NA, fill=NA),panel.border = element_rect(fill = NA, color = "black"),
                 strip.text = element_text(face="bold", size=12),
@@ -119,6 +123,7 @@ sr_plot=function(df,mod,title,make.pdf=FALSE,path,type=c('static','rw','hmm'),pa
                       plot2 + theme(legend.position="none"),
                        ncol=2,nrow=1,labels=c("A","B"))
         plot=cowplot::plot_grid(plot_rw_a,legend,rel_widths = c(3,.25))
+        if(sr_only==TRUE){plot=plot1}
       }
       if(par=='b'){ ###rw beta=====
           if(form=='stan'){
@@ -162,7 +167,7 @@ sr_plot=function(df,mod,title,make.pdf=FALSE,path,type=c('static','rw','hmm'),pa
               theme_classic(14)+
               theme(panel.background = element_blank(),strip.background = element_rect(colour=NA, fill=NA),panel.border = element_rect(fill = NA, color = "black"),
                     strip.text = element_text(face="bold", size=12),
-                    axis.text=element_text(face="bold"),axis.title = element_text(face="bold"),plot.title = element_text(face = "bold", hjust = 0.5,size=15))
+                    axis.text=element_text(face="bold",size=14),axis.title = element_text(face="bold",size=14),plot.title = element_text(face = "bold", hjust = 0.5,size=15))
             
             
           }
@@ -191,11 +196,13 @@ sr_plot=function(df,mod,title,make.pdf=FALSE,path,type=c('static','rw','hmm'),pa
           ggtitle(title)+
           xlab("Spawners") + 
           ylab("Recruits")+
+          xlim(0, max(df$S))+
+          ylim(0, max(df$R))+
           theme_classic(14)+
           theme(panel.background = element_blank(),strip.background = element_rect(colour=NA, fill=NA),panel.border = element_rect(fill = NA, color = "black"),
                 strip.text = element_text(face="bold", size=12),
-                axis.text=element_text(face="bold"),axis.title = element_text(face="bold"),plot.title = element_text(face = "bold", hjust = 0.5,size=15))
-        
+                axis.text=element_text(face="bold",size=14),axis.title = element_text(face="bold",size=14),plot.title = element_text(face = "bold", hjust = 0.5,size=15))
+
         
         legend = cowplot::get_legend(plot1)
         
@@ -203,10 +210,12 @@ sr_plot=function(df,mod,title,make.pdf=FALSE,path,type=c('static','rw','hmm'),pa
                                      plot2 + theme(legend.position="none"),
                                      ncol=2,nrow=1,labels=c("A","B"))
         plot=cowplot::plot_grid(plot_rw_b,legend,rel_widths = c(3,.25))
+        if(sr_only==TRUE){plot=plot1}
       }
       if(par=='both'){ #rw alpha beta=====
         if(form=='stan'){
           post=rstan::extract(mod)
+          pred_df=data.frame(x_new)
           for(n in 1:length(by_q)){
             pred_df[,1+n]=exp(median(post$log_a[,match(by_q[n],df$by)])-median(post$b[,match(by_q[n],df$by)])*x_new)*x_new
           }
@@ -297,6 +306,8 @@ sr_plot=function(df,mod,title,make.pdf=FALSE,path,type=c('static','rw','hmm'),pa
           ggtitle(title)+
           xlab("Spawners") + 
           ylab("Recruits")+
+          xlim(0, max(df$S))+
+          ylim(0, max(df$R))+
           theme_classic(14)+
           theme(panel.background = element_blank(),strip.background = element_rect(colour=NA, fill=NA),panel.border = element_rect(fill = NA, color = "black"),
                 strip.text = element_text(face="bold", size=12),
@@ -310,6 +321,7 @@ sr_plot=function(df,mod,title,make.pdf=FALSE,path,type=c('static','rw','hmm'),pa
                                      plot3 + theme(legend.position="none"),
                                      legend,
                                      ncol=2,nrow=2,labels=c("A","B","C"))
+        if(sr_only==TRUE){plot=plot1}
         
       }
       
@@ -366,14 +378,16 @@ sr_plot=function(df,mod,title,make.pdf=FALSE,path,type=c('static','rw','hmm'),pa
           }
           
           plot1=ggplot2::ggplot(df, aes(S, R)) +
-            geom_line(data=pred_df,aes(x=x_new,y=pred_df[,2]),linewidth=1.3)+
-            geom_line(data=pred_df,aes(x=x_new,y=pred_df[,3]),linewidth=1.3)+
+            geom_line(data=pred_df,aes(x=x_new,y=pred_df[,2],colour = min(gamma_df$gamma)),linewidth=1.3)+
+            geom_line(data=pred_df,aes(x=x_new,y=pred_df[,3],colour = max(gamma_df$gamma)),linewidth=1.3)+
             geom_point(aes(colour = gamma_df$gamma),size=2.5) +
             scale_colour_viridis_c(name='p')+
             ggtitle(title)+
             xlab("Spawners") + 
             ylab("Recruits")+
             theme_classic(14)+
+            xlim(0, max(df$S))+
+            ylim(0, max(df$R))+
             theme(panel.background = element_blank(),strip.background = element_rect(colour=NA, fill=NA),panel.border = element_rect(fill = NA, color = "black"),
                   strip.text = element_text(face="bold", size=12),
                   axis.text=element_text(face="bold"),axis.title = element_text(face="bold"),plot.title = element_text(face = "bold", hjust = 0.5,size=15))
@@ -386,12 +400,13 @@ sr_plot=function(df,mod,title,make.pdf=FALSE,path,type=c('static','rw','hmm'),pa
                                        plot2 + theme(legend.position="none"),
                                        ncol=2,nrow=1,labels=c("A","B"))
           plot=cowplot::plot_grid(plot_hmm_a,legend,rel_widths = c(3,.3))
-          
+          if(sr_only==TRUE){plot=plot1}
         }
         
         if(par=='b'){ #hmm beta====
           
           if(form=='stan'){
+          post=rstan::extract(mod)
           pred_df[,2]=exp(median(post$log_a)-median(post$b[,1])*x_new)*x_new
           pred_df[,3]=exp(median(post$log_a)-median(post$b[,2])*x_new)*x_new
           df$gamma=apply(post$gamma[,,2],2,median)
@@ -434,13 +449,15 @@ sr_plot=function(df,mod,title,make.pdf=FALSE,path,type=c('static','rw','hmm'),pa
           }
           
           plot1=ggplot2::ggplot(df, aes(S, R)) +
-            geom_line(data=pred_df,aes(x=x_new,y=pred_df[,2]),linewidth=1.3)+
-            geom_line(data=pred_df,aes(x=x_new,y=pred_df[,3]),linewidth=1.3)+
+            geom_line(data=pred_df,aes(x=x_new,y=pred_df[,2],colour = max(gamma_df$gamma)),linewidth=1.3)+
+            geom_line(data=pred_df,aes(x=x_new,y=pred_df[,3],colour = min(gamma_df$gamma)),linewidth=1.3)+
             geom_point(aes(colour = gamma_df$gamma),size=2.5) +
             scale_colour_viridis_c(name='p')+
             ggtitle(title)+
             xlab("Spawners") + 
             ylab("Recruits")+
+            xlim(0, max(df$S))+
+            ylim(0, max(df$R))+
             theme_classic(14)+
             theme(panel.background = element_blank(),strip.background = element_rect(colour=NA, fill=NA),panel.border = element_rect(fill = NA, color = "black"),
                   strip.text = element_text(face="bold", size=12),
@@ -454,9 +471,11 @@ sr_plot=function(df,mod,title,make.pdf=FALSE,path,type=c('static','rw','hmm'),pa
                                         plot2 + theme(legend.position="none"),
                                         ncol=2,nrow=1,labels=c("A","B"))
           plot=cowplot::plot_grid(plot_hmm_b,legend,rel_widths = c(3,.3))
+          if(sr_only==TRUE){plot=plot1}
         }
         if(par=='both'){ #hmm alpha beta====
           if(form=='stan'){
+          post=rstan::extract(mod)
           pred_df[,2]=exp(median(post$log_a[,1])-median(post$b[,1])*x_new)*x_new
           pred_df[,3]=exp(median(post$log_a[,2])-median(post$b[,2])*x_new)*x_new
           df$gamma=apply(post$gamma[,,2],2,median)
@@ -498,13 +517,15 @@ sr_plot=function(df,mod,title,make.pdf=FALSE,path,type=c('static','rw','hmm'),pa
           }
           
           plot1=ggplot2::ggplot(df, aes(S, R)) +
-            geom_line(data=pred_df,aes(x=x_new,y=pred_df[,2]),linewidth=1.3)+
-            geom_line(data=pred_df,aes(x=x_new,y=pred_df[,3]),linewidth=1.3)+
+            geom_line(data=pred_df,aes(x=x_new,y=pred_df[,2],colour = min(gamma_df$gamma)),linewidth=1.3)+
+            geom_line(data=pred_df,aes(x=x_new,y=pred_df[,3],colour = max(gamma_df$gamma)),linewidth=1.3)+
             geom_point(aes(colour = gamma_df$gamma),size=2.5) +
             scale_colour_viridis_c(name='p')+
             ggtitle(title)+
             xlab("Spawners") + 
             ylab("Recruits")+
+            xlim(0, max(df$S))+
+            ylim(0, max(df$R))+
             theme_classic(14)+
             theme(panel.background = element_blank(),strip.background = element_rect(colour=NA, fill=NA),panel.border = element_rect(fill = NA, color = "black"),
                   strip.text = element_text(face="bold", size=12),
@@ -516,10 +537,15 @@ sr_plot=function(df,mod,title,make.pdf=FALSE,path,type=c('static','rw','hmm'),pa
                                         plot2 + theme(legend.position="none"),
                                         ncol=2,nrow=1,labels=c("A","B"))
           plot=cowplot::plot_grid(plot_hmm_ab,legend,rel_widths = c(3,.3))
+          if(sr_only==TRUE){plot=plot1}
         }
     }
     if(make.pdf==TRUE){
-      pdf(here(path,paste(paste(title,type,par,form,sep='_'),'.pdf',sep='')))
+      if(type=='static'){ pdf(here(path,paste(paste(title,type,par,form,sep='_'),'.pdf',sep='')),width=8,height=6)}
+      if(type=='rw'&par=='both'){ pdf(here(path,paste(paste(title,type,par,form,sep='_'),'.pdf',sep='')),width=10,height=10)}
+      if(type=='rw'&par!='both'){ pdf(here(path,paste(paste(title,type,par,form,sep='_'),'.pdf',sep='')),width=14,height=6)}
+      if(type=='hmm'&par=='both'){ pdf(here(path,paste(paste(title,type,par,form,sep='_'),'.pdf',sep='')),width=8,height=6)}
+      if(type=='hmm'&par!='both'){ pdf(here(path,paste(paste(title,type,par,form,sep='_'),'.pdf',sep='')),width=14,height=6)}
       return(plot)
       dev.off()
     }
