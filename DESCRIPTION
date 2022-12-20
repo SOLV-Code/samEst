@@ -17,10 +17,12 @@ BugReports: https://github.com/Pacific-salmon-assess/samEst/issues
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 Depends: 
-    R (>= 4.1.0)
+    R (>= 4.0.5)
 Imports:
     TMB (>= 1.8.0),
-    rstan (>= 2.21.0)
+    rstan (>= 2.21.0),
+    ggplot2,
+    cowplot
 RoxygenNote: 7.2.1
 LazyData: true
 

@@ -12,7 +12,8 @@ sr_plot(
   path,
   type = c("static", "rw", "hmm"),
   par = c("a", "b", "both"),
-  form = c("stan", "tmb")
+  form = c("stan", "tmb"),
+  sr_only = FALSE
 )
 }
 \arguments{
