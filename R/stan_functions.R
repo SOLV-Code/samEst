@@ -1273,7 +1273,7 @@ if(type=='hmm'&par=='both'){
      
       log_a ~ gamma(3,1.5);
       log_b ~ normal(-12,3);
-      _e ~ normal(0,1);
+      sigma_e ~ normal(0,1);
       
       pi1 ~ dirichlet(rep_vector(1, K));
       
