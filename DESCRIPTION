@@ -9,8 +9,12 @@ Authors@R:
      person(given ="Dan", 
             family = "Greenberg",
             email = "Dan.Greenberg@dfo-mpo.gc.ca",
-            role = c("aut")))
-Description: Collection of salmon stock recruit estimation models including models with time-varying parameters and regime shifts. Models are written primarily with TMB and stan functions.
+            role = c("aut")),
+    person(given ="Dan", 
+            family = "Anderson,
+            email = "Sean.Anderson@dfo-mpo.gc.ca",
+            role = c("aut"))))
+Description: Collection of salmon spawner recruit estimation models including models with time-varying parameters and regime shifts. Models are written primarily with TMB and stan functions.
 License: `use_gpl3_license()` 
 URL: https://github.com/Pacific-salmon-assess/samEst
 BugReports: https://github.com/Pacific-salmon-assess/samEst/issues
