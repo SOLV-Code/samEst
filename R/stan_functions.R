@@ -1315,7 +1315,7 @@ for (j in 1:K) { // j = previous (t-1)
 for (i in 1:K) { // i = next (t)
 // Murphy (2012) Eq. 17.58
 // backwards t + transition prob + local evidence at t
-accumulator[i] = logbeta[t, i] + log(A[j, i]) + normal_lpdf(R_S[t] |log_a[i] - b[i]*S[t], _e);
+accumulator[i] = logbeta[t, i] + log(A[j, i]) + normal_lpdf(R_S[t] |log_a[i] - b[i]*S[t], sigma_e);
 }
 logbeta[t-1, j] = log_sum_exp(accumulator);
 }
