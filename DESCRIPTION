@@ -7,11 +7,15 @@ Authors@R:
              email ="catarina.wor@dfo-mpo.gc.ca", 
              role =  c("aut", "cre")),
      person(given ="Dan", 
-            family = "Greenberg",
+            family = "Greenberg",q()
             email = "Dan.Greenberg@dfo-mpo.gc.ca",
-            role = c("aut")))
-Description: Collection of salmon stock recruit estimation models including models with time-varying parameters and regime shifts. Models are written primarily with TMB and stan functions.
-License: `use_gpl3_license()` 
+            role = c("aut")),
+    person(given ="Dan", 
+            family = "Anderson,
+            email = "Sean.Anderson@dfo-mpo.gc.ca",
+            role = c("aut"))))
+Description: Collection of salmon spawner recruit estimation models including models with time-varying parameters and regime shifts. Models are written primarily with TMB and stan functions.
+License: AGPL-3 | file LICENSE 
 URL: https://github.com/Pacific-salmon-assess/samEst
 BugReports: https://github.com/Pacific-salmon-assess/samEst/issues
 Encoding: UTF-8
@@ -22,7 +26,8 @@ Imports:
     TMB (>= 1.8.0),
     rstan (>= 2.21.0),
     ggplot2,
-    cowplot
+    cowplot,
+    gsl
 RoxygenNote: 7.2.1
 LazyData: true
 

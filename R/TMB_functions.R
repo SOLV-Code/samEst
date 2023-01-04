@@ -13,7 +13,10 @@
 #' @param tmb_map optional, mapping list indicating if parameters should be estimated of fixed. 
 #' Default is all parameters are estimated
 #' @param AC Logical. Are residuals autocorrelated? Default is FALSE
-#' @param priors Integer, 1 priors are included in estimation model, 0 priors are not included.
+#' @param prior_flag Integer, 1 priors are included in estimation model, 0 priors are not included.
+#'  See details for priors documentation
+#' @param stan_flag Integer, flag indicating wether or not TMB code will be used with TMBstan - Jacobian
+#' adjustment implemented. Default is 0, jacobian adjustment not included.
 #'  See details for priors documentation
 #' 
 #' @details Priors: Weakly informative priors are included for the main parameterst of the model:

@@ -46,7 +46,8 @@ Type objective_function<Type>::operator() ()
 {
   DATA_VECTOR(obs_S);    // observed  Spawner
   DATA_VECTOR(obs_logRS);   // observed log recruitment
-  DATA_INTEGER(priors);
+  DATA_INTEGER(priors_flag); //flag indiacting wether or not priors should be used
+  DATA_INTEGER(stan_flag); //flag indicating wether or not 
   
   PARAMETER(alpha);
   PARAMETER(logbeta);
