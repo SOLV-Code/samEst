@@ -10,7 +10,8 @@ ricker_TMB(
   control = TMBcontrol(),
   tmb_map = list(),
   AC = FALSE,
-  priors = 1
+  priors_flag = 1,
+  stan_flag = 0
 )
 }
 \arguments{
@@ -25,7 +26,11 @@ Default is all parameters are estimated}
 
 \item{AC}{Logical. Are residuals autocorrelated? Default is FALSE}
 
-\item{priors}{Integer, 1 priors are included in estimation model, 0 priors are not included.
+\item{priors_flag}{Integer, 1 priors are included in estimation model, 0 priors are not included.
+See details for priors documentation}
+
+\item{stan_flag}{Integer, flag indicating wether or not TMB code will be used with TMBstan - Jacobian
+adjustment implemented. Default is 0, jacobian adjustment not included.
 See details for priors documentation}
 }
 \value{

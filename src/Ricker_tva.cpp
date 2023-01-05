@@ -74,13 +74,12 @@ Type objective_function<Type>::operator() ()
 
   DATA_VECTOR(obs_S);    // observed  Spawner
   DATA_VECTOR(obs_logRS);   // observed recruitment
-  DATA_INTEGER(priors);
+  DATA_INTEGER(priors_flag); //flag indicating wether or not priors should be used
+  DATA_INTEGER(stan_flag); //flag indicating wether or not tmbstan is used 
   
-  //logbeta     -> log of beta from ricker curve
-  //alphao      -> initial alpha value
 
-  PARAMETER(alphao);
-  PARAMETER(logbeta);
+  PARAMETER(alphao); //initial alpha value
+  PARAMETER(logbeta); //log of beta from ricker curve
   PARAMETER(logsigobs);
   PARAMETER(logsiga);
  
@@ -106,14 +105,21 @@ Type objective_function<Type>::operator() ()
   Type renll = Type(0.0);
   Type pnll = Type(0.0);
 
-  if(priors == 1){
+  if(priors_flag == 1){
     //ans -=dnorm(alphao,Type(0.0),Type(2.5),true);
     pnll -=dgamma(alphao,Type(3.0),Type(1.0),true);
     pnll -=dnorm(logbeta,Type(-12.0),Type(3.0),true); 
     //ans -= dnorm(logsigobs,Type(0.0),Type(2.0),true);
     //ans -= dnorm(logsiga,Type(0.0),Type(2.0),true);
-    pnll  -= dgamma(sigobs,Type(2.0),Type(1.0)/Type(3.0),true);  
-    pnll  -= dgamma(siga,Type(2.0),Type(1.0)/Type(3.0),true);
+    //pnll  -= dgamma(sigobs,Type(2.0),Type(1.0)/Type(3.0),true);  
+    //pnll  -= dgamma(siga,Type(2.0),Type(1.0)/Type(3.0),true);
+
+    pnll  -= dnorm(sigobs,Type(0.0),Type(1.0),true) - log(pnorm(Type(0.0), Type(0.0),Type(1.0)));
+    pnll  -= dnorm(siga,Type(0.0),Type(1.0),true) - log(pnorm(Type(0.0), Type(0.0),Type(1.0)));
+    if(stan_flag){
+      pnll -= logsigobs;
+      pnll -= logsiga;
+    } 
   }
   
   renll+= -dnorm(alpha(0),alphao,siga,true);

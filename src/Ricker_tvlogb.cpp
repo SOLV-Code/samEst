@@ -77,7 +77,8 @@ Type objective_function<Type>::operator() ()
 
   DATA_VECTOR(obs_S);    // observed  Spawner
   DATA_VECTOR(obs_logRS);   // observed recruitment
-  DATA_INTEGER(priors);
+  DATA_INTEGER(priors_flag); //flag indicating wether or not priors should be used
+  DATA_INTEGER(stan_flag); //flag indicating wether or not tmbstan is used 
 
   //DATA_SCALAR(prbeta1); //beta prior parameter
   //DATA_SCALAR(prbeta2); //beta prior parameter
@@ -127,7 +128,7 @@ Type objective_function<Type>::operator() ()
   Type pnll = Type(0.0);
   Type renll = Type(0.0);
 
-  if(priors == 1){
+  if(priors_flag == 1){
     //ans -= dnorm(alpha,Type(0.0),Type(2.5),true);
     pnll -= dgamma(alpha,Type(3.0),Type(1.0),true);
     pnll -= dnorm(logbetao,Type(-12.0),Type(3.0),true);
@@ -135,10 +136,19 @@ Type objective_function<Type>::operator() ()
     //ans -= dnorm(logsigb,Type(0.0),Type(2.0),true);
     //ans -= dnorm(sigobs,Type(0.0),Type(2.0),true);
     //ans -= dnorm(sigb,Type(0.0),Type(2.0),true);
-    //ans -= sigobs;
-    //ans -= sigb;
-    pnll -= dgamma(sigobs,Type(2.0),Type(1.0)/Type(3.0),true);
-    pnll -= dgamma(sigb,Type(2.0),Type(1.0)/Type(3.0),true);
+    //pnll -= dgamma(sigobs,Type(2.0),Type(1.0)/Type(3.0),true);
+    //pnll -= dgamma(sigb,Type(2.0),Type(1.0)/Type(3.0),true);
+    
+    pnll  -= dnorm(sigobs,Type(0.0),Type(1.0),true) - log(pnorm(Type(0.0), Type(0.0),Type(1.0)));
+    pnll  -= dnorm(sigb,Type(0.0),Type(1.0),true) - log(pnorm(Type(0.0), Type(0.0),Type(1.0)));
+    pnll  -= dnorm(siga,Type(0.0),Type(1.0),true) - log(pnorm(Type(0.0), Type(0.0),Type(1.0)));
+
+    if(stan_flag){
+      pnll -= logsigobs;
+      pnll -= logsiga;
+      pnll -= logsigb;
+    } 
+
   }
   
   renll+= -dnorm(logbeta(0),logbetao,sigb,true);

@@ -13,11 +13,11 @@
 #' @param tmb_map optional, mapping list indicating if parameters should be estimated of fixed. 
 #' Default is all parameters are estimated
 #' @param AC Logical. Are residuals autocorrelated? Default is FALSE
-#' @param prior_flag Integer, 1 priors are included in estimation model, 0 priors are not included.
-#'  See details for priors documentation
+#' @param priors_flag Integer, 1 priors are included in estimation model, 0 priors are not included.
+#'  See details for priors documentation. See details for priors documentation.
 #' @param stan_flag Integer, flag indicating wether or not TMB code will be used with TMBstan - Jacobian
 #' adjustment implemented. Default is 0, jacobian adjustment not included.
-#'  See details for priors documentation
+#'  
 #' 
 #' @details Priors: Weakly informative priors are included for the main parameterst of the model:
 #' alpha ~ gamma(3,1)
@@ -51,13 +51,14 @@
 #' rickerTMB(data=harck)
 #' 
 ricker_TMB <- function(data,  silent = FALSE, control = TMBcontrol(), 
-  tmb_map = list(), AC=FALSE, priors=1) {
+  tmb_map = list(), AC=FALSE, priors_flag=1, stan_flag=0) {
 
   
   tmb_data <- list(
     obs_S = data$S,
     obs_logRS = data$logRS,
-    priors=priors
+    priors_flag=priors,
+    stan_flag=stan_flag
   )
   
   magS <- log10_ceiling(max(data$S))
@@ -150,8 +151,10 @@ ricker_TMB <- function(data,  silent = FALSE, control = TMBcontrol(),
 #' logbeta (a number), logsigobs (a number), logsiga (a number), and alpha ( a vector with the same length as the data). 
 #' @param tmb_map optional, mapping list indicating if parameters should be estimated of fixed. 
 #' Default is all parameters are estimated
-#' @param priors Integer, 1 priors are included in estimation model, 0 priors are not included.
-#'  See details for priors documentation
+#' @param priors_flag Integer, 1 priors are included in estimation model, 0 priors are not included.
+#'  See details for priors documentation. See details for priors documentation.
+#' @param stan_flag Integer, flag indicating wether or not TMB code will be used with TMBstan - Jacobian
+#' adjustment implemented. Default is 0, jacobian adjustment not included.
 #' 
 #' @details Priors: Weakly informative priors are included for the main parameterst of the model:
 #' alpha ~ gamma(3,1)
@@ -188,7 +191,7 @@ ricker_TMB <- function(data,  silent = FALSE, control = TMBcontrol(),
 #' 
 #' 
 ricker_rw_TMB <- function(data, tv.par=c('a','b','both'), silent = FALSE, 
-  control = TMBcontrol(), ini_param=NULL, tmb_map = list(), priors=1) {
+  control = TMBcontrol(), ini_param=NULL, tmb_map = list(), priors_flag=1, stan_flag=0 ) {
 
   #===================================
   #prepare TMB input and options
@@ -196,7 +199,8 @@ ricker_rw_TMB <- function(data, tv.par=c('a','b','both'), silent = FALSE,
   tmb_data <- list(
     obs_S = data$S,
     obs_logRS = data$logRS,
-    priors=priors
+    priors_flag=priors_flag,
+    stan_flag=stan_flag
   )
 
   if(is.null(ini_param)){
@@ -368,15 +372,16 @@ ricker_rw_TMB <- function(data, tv.par=c('a','b','both'), silent = FALSE,
 #' @param k_regime Number of regimes to be considered
 #' @param alpha_limits vector containing two values: upper and lower limit for alpha parameters. default is c(0,20)
 #' @param beta_upper upper limit for beta parameter. default is 1
-#' @param sigma_upper upper limit for beta parameter. default is 2
 #' @param silent Logical Silent or optimization details? default is FALSE
 #' @param control output from TMBcontrol() function, to be passed to nlminb()
 #' @param ini_param Optional. A list with initial parameter guesses. The list should contain: lalpha (vector of length k_regime),
-#' lbeta (vector of length k_regime), lsigma (vector of length k_regime), pi1_tran (vector of length k_regime-1), 
+#' lbeta (vector of length k_regime), logsigma, pi1_tran (vector of length k_regime-1), 
 #' and qij_tran (matrix with nrow=k_regime, and ncol=k_regime-1). Keep in mind that the main
-#' parameters (alpha, beta and sigma) are transformed with a logistic function to account for the custom upper and lower values.   
-#' @param priors Integer, 1 priors are included in estimation model, 0 priors are not included.
-#'  See details for priors documentation
+#' parameters (alpha and beta) are transformed with a logistic function to account for the custom upper and lower values.   
+#' @param priors_flag Integer, 1 priors are included in estimation model, 0 priors are not included.
+#'  See details for priors documentation. See details for priors documentation.
+#' @param stan_flag Integer, flag indicating wether or not TMB code will be used with TMBstan - Jacobian
+#' adjustment implemented. Default is 0, jacobian adjustment not included.
 #' 
 #' 
 #' 
@@ -422,13 +427,13 @@ ricker_hmm_TMB <- function(data,
                            tv.par = c('a','b','both'), 
                            k_regime = 2, 
                            alpha_limits = c(0,20), 
-                           beta_upper=.1, 
-                           sigma_upper=2, 
+                           beta_upper=.1,  
                            silent = FALSE, 
                            control = TMBcontrol(), 
                            ini_param = NULL, 
                            tmb_map = list(), 
-                           priors = 1) {
+                           priors_flag = 1,
+                           stan_flag = 0) {
 
   #===================================
   #prepare TMB input and options
@@ -439,9 +444,9 @@ ricker_hmm_TMB <- function(data,
     alpha_u= alpha_limits[2],
     alpha_l=alpha_limits[1],
     beta_u=beta_upper,
-    sigma_u = sigma_upper,
     alpha_dirichlet=rep(1,k_regime),
-    priors=priors  
+    priors_flag=priors_flag,
+    stan_flag=stan_flag  
   )
 
   if(is.null(ini_param)){
@@ -458,7 +463,7 @@ ricker_hmm_TMB <- function(data,
                                   max(initlm$coefficients[[1]],.5)),
                    k_regime),
           lbeta = find_linit(beta_upper,0,-bguess),
-          lsigma = find_linit(sigma_upper,0,.1),
+          logsigma = log(.6),
           pi1_tran = rep(0.5,k_regime-1),
           qij_tran = matrix(0.1,nrow=k_regime,ncol=k_regime-1)          
       )  
@@ -479,7 +484,7 @@ ricker_hmm_TMB <- function(data,
       tmb_params <- list(        
           lalpha = find_linit(alpha_limits[2],alpha_limits[1],max(initlm$coefficients[[1]],.5)),
           lbeta = rep(find_linit(beta_upper,0,-bguess),k_regime),
-          lsigma = find_linit(sigma_upper,0,.1),
+          logsigma = log(.6),
           pi1_tran = rep(0.5,k_regime-1),
           qij_tran = matrix(0.5,nrow=k_regime,ncol=k_regime-1)          
       )      
@@ -499,7 +504,7 @@ ricker_hmm_TMB <- function(data,
         lalpha = rep(find_linit(alpha_limits[2],alpha_limits[1],max(initlm$coefficients[[1]],.5)),
           k_regime),
         lbeta = rep(find_linit(beta_upper,0,-bguess),k_regime),
-        lsigma = find_linit(sigma_upper,0,.1),
+        logsigma = log(.6),
         pi1_tran = rep(0.5,k_regime-1),
         qij_tran = matrix(0.1,nrow=k_regime,ncol=k_regime-1)          
       )

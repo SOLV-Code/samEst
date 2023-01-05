@@ -135,13 +135,13 @@ Type objective_function<Type>::operator() ()
   DATA_SCALAR(alpha_u); //upper bound for b
   DATA_SCALAR(alpha_l); //lower bound for b
   DATA_SCALAR(beta_u);  //upper bound for a
-  DATA_SCALAR(sigma_u); //upper bound for sigma
+  //DATA_SCALAR(sigma_u); //upper bound for sigma
   DATA_VECTOR(alpha_dirichlet); //prior inputs for dirichlet 
   DATA_INTEGER(priors);
 
   PARAMETER_VECTOR(lalpha);
   PARAMETER(lbeta);
-  PARAMETER(lsigma);
+  PARAMETER(logsigma);
   PARAMETER_VECTOR(pi1_tran);
   PARAMETER_MATRIX(qij_tran);
 
@@ -162,7 +162,8 @@ Type objective_function<Type>::operator() ()
 
   } // alpha(1) from alpha(0) to alpha_u
 
-  Type sigma = sigma_u/(1+exp(-lsigma));
+  //Type sigma = sigma_u/(1+exp(-lsigma));
+  Type sigma = exp(logsigma);
   vector<Type> pi1(k_regime);
  
   for(int i = 0;i < k_regime-1;++i){
@@ -221,7 +222,9 @@ Type objective_function<Type>::operator() ()
  
     Type logbeta = log(beta);
     pnll -= dnorm(logbeta,Type(-12.0),Type(3.0),true);
-    pnll -= dgamma(sigma,Type(2.0),Type(1.0)/Type(3.0),true);
+    //pnll -= dgamma(sigma,Type(2.0),Type(1.0)/Type(3.0),true);
+    pnll -= dnorm(sigma,Type(0.0),Type(1.0),true) - log(pnorm(Type(0.0), Type(0.0),Type(1.0)));
+    if(stan_flag) pnll -= logsigma;
    
     for(int j = 0;j < k_regime;++j){
       pi_prior(j) = Type(1.0);

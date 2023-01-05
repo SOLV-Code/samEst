@@ -46,8 +46,8 @@ Type objective_function<Type>::operator() ()
 {
   DATA_VECTOR(obs_S);    // observed  Spawner
   DATA_VECTOR(obs_logRS);   // observed log recruitment
-  DATA_INTEGER(priors_flag); //flag indiacting wether or not priors should be used
-  DATA_INTEGER(stan_flag); //flag indicating wether or not 
+  DATA_INTEGER(priors_flag); //flag indicating wether or not priors should be used
+  DATA_INTEGER(stan_flag); //flag indicating wether or not tmbstan is used 
   
   PARAMETER(alpha);
   PARAMETER(logbeta);
@@ -65,12 +65,16 @@ Type objective_function<Type>::operator() ()
   Type sigobs = exp(logsigobs);
   Type Smax  = Type(1.0)/beta;
 
-  if(priors == 1){
+  if(priors_flag == 1){
     //ans -=dnorm(alpha,Type(0.0),Type(2.5),true);
     pnll -=dgamma(alpha,Type(3.0),Type(1.0),true);
-    pnll -=dnorm(logbeta,Type(-12.0),Type(3.0),true);  
-    pnll -= dgamma(sigobs,Type(2.0),Type(1.0)/Type(3.0),true);
+    pnll -=dnorm(logbeta,Type(-12.0),Type(3.0),true); 
+    //pnll -= dgamma(sigobs,Type(2.0),Type(1.0)/Type(3.0),true);
+    
+    pnll -= dnorm(sigobs,Type(0.0),Type(1.0),true) - log(pnorm(Type(0.0), Type(0.0),Type(1.0)));
+    if(stan_flag) pnll -= logsigobs;
   }
+
   //ans -= dnorm(logsigobs,Type(0.0),Type(2.0),true);
   //ans -= dexp(sigobs,Type(2.0),true);
   //ans -= dt(sigobs,Type(3.0),true);
@@ -88,8 +92,7 @@ Type objective_function<Type>::operator() ()
     }
   
   }
-  //Type umsy = Type(.5) * alpha - Type(0.07) * (alpha * alpha);
-  //Type Smsy = alpha/beta * (Type(0.5) -Type(0.07) * alpha);
+  
   Type umsy = (Type(1) - LambertW(exp(1-alpha)));
   Type Smsy = (Type(1) - LambertW(exp(1-alpha))) / beta;
   Type ans= nll + pnll;
