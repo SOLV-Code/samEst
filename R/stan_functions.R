@@ -262,7 +262,7 @@ model{
   
   //variance terms
    target += normal_lpdf(sigma | 0, 1) - normal_lcdf(0 | 0, 1); //remove density below zero   
-  sigma_a ~ normal(0,1);
+  target += normal_lpdf(sigma_a| 0, 1) - normal_lcdf(0 | 0, 1); //remove density below zero  
    
  
   for(n in 1:N) R_S[n] ~ normal(log_a[ii[n]] - S[n]*b, sigma); 
@@ -323,7 +323,7 @@ model{
   
   //variance terms
    target += normal_lpdf(sigma | 0, 1) - normal_lcdf(0 | 0, 1); //remove density below zero   
-  sigma_a ~ normal(0,1);
+  target += normal_lpdf(sigma_a| 0, 1) - normal_lcdf(0 | 0, 1); //remove density below zero  
    
   for(n in 1:N) R_S[n] ~ normal(log_a[ii[n]] - S[n]*b, sigma);
 }
@@ -384,7 +384,7 @@ model{
   
   //variance terms
    target += normal_lpdf(sigma | 0, 1) - normal_lcdf(0 | 0, 1); //remove density below zero   
-  sigma_b ~ normal(0,1);
+  target += normal_lpdf(sigma_b| 0, 1) - normal_lcdf(0 | 0, 1); //remove density below zero  
    
   b_dev ~ std_normal();
  for(n in 1:N) R_S[n] ~ normal(log_a-b[ii[n]]*S[n], sigma);
@@ -446,7 +446,7 @@ model{
   
   //variance terms
    target += normal_lpdf(sigma | 0, 1) - normal_lcdf(0 | 0, 1); //remove density below zero   
-  sigma_b ~ normal(0,1);
+  target += normal_lpdf(sigma_b| 0, 1) - normal_lcdf(0 | 0, 1); //remove density below zero  
    
   b_dev ~ std_normal();
   
@@ -513,8 +513,8 @@ model{
   
   //variance terms
    target += normal_lpdf(sigma | 0, 1) - normal_lcdf(0 | 0, 1); //remove density below zero   
-  sigma_a ~ normal(0,1);
-  sigma_b ~ normal(0,1);
+  target += normal_lpdf(sigma_a| 0, 1) - normal_lcdf(0 | 0, 1); //remove density below zero  
+  target += normal_lpdf(sigma_b| 0, 1) - normal_lcdf(0 | 0, 1); //remove density below zero  
   
   a_dev ~ std_normal();
   b_dev ~ std_normal();
@@ -581,8 +581,8 @@ log_b0 ~ normal(-12,3); //initial capacity
   
   //variance terms
    target += normal_lpdf(sigma | 0, 1) - normal_lcdf(0 | 0, 1); //remove density below zero   
-  sigma_a ~ normal(0,1);
-  sigma_b ~ normal(0,1);
+  target += normal_lpdf(sigma_a| 0, 1) - normal_lcdf(0 | 0, 1); //remove density below zero  
+  target += normal_lpdf(sigma_b| 0, 1) - normal_lcdf(0 | 0, 1); //remove density below zero  
   
   a_dev ~ std_normal();
   b_dev ~ std_normal();
