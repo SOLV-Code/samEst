@@ -137,7 +137,8 @@ Type objective_function<Type>::operator() ()
   DATA_SCALAR(beta_u);  //upper bound for a
   //DATA_SCALAR(sigma_u); //upper bound for sigma
   DATA_VECTOR(alpha_dirichlet); //prior inputs for dirichlet 
-  DATA_INTEGER(priors);
+  DATA_INTEGER(priors_flag);
+  DATA_INTEGER(stan_flag);
 
   PARAMETER_VECTOR(lalpha);
   PARAMETER(lbeta);
@@ -217,7 +218,7 @@ Type objective_function<Type>::operator() ()
 
   //priors
   Type pnll = Type(0.0);
-  if(priors == 1){
+  if(priors_flag == 1){
     vector<Type> pi_prior(k_regime);
  
     Type logbeta = log(beta);

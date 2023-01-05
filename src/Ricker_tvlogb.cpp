@@ -141,11 +141,9 @@ Type objective_function<Type>::operator() ()
     
     pnll  -= dnorm(sigobs,Type(0.0),Type(1.0),true) - log(pnorm(Type(0.0), Type(0.0),Type(1.0)));
     pnll  -= dnorm(sigb,Type(0.0),Type(1.0),true) - log(pnorm(Type(0.0), Type(0.0),Type(1.0)));
-    pnll  -= dnorm(siga,Type(0.0),Type(1.0),true) - log(pnorm(Type(0.0), Type(0.0),Type(1.0)));
-
+   
     if(stan_flag){
       pnll -= logsigobs;
-      pnll -= logsiga;
       pnll -= logsigb;
     } 
 

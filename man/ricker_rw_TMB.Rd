@@ -11,7 +11,8 @@ ricker_rw_TMB(
   control = TMBcontrol(),
   ini_param = NULL,
   tmb_map = list(),
-  priors = 1
+  priors_flag = 1,
+  stan_flag = 0
 )
 }
 \arguments{
@@ -29,8 +30,11 @@ logbeta (a number), logsigobs (a number), logsiga (a number), and alpha ( a vect
 \item{tmb_map}{optional, mapping list indicating if parameters should be estimated of fixed.
 Default is all parameters are estimated}
 
-\item{priors}{Integer, 1 priors are included in estimation model, 0 priors are not included.
-See details for priors documentation}
+\item{priors_flag}{Integer, 1 priors are included in estimation model, 0 priors are not included.
+See details for priors documentation. See details for priors documentation.}
+
+\item{stan_flag}{Integer, flag indicating wether or not TMB code will be used with TMBstan - Jacobian
+adjustment implemented. Default is 0, jacobian adjustment not included.}
 }
 \value{
 a list containing several model outputs:

@@ -27,11 +27,10 @@ Default is all parameters are estimated}
 \item{AC}{Logical. Are residuals autocorrelated? Default is FALSE}
 
 \item{priors_flag}{Integer, 1 priors are included in estimation model, 0 priors are not included.
-See details for priors documentation}
+See details for priors documentation. See details for priors documentation.}
 
 \item{stan_flag}{Integer, flag indicating wether or not TMB code will be used with TMBstan - Jacobian
-adjustment implemented. Default is 0, jacobian adjustment not included.
-See details for priors documentation}
+adjustment implemented. Default is 0, jacobian adjustment not included.}
 }
 \value{
 a list containing several model outputs:

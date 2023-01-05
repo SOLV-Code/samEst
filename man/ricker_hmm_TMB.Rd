@@ -10,12 +10,12 @@ ricker_hmm_TMB(
   k_regime = 2,
   alpha_limits = c(0, 20),
   beta_upper = 0.1,
-  sigma_upper = 2,
   silent = FALSE,
   control = TMBcontrol(),
   ini_param = NULL,
   tmb_map = list(),
-  priors = 1
+  priors_flag = 1,
+  stan_flag = 0
 )
 }
 \arguments{
@@ -29,19 +29,20 @@ ricker_hmm_TMB(
 
 \item{beta_upper}{upper limit for beta parameter. default is 1}
 
-\item{sigma_upper}{upper limit for beta parameter. default is 2}
-
 \item{silent}{Logical Silent or optimization details? default is FALSE}
 
 \item{control}{output from TMBcontrol() function, to be passed to nlminb()}
 
 \item{ini_param}{Optional. A list with initial parameter guesses. The list should contain: lalpha (vector of length k_regime),
-lbeta (vector of length k_regime), lsigma (vector of length k_regime), pi1_tran (vector of length k_regime-1),
+lbeta (vector of length k_regime), logsigma, pi1_tran (vector of length k_regime-1),
 and qij_tran (matrix with nrow=k_regime, and ncol=k_regime-1). Keep in mind that the main
-parameters (alpha, beta and sigma) are transformed with a logistic function to account for the custom upper and lower values.}
+parameters (alpha and beta) are transformed with a logistic function to account for the custom upper and lower values.}
 
-\item{priors}{Integer, 1 priors are included in estimation model, 0 priors are not included.
-See details for priors documentation}
+\item{priors_flag}{Integer, 1 priors are included in estimation model, 0 priors are not included.
+See details for priors documentation. See details for priors documentation.}
+
+\item{stan_flag}{Integer, flag indicating wether or not TMB code will be used with TMBstan - Jacobian
+adjustment implemented. Default is 0, jacobian adjustment not included.}
 }
 \value{
 a list containing several model outputs:
