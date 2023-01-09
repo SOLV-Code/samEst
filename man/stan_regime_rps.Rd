@@ -4,7 +4,7 @@
 \alias{stan_regime_rps}
 \title{Compute reference points from parameters of Hidden Markov Model (regime shift) Stan model}
 \usage{
-stan_regime_rps(m, par = c("a", "b", "both"))
+stan_regime_rps(m, par = c("a", "b", "both"), lambertW = FALSE)
 }
 \arguments{
 \item{m}{estimated fit for rstan model}

@@ -19,6 +19,7 @@
 #' @param chains To be passed to rstan::sampling. A positive integer specifying the number of Markov chains. The default is 6.
 #' @param iter To be passed to rstan::sampling. A positive integer specifying the number of iterations for each chain 
 #' (including warmup). The default is 1000.
+#' @param lambertW Logical, indicating if lambertW functions should be used in stan code, requires git installation from stan
 #' @param ... Anything else that would be passed to rstan::sampling
 #' 
 #' 
@@ -64,6 +65,8 @@ compile_code<-function(type=c('static','rw','hmm'), ac=FALSE, par=c('n','a','b',
 #' @param chains To be passed to rstan::sampling. A positive integer specifying the number of Markov chains. The default is 6.
 #' @param iter To be passed to rstan::sampling. A positive integer specifying the number of iterations for each chain 
 #' (including warmup). The default is 1000.
+#' @param lambertW Logical, indicating if lambertW functions should be used in stan code, requires git installation from stan
+#' 
 #' @param ... Anything else that would be passed to rstan::sampling
 #' 
 #' 
@@ -86,11 +89,11 @@ compile_code<-function(type=c('static','rw','hmm'), ac=FALSE, par=c('n','a','b',
 #' data(harck)
 #' rickerstan(data=harck)
 #' 
-ricker_stan <- function(data,  AC=FALSE, control = stancontrol(), mod=NULL, warmup=300,  chains = 6, iter = 1000,...) {
+ricker_stan <- function(data,  AC=FALSE, control = stancontrol(), mod=NULL, warmup=300,  chains = 6, iter = 1000,lambertW=FALSE,...) {
  
 
  if(is.null(mod)){
-   sm <- compile_code(type='static',ac=AC,par='n')
+   sm <- compile_code(type='static',ac=AC,par='n',lambertW=lambertW)
   }else{
    sm <-mod
   }
@@ -124,18 +127,23 @@ ricker_stan <- function(data,  AC=FALSE, control = stancontrol(), mod=NULL, warm
     
   aa <- rstan::summary(fit)
   
-
-
-  return(list(alpha=aa$summary["log_a","50%"],
+  ans<-list(alpha=aa$summary["log_a","50%"],
    beta=aa$summary["b","50%"],
    Smax=aa$summary["S_max","50%"],
-   sigobs=aa$summary["sigma_e","50%"], 
-   Smsy=aa$summary["S_msy","50%"],
-   umsy=aa$summary["U_msy","50%"],
+   sigobs=aa$summary["sigma","50%"], 
+   #Smsy=aa$summary["S_msy","50%"],
+   #umsy=aa$summary["U_msy","50%"],
    stanfit=fit, 
    mcmcsummary=aa$summary,
    c_mcmcsummary=aa$c_summary, 
-   samples=mc ) )
+   samples=mc ) 
+
+  if(lambertW){
+    ans$Smsy=aa$summary["S_msy","50%"]
+    ans$umsy=aa$summary["U_msy","50%"]
+  }
+
+  return(ans )
 
 }
 
@@ -158,6 +166,7 @@ ricker_stan <- function(data,  AC=FALSE, control = stancontrol(), mod=NULL, warm
 #' (including warmup). The default is 1000.
 #' @param ... Anything else that would be passed to rstan::sampling
 #' @param sm_ext Default is null, external stan rw model. Implemented to speed up simulation evaluation, use with caution.
+#' @param lambertW Logical, indicating if lambertW functions should be used in stan code, requires git installation from stan
 #' 
 #' @returns a list containing the 
 #' * alpha - median estimates for the alpha parameter vector
@@ -179,11 +188,11 @@ ricker_stan <- function(data,  AC=FALSE, control = stancontrol(), mod=NULL, warm
 #' ricker_rw_stan(data=harck)
 #' 
 ricker_rw_stan <- function(data, par=c('a','b','both'),  control = stancontrol(), mod=NULL,
-  warmup=300,  chains = 6, iter = 1000,...) {
+  warmup=300,  chains = 6, iter = 1000, lambertW=FALSE,...) {
   #par='b'
 
   if(is.null(mod)){
-   sm <- compile_code(type='rw',ac=FALSE,par=par)
+   sm <- compile_code(type='rw',ac=FALSE,par=par,lambertW=lambertW)
   }else{
    sm <- mod
   }
@@ -207,20 +216,23 @@ ricker_rw_stan <- function(data, par=c('a','b','both'),  control = stancontrol()
     
   aa <- rstan::summary(fit)
   
-
-
-  return(list(alpha=aa$summary[grep("log_a",row.names(aa$summary)),"50%"],
+  ans <-list(alpha=aa$summary[grep("log_a",row.names(aa$summary)),"50%"],
    beta=aa$summary[grep("^b",row.names(aa$summary)),"50%"],
    Smax=aa$summary[grep("S_max",row.names(aa$summary)),"50%"],
-   sigobs=aa$summary["sigma_e","50%"],
+   sigobs=aa$summary["sigma","50%"],
    siga=ifelse(par=="a"|par=="both",aa$summary["sigma_a","50%"],NA),
    sigb=ifelse(par=="b"|par=="both",aa$summary["sigma_b","50%"],NA),
-   Smsy=aa$summary[grep("S_msy",row.names(aa$summary)),"50%"],
-   umsy=aa$summary[grep("U_msy",row.names(aa$summary)),"50%"],
    stanfit=fit, 
    mcmcsummary=aa$summary,
    c_mcmcsummary=aa$c_summary, 
-   samples=mc ) )
+   samples=mc )
+
+  if(lambertW){
+    ans$Smsy=aa$summary["S_msy","50%"]
+    ans$umsy=aa$summary["U_msy","50%"]
+  }
+
+  return( )
 
 }
 
@@ -238,7 +250,9 @@ ricker_rw_stan <- function(data, par=c('a','b','both'),  control = stancontrol()
 #' (including warmup). The default is 1000.
 #' @param ... Anything else that would be passed to rstan::sampling
 #' @param sm_ext Default is null, external stan hmm model. Implemented to speed up simulation evaluation, use with caution.
-#' 
+#' @param lambertW Logical, indicating if lambertW functions should be used in stan code, requires git installation from stan
+#'  
+#'
 #' @returns a list containing the 
 #' * alpha - median estimates for the alpha parameter vector
 #' * beta - median estimates for the beta parameter 
@@ -259,7 +273,8 @@ ricker_rw_stan <- function(data, par=c('a','b','both'),  control = stancontrol()
 #' ricker_hmm_stan(data=harck)
 #' 
 ricker_hmm_stan <- function(data, par=c('a','b','both'), k_regime=2, 
-  control = stancontrol(), warmup=300,  chains = 6, iter = 1000,..., mod=NULL) {
+  control = stancontrol(), warmup=300,  chains = 6, iter = 1000, mod=NULL,
+  lambertW=FALSE,...) {
   #par='both'
   
   if(is.null(mod)){
@@ -291,14 +306,17 @@ ricker_hmm_stan <- function(data, par=c('a','b','both'), k_regime=2,
   aa <- rstan::summary(fit)
 
   #extract time-series of parameters
-  parts <-stan_regime_rps(m=fit,par=par)
 
-#row.names(aa$summary)
-#[grep("^b\\[",row.names(aa$summary))]
+  if(lambertW){
+    parts <-stan_regime_rps(m=fit,par=par)
+    ans$Smax_regime=ifelse(rep(par=="b"|par=="both",nrow(data)),parts$S_max_t,NA)
+    ans$Smax_wgt=ifelse(rep(par=="b"|par=="both",nrow(data)),parts$S_max_wt,NA)
+    ans$Smsy_regime=parts$S_msy_t
+    ans$Smsy_wgt=parts$S_msy_wt
+    ans$umsy_regime=ifelse(rep(par=="a"|par=="both",nrow(data)),parts$U_msy_t,NA)
+    ans$umsy_wgt=ifelse(rep(par=="a"|par=="both",nrow(data)),parts$U_msy_wt,NA)
+  } 
 
-#aa$summary[grep("zstar",row.names(aa$summary)),"50%"]
-# these are meaningless need to calc for each mcmc draw check with Dan
-#need regime and weighted alpha, beta, sigma  
    return(list(
 
    alpha_regime=ifelse(rep(par=="a"|par=="both",nrow(data)),parts$log_a_t,NA),

@@ -7,10 +7,13 @@
 compile_code(
   type = c("static", "rw", "hmm"),
   ac = FALSE,
-  par = c("n", "a", "b", "both")
+  par = c("n", "a", "b", "both"),
+  lambertW = FALSE
 )
 }
 \arguments{
+\item{lambertW}{Logical, indicating if lambertW functions should be used in stan code, requires git installation from stan}
+
 \item{data}{A list or data frame containing Spawners (S) and log(Recruits/Spawners) (logRS) time series.}
 
 \item{AC}{Logical. Are residuals autocorrelated? Default is FALSE}
