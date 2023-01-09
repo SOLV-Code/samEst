@@ -1937,7 +1937,8 @@ model{
     
      
     for(n in 1:N) log_lik[n] = normal_lpdf(R_S[n]|log_a - b[ii[n]]*S[n], sigma);
-   
+ 
+ }  
  "
   }
 if(lfo==TRUE){
