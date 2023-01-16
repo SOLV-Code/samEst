@@ -1,8 +1,3 @@
-#----------------------------------------------------
-#Catarina put this functions together to be used in simulation
-# 
-#----------------------------------------------------
-
 
 
 
@@ -304,21 +299,9 @@ ricker_hmm_stan <- function(data, par=c('a','b','both'), k_regime=2,
     
 
   aa <- rstan::summary(fit)
-
-  #extract time-series of parameters
-
-  if(lambertW){
-    parts <-stan_regime_rps(m=fit,par=par)
-    ans$Smax_regime=ifelse(rep(par=="b"|par=="both",nrow(data)),parts$S_max_t,NA)
-    ans$Smax_wgt=ifelse(rep(par=="b"|par=="both",nrow(data)),parts$S_max_wt,NA)
-    ans$Smsy_regime=parts$S_msy_t
-    ans$Smsy_wgt=parts$S_msy_wt
-    ans$umsy_regime=ifelse(rep(par=="a"|par=="both",nrow(data)),parts$U_msy_t,NA)
-    ans$umsy_wgt=ifelse(rep(par=="a"|par=="both",nrow(data)),parts$U_msy_wt,NA)
-  } 
-
-   return(list(
-
+  parts <-stan_regime_rps(m=fit,par=par)
+  
+  ans<-list(
    alpha_regime=ifelse(rep(par=="a"|par=="both",nrow(data)),parts$log_a_t,NA),
    alpha_wgt=ifelse(rep(par=="a"|par=="both",nrow(data)),parts$log_a_wt,NA),
    Smax_regime=ifelse(rep(par=="b"|par=="both",nrow(data)),parts$S_max_t,NA),
@@ -340,7 +323,24 @@ ricker_hmm_stan <- function(data, par=c('a','b','both'), k_regime=2,
    stanfit=fit, 
    mcmcsummary=aa$summary,
    c_mcmcsummary=aa$c_summary, 
-   samples=mc ) )
+   samples=mc ) 
+
+  #extract time-series of parameters
+
+
+  if(lambertW){
+    
+    ans$Smax_regime=ifelse(rep(par=="b"|par=="both",nrow(data)),parts$S_max_t,NA)
+    ans$Smax_wgt=ifelse(rep(par=="b"|par=="both",nrow(data)),parts$S_max_wt,NA)
+    ans$Smsy_regime=parts$S_msy_t
+    ans$Smsy_wgt=parts$S_msy_wt
+    ans$umsy_regime=ifelse(rep(par=="a"|par=="both",nrow(data)),parts$U_msy_t,NA)
+    ans$umsy_wgt=ifelse(rep(par=="a"|par=="both",nrow(data)),parts$U_msy_wt,NA)
+  }
+
+
+
+   return()
 
 }
 

@@ -39,7 +39,8 @@ plot(harck$S,harck$R)
 ##testing functions
 
 p <- ricker_TMB(data=harck)
-
+simple_mod <- samEst::compile_code(type='static', ac=FALSE, par='n',lambertW = FALSE)
+b <- ricker_stan(data=harck,iter = 800, mod=simple_mod)
 
 pnp <- ricker_TMB(data=harck,prior=0)
 

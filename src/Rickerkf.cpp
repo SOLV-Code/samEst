@@ -50,7 +50,7 @@ Type objective_function<Type>::operator() ()
   //Kalman filter translated to TMB from Carrie holt R-code
   DATA_VECTOR(x);   // observed log recruitment
   DATA_VECTOR(y);    // observed  Spawner
-  
+  DATA_INTEGER(LL_flag);
  
   //logbeta     -> log of beta from ricker curve
   //alphao      -> initial alpha value
@@ -93,8 +93,14 @@ Type objective_function<Type>::operator() ()
   postmeana(0) = priormeana(0) + (priorvara(0) * (v(0)/f(0)));
   postvara(0) = priorvara(0) - (priorvara(0)*priorvara(0)/f(0));
   filtery(0) = postmeana(0) + b * x(0);
-  ans +=  (log(f(0)) + (v(0)*v(0)/f(0)))/Type(2.);
-
+  if(LL_flag == 0){
+    ans +=  (log(f(0)) + (v(0)*v(0)/f(0)))/Type(2.);
+  }
+  if(LL_flag == 1){
+    Type sig;
+    sig = sqrt(f(0));
+    ans -=  dnorm(y(0) , yhat(0),sig,true);
+  }
 
 
   for(int t=1; t<Tmax; t++){
@@ -119,7 +125,13 @@ Type objective_function<Type>::operator() ()
       postmeana(t) = priormeana(t) + (priorvara(t) * (v(t)/f(t)));
       postvara(t) = priorvara(t) - (priorvara(t)*priorvara(t)/f(t));
       filtery(t) = postmeana(t) + b * x(t);
-      ans += (log(f(t)) + (v(t)*v(t)/f(t)))/Type(2.);
+      if(LL_flag == 0){
+        ans += (log(f(t)) + (v(t)*v(t)/f(t)))/Type(2.);
+      }
+      if(LL_flag == 1){
+        sig = sqrt(f(t));
+        ans -=  dnorm(y(t) , yhat(t),sig,true);
+      }
     }
 
   }

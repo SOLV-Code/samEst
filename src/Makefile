@@ -1,4 +1,4 @@
-all: Ricker_simple.so Ricker_autocorr.so Ricker_tva.so Ricker_tvlogb.so Ricker_tva_tvb.so SR_HMM.so SR_HMM_a.so SR_HMM_b.so Rickerkf_fullLL.so Rickerkf.so
+all: Ricker_simple.so Ricker_autocorr.so Ricker_tva.so Ricker_tvlogb.so Ricker_tva_tvb.so SR_HMM.so SR_HMM_a.so SR_HMM_b.so Rickerkf.so
 
 Ricker_simple.so: Ricker_simple.cpp
 	Rscript --vanilla -e "TMB::compile('Ricker_simple.cpp')"
@@ -23,11 +23,6 @@ SR_HMM_a.so: SR_HMM_a.cpp
 
 SR_HMM_b.so: SR_HMM_b.cpp
 	Rscript --vanilla -e "TMB::compile('SR_HMM_b.cpp')"
-
-
-Rickerkf_fullLL.so: Rickerkf_fullLL.cpp
-	Rscript --vanilla -e "TMB::compile('Rickerkf_fullLL.cpp')"
-
 
 Rickerkf.so: Rickerkf.cpp
 	Rscript --vanilla -e "TMB::compile('Rickerkf.cpp')"

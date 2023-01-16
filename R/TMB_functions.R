@@ -607,7 +607,8 @@ ricker_kf_TMB <- function(data,  silent = FALSE, control = TMBcontrol(),  tmb_ma
   
   tmb_data <- list(
     x = data$S,
-    y = data$logRS
+    y = data$logRS,
+    LL_flag=as.integer(fullLL)
   )
   
   magS <- log10_ceiling(max(data$S))
@@ -621,15 +622,11 @@ ricker_kf_TMB <- function(data,  silent = FALSE, control = TMBcontrol(),  tmb_ma
     logsigw     = log(1)
   )
 
-  if(fullLL){
-     tmb_obj <- TMB::MakeADFun(
-    data = tmb_data, parameters = tmb_params, map = tmb_map,
-    random = tmb_random, DLL = "Rickerkf_fullLL", silent = silent)
-   }else{
+  
      tmb_obj <- TMB::MakeADFun(
     data = tmb_data, parameters = tmb_params, map = tmb_map,
     random = tmb_random, DLL = "Rickerkf", silent = silent)
-   }
+   
  
   
 
@@ -737,7 +734,6 @@ get_convergence_diagnostics <- function(sd_report) {
 #' @useDynLib Ricker_tva_tvb
 #' @useDynLib SR_HMM_a
 #' @useDynLib SR_HMM_b
-#' @useDynLib Rickerkf_fullLL
 #' @useDynLib Rickerkf
 #'
 dummy <- function(){
