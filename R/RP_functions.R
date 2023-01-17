@@ -166,10 +166,9 @@ stan_regime_rps<- function(m,par=c('a','b','both'),lambertW=FALSE){
       S_msy_wt = gamma%*%S_msy
       ans<-data.frame(beta_t,beta_wt,S_max_t,S_max_wt,S_msy_t,S_msy_wt)
     }else{
-      ans<-data.frame(beta_t,beta_wt,S_max_t,S_max_wt,)
+      ans<-data.frame(beta_t,beta_wt,S_max_t,S_max_wt)
     }
 
-    return()
   }
   if(par=='both'){
     log_a=apply(d$log_a,2,median)
