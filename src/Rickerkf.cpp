@@ -97,8 +97,8 @@ Type objective_function<Type>::operator() ()
     ans +=  (log(f(0)) + (v(0)*v(0)/f(0)))/Type(2.);
   }
   if(LL_flag == 1){
-    Type sig;
-    sig = sqrt(f(0));
+    
+    Type sig = sqrt(f(0));
     ans -=  dnorm(y(0) , yhat(0),sig,true);
   }
 
@@ -129,7 +129,7 @@ Type objective_function<Type>::operator() ()
         ans += (log(f(t)) + (v(t)*v(t)/f(t)))/Type(2.);
       }
       if(LL_flag == 1){
-        sig = sqrt(f(t));
+        Type sig = sqrt(f(t));
         ans -=  dnorm(y(t) , yhat(t),sig,true);
       }
     }
