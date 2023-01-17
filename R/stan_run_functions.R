@@ -84,7 +84,7 @@ compile_code<-function(type=c('static','rw','hmm'), ac=FALSE, par=c('n','a','b',
 #' data(harck)
 #' rickerstan(data=harck)
 #' 
-ricker_stan <- function(data,  AC=FALSE, control = stancontrol(), mod=NULL, warmup=300,  chains = 6, iter = 1000,lambertW=FALSE,...) {
+ricker_stan <- function(data,  AC=FALSE, control = stancontrol(), mod=NULL, warmup=300, chains = 6, iter = 1000,lambertW=FALSE,...) {
  
 
  if(is.null(mod)){
@@ -110,7 +110,7 @@ ricker_stan <- function(data,  AC=FALSE, control = stancontrol(), mod=NULL, warm
   
   fit<-rstan::sampling(sm, data=datm,
                       control = control, warmup = warmup, 
-                      chains = chains, iter = iter )
+                      chains = chains, iter = iter,verbose=FALSE)
   #fit <- rstan::stan(model_code = sm, 
   #                      data = datm,
   #                      control = control, warmup = warmup, chains = chains, iter = iter)
