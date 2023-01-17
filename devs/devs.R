@@ -5,11 +5,13 @@
 #============================================
 
 
+
+
 devtools::document()
 devtools::load_all()
 
 
-
+remotes::install_git('https://github.com/Pacific-salmon-assess/samEst', force=TRUE)
 
 
 #read in data 

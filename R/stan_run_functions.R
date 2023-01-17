@@ -273,7 +273,7 @@ ricker_hmm_stan <- function(data, par=c('a','b','both'), k_regime=2,
   #par='both'
   
   if(is.null(mod)){
-   sm <- compile_code(type='hmm',ac=FALSE,par=par)
+   sm <- compile_code(type='hmm',ac=FALSE,par=par,lambertW=lambertW)
   }else{
    sm <-mod
   }
@@ -306,10 +306,6 @@ ricker_hmm_stan <- function(data, par=c('a','b','both'), k_regime=2,
    alpha_wgt=ifelse(rep(par=="a"|par=="both",nrow(data)),parts$log_a_wt,NA),
    Smax_regime=ifelse(rep(par=="b"|par=="both",nrow(data)),parts$S_max_t,NA),
    Smax_wgt=ifelse(rep(par=="b"|par=="both",nrow(data)),parts$S_max_wt,NA),
-   Smsy_regime=parts$S_msy_t,
-   Smsy_wgt=parts$S_msy_wt,
-   umsy_regime=ifelse(rep(par=="a"|par=="both",nrow(data)),parts$U_msy_t,NA),
-   umsy_wgt=ifelse(rep(par=="a"|par=="both",nrow(data)),parts$U_msy_wt,NA),
    alpha=ifelse(par=="a"|par=="both",list(aa$summary[grep("log_a\\[",row.names(aa$summary)),"50%"]),aa$summary["log_a","50%"])[[1]],
    beta=ifelse(par=="b"|par=="both",list(aa$summary[grep("b\\[",row.names(aa$summary)),"50%"]),aa$summary["b","50%"])[[1]],
    Smax=ifelse(par=="b"|par=="both",list(aa$summary[grep("S_max\\[",row.names(aa$summary)),"50%"]),aa$summary["S_max","50%"])[[1]],
@@ -318,8 +314,6 @@ ricker_hmm_stan <- function(data, par=c('a','b','both'), k_regime=2,
    A=aa$summary[grep("A",row.names(aa$summary)),"50%"],
    probregime =matrix(aa$summary[grep("gamma\\[",row.names(aa$summary)),"50%"],ncol=k_regime, byrow=T),
    regime = aa$summary[grep("^zstar",row.names(aa$summary)),"50%"],
-   Smsy=aa$summary[grep("S_msy\\[",row.names(aa$summary)),"50%"],
-   umsy=ifelse(par=="a"|par=="both",list(aa$summary[grep("U_msy\\[",row.names(aa$summary)),"50%"]),aa$summary["U_msy","50%"])[[1]],
    stanfit=fit, 
    mcmcsummary=aa$summary,
    c_mcmcsummary=aa$c_summary, 
@@ -330,12 +324,14 @@ ricker_hmm_stan <- function(data, par=c('a','b','both'), k_regime=2,
 
   if(lambertW){
     
-    ans$Smax_regime=ifelse(rep(par=="b"|par=="both",nrow(data)),parts$S_max_t,NA)
-    ans$Smax_wgt=ifelse(rep(par=="b"|par=="both",nrow(data)),parts$S_max_wt,NA)
+    
     ans$Smsy_regime=parts$S_msy_t
     ans$Smsy_wgt=parts$S_msy_wt
     ans$umsy_regime=ifelse(rep(par=="a"|par=="both",nrow(data)),parts$U_msy_t,NA)
     ans$umsy_wgt=ifelse(rep(par=="a"|par=="both",nrow(data)),parts$U_msy_wt,NA)
+    ans$Smsy=aa$summary[grep("S_msy\\[",row.names(aa$summary)),"50%"]
+    ans$umsy=ifelse(par=="a"|par=="both",list(aa$summary[grep("U_msy\\[",row.names(aa$summary)),"50%"]),aa$summary["U_msy","50%"])[[1]]
+   
   }
 
 
