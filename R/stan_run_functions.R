@@ -203,7 +203,7 @@ ricker_rw_stan <- function(data, par=c('a','b','both'),  control = stancontrol()
                                     ii=seq_along(data$logRS),
                                     R_S =data$logRS,
                                     S=data$S),
-                        control = control, warmup = warmup, chains = chains, iter = iter)
+                        control = control, warmup = warmup, chains = chains, iter = iter,verbose=FALSE)
   
   mc <- rstan::extract(fit, 
                 inc_warmup=FALSE, permuted=FALSE)
@@ -227,7 +227,7 @@ ricker_rw_stan <- function(data, par=c('a','b','both'),  control = stancontrol()
     ans$umsy=aa$summary["U_msy","50%"]
   }
 
-  return( )
+  return(ans)
 
 }
 
@@ -291,7 +291,7 @@ ricker_hmm_stan <- function(data, par=c('a','b','both'), k_regime=2,
                                     K=k_regime,
                                     alpha_dirichlet=rep(1,k_regime)
                                     ),
-                        control = control, warmup = warmup, chains = chains, iter = iter)
+                        control = control, warmup = warmup, chains = chains, iter = iter,verbose=FALSE)
   
 
   mc <- rstan::extract(fit, 
@@ -340,7 +340,7 @@ ricker_hmm_stan <- function(data, par=c('a','b','both'), k_regime=2,
 
 
 
-   return()
+   return(ans)
 
 }
 
