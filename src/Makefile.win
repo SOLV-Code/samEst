@@ -25,7 +25,7 @@ SR_HMM_a.dll: SR_HMM_a.cpp
 SR_HMM_b.dll: SR_HMM_b.cpp
 	Rscript --vanilla -e "TMB::compile('SR_HMM_b.cpp','-O1 -g', DLLFLAGS='', framework = 'TMBad')"
 
-Rickerkf.dll: Rickerkf_fullLL.cpp
+Rickerkf.dll: Rickerkf.cpp
 	Rscript --vanilla -e "TMB::compile('Rickerkf.cpp', '-O1 -g',DLLFLAGS='', framework = 'TMBad')"
 
 
