@@ -657,7 +657,7 @@ ricker_kf_TMB <- function(data,  silent = FALSE, control = TMBcontrol(),  tmb_ma
     conv_problem = conv$conv_problem,
     call       = match.call(expand.dots = TRUE),
     sd_report  = sd_report,
-    class      = ifelse(fullLL,"Rickerkf_fullLL","Rickerkf")))
+    class      = "Rickerkf"))
 
 }
 

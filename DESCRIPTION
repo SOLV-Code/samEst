@@ -26,8 +26,7 @@ Imports:
     TMB (>= 1.8.0),
     rstan (>= 2.21.0),
     ggplot2,
-    cowplot
-RoxygenNote: 7.2.1
+    cowplot,
+    gsl
+RoxygenNote: 7.2.3
 LazyData: true
-
-
