@@ -1932,9 +1932,9 @@ model{
 }
  generated quantities{
      vector[N] log_lik;
-     vector[L] Smax;
+     vector[L] S_max;
     
-    for(l in 1:L) Smax[L] = 1/b[L];
+    for(l in 1:L) S_max[L] = 1/b[L];
     for(n in 1:N) log_lik[n] = normal_lpdf(R_S[n]|log_a - b[ii[n]]*S[n], sigma);
  
  }  
