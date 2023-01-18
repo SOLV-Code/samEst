@@ -384,7 +384,7 @@ model{
   
   //variance terms
    target += normal_lpdf(sigma | 0, 1) - normal_lcdf(0 | 0, 1); //remove density below zero   
-  target += normal_lpdf(sigma_b| 0, 1) - normal_lcdf(0 | 0, 1); //remove density below zero  
+   target += normal_lpdf(sigma_b| 0, 1) - normal_lcdf(0 | 0, 1); //remove density below zero  
    
   b_dev ~ std_normal();
  for(n in 1:N) R_S[n] ~ normal(log_a-b[ii[n]]*S[n], sigma);
@@ -396,7 +396,6 @@ model{
      vector[L] S_msy;
      
     for(n in 1:N) log_lik[n] = normal_lpdf(R_S[n]|log_a - b[ii[n]]*S[n], sigma);
-   
      
     for(l in 1:L){ S_max[l] = 1/b[l];
                    S_msy[l] = (1-lambert_w0(exp(1-log_a)))/b[l];
@@ -1935,7 +1934,7 @@ model{
      vector[N] log_lik;
      vector[L] S_max;
     
-     
+    for(l in 1:L) Smax[L] = 1/b[L];
     for(n in 1:N) log_lik[n] = normal_lpdf(R_S[n]|log_a - b[ii[n]]*S[n], sigma);
  
  }  
@@ -2061,7 +2060,7 @@ model{
      vector[N] log_lik;
      vector[L] S_max;
     
-     
+    for(l in 1:L) Smax[L] = 1/b[L]; 
    for(n in 1:N) log_lik[n] = normal_lpdf(R_S[n]|log_a[ii[n]] - S[n]*b[ii[n]], sigma);
    
     }
