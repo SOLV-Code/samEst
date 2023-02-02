@@ -183,4 +183,64 @@ model_weights<- function(x,form=c('PBMA','AIC'),type=c('full','d90','d80')){
   return(w)
 }
 
+stan_aic<- function(x,form=c('aic','bic'),type=c('full','d90','d80'),k){
+  LL=NA;AIC=NA;BIC=NA
+  elpd_1=matrix(nrow=length(x),ncol=ncol(x[[1]]))
+    if(type=='full'){
+      for(i in 1:length(x)){
+        elpd_1[i,]=apply(x[[i]],2,log_mean_exp) #
+      }
+    LL=apply(elpd_1,1,sum)
+    AIC=-2*LL+2*k+(2*k^2+2*k)/(ncol(x[[1]])-k-1)
+    BIC=-2*LL+k*log(ncol(x[[1]]))
+      
+    dAIC=AIC-min(AIC)
+    dBIC=BIC-min(BIC)
+    w_aic=NA
+    w_bic=NA
+    for(i in 1:length(x)){w_aic[i]=exp(-0.5*dAIC[i])/sum(exp(-0.5*dBIC))}
+    for(i in 1:length(x)){w_bic[i]=exp(-0.5*dBIC[i])/sum(exp(-0.5*dBIC))}
+    }
+  if(type=='d90'){
+    for(i in 1:length(x)){
+      elpd_1[i,]=apply(x[[i]],2,log_mean_exp) #
+    }
+    elpd_1=elpd_1[,apply(elpd_1,2,sum)>=quantile(apply(elpd_1,2,sum),0.1)]
+  
+    LL=apply(elpd_1,1,sum)
+    AIC=-2*LL+2*k+(2*k^2+2*k)/(ncol(x[[1]])-k-1)
+    BIC=-2*LL+k*log(ncol(x[[1]]))
+    
+    dAIC=AIC-min(AIC)
+    dBIC=BIC-min(BIC)
+    w_aic=NA
+    w_bic=NA
+    for(i in 1:length(x)){w_aic[i]=exp(-0.5*dAIC[i])/sum(exp(-0.5*dBIC))}
+    for(i in 1:length(x)){w_bic[i]=exp(-0.5*dBIC[i])/sum(exp(-0.5*dBIC))}
+  }
+  if(type=='d80'){
+    for(i in 1:length(x)){
+      elpd_1[i,]=apply(x[[i]],2,log_mean_exp) #
+    }
+    elpd_1=elpd_1[,apply(elpd_1,2,sum)>=quantile(apply(elpd_1,2,sum),0.2)]
+    
+    LL=apply(elpd_1,1,sum)
+    AIC=-2*LL+2*k+(2*k^2+2*k)/(ncol(x[[1]])-k-1)
+    BIC=-2*LL+k*log(ncol(x[[1]]))
+    
+    dAIC=AIC-min(AIC)
+    dBIC=BIC-min(BIC)
+    w_aic=NA
+    w_bic=NA
+    for(i in 1:length(x)){w_aic[i]=exp(-0.5*dAIC[i])/sum(exp(-0.5*dBIC))}
+    for(i in 1:length(x)){w_bic[i]=exp(-0.5*dBIC[i])/sum(exp(-0.5*dBIC))}
+  }
+  if(form=='aic'){
+    return(w_aic)
+  }
+  if(form=='bic'){
+    return(w_bic)
+  }
+}
+
 
