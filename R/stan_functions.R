@@ -1693,15 +1693,11 @@ for(t in 2:N) R_S[t] ~ normal(mu[t], sigma_AR);
  generated quantities{
      vector[N] log_lik;
      real S_max;
-     real U_msy;
-     real S_msy;
     
     log_lik[1] = normal_lpdf(R_S[1]|mu[1], sigma);
     for(n in 1:N) log_lik[n] = normal_lpdf(R_S[n]|mu[n], sigma_AR);
      
     S_max = 1/b;
-    U_msy = 1-lambert_w0(exp(1-log_a));
-    S_msy = (1-lambert_w0(exp(1-log_a)))/b;
     }
     "
     }
@@ -3061,3 +3057,405 @@ if(modelcode){
 }
 }
 
+
+
+#slow grow rw mod
+sr_mod3<- function(type=c('rw'),par=c('a','b','both'),lfo=FALSE, modelcode=FALSE){
+  if(type=='rw'&par=='a'){
+    if(lfo==FALSE){
+      m="data{
+  int<lower=1> N;//number of annual samples 
+  int L; //years covered by time-series
+  int ii[N];//index of years with data
+  vector[N] R_S; //log(recruits per spawner)
+  vector[N] S; //spawners in time T
+  }
+parameters{
+  real<lower = 0> log_a0;// initial productivity (on log scale)
+  real<upper = 0> log_b; // rate capacity - fixed in this
+
+ //variance components  
+  real<lower = 0> sigma;
+  real<lower = 0> sigma_a;
+
+  //time-varying parameters
+  vector[L-1] a_dev; //year-to-year deviations in a
+  
+}
+transformed parameters{
+  real b;
+  vector[L] log_a; //a in each year (on log scale)
+  
+  b=exp(log_b);
+  
+  log_a[1] = log_a0; //initial value
+  for(t in 2:L){
+    log_a[t] = log_a[t-1] + a_dev[t-1]*sigma_a; //random walk of log_a
+  }
+  
+}  
+model{
+  //priors
+  log_a0 ~ gamma(3,1.5); //initial productivity - wide prior
+  log_b ~ normal(-12,3); //per capita capacity parameter - wide prior
+  a_dev ~ std_normal(); //standardized (z-scales) deviances
+  
+  //variance terms
+   target += normal_lpdf(sigma | 0, 1) - normal_lcdf(0 | 0, 1); //remove density below zero   
+  target += normal_lpdf(sigma_a| 0, 1) - normal_lcdf(0 | 0, 1); //remove density below zero  
+   
+ 
+  for(n in 1:N) R_S[n] ~ normal(log_a[ii[n]] - S[n]*b, sigma); 
+  
+}
+ generated quantities{
+     vector[N] log_lik;
+     real S_max;
+     vector[L] U_msy;
+     vector[L] S_msy;
+     
+    for(n in 1:N) log_lik[n] = normal_lpdf(R_S[n]|log_a[ii[n]] - S[n]*b, sigma);
+   
+    S_max = 1/b;
+    U_msy = 1-lambert_w0(exp(1-log_a));
+    S_msy = (1-lambert_w0(exp(1-log_a)))/b;
+    }
+"
+    }
+if(lfo==TRUE){
+  m="data{
+  int<lower=1> N;//number of annual samples
+  int<lower=1> L;//number years in the data series(time-series length)
+  int ii[N];//index of years with data
+  vector[N] R_S; //log(recruits per spawner)
+  vector[N] S; //spawners in time T
+  real y_oos; //log(recruits per spawner)
+  real x_oos; //spawners in time T
+ }
+parameters{
+  real<lower = 0> log_a0;// initial productivity (on log scale)
+  real<upper = 0> log_b; // rate capacity - fixed in this
+
+ //variance components  
+  real<lower = 0> sigma;
+  real<lower = 0> sigma_a;
+
+  //time-varying parameters
+  vector[L-1] a_dev; //year-to-year deviations in a
+  
+}
+transformed parameters{
+  real b;
+  vector[L] log_a; //a in each year (on log scale)
+  
+  b=exp(log_b);
+  
+  log_a[1] = log_a0; //initial value
+  for(t in 2:L){
+    log_a[t] = log_a[t-1] + a_dev[t-1]*sigma_a; //random walk of log_a
+  }
+}  
+model{
+  //priors
+  log_a0 ~ gamma(3,1.5); //initial productivity - wide prior
+  log_b ~ normal(-12,3); //per capita capacity parameter - wide prior
+  a_dev ~ std_normal(); //standardized (z-scales) deviances
+  
+  //variance terms
+   target += normal_lpdf(sigma | 0, 1) - normal_lcdf(0 | 0, 1); //remove density below zero   
+  target += normal_lpdf(sigma_a| 0, 1) - normal_lcdf(0 | 0, 1); //remove density below zero  
+   
+  for(n in 1:N) R_S[n] ~ normal(log_a[ii[n]] - S[n]*b, sigma);
+}
+  generated quantities{
+  real log_a_3b;
+  real log_a_5b;
+  real log_lik_oos_1b;
+  real log_lik_oos_3b;
+  real log_lik_oos_5b;
+  
+  log_a_3b = (log_a[ii[N]]+log_a[ii[N-1]]+log_a[ii[N-2]])/3;
+  log_a_5b = (log_a[ii[N]]+log_a[ii[N-1]]+log_a[ii[N-2]]+log_a[ii[N-3]]+log_a[ii[N-4]])/5;
+  
+  log_lik_oos_1b = normal_lpdf(y_oos|log_a[ii[N]] - x_oos*b, sigma);
+  log_lik_oos_3b = normal_lpdf(y_oos|log_a_3b - x_oos*b, sigma);
+  log_lik_oos_5b = normal_lpdf(y_oos|log_a_5b - x_oos*b, sigma);
+ }
+    "}
+  }  
+#M4: TV Cap S-R####
+if(type=='rw'&par=='b'){
+  if(lfo==FALSE){
+    m="data{
+  int<lower=1> N;//number of annual samples
+  int<lower=1> L;//number years in the data series(time-series length)
+  int ii[N];//index of years with data
+  vector[N] R_S; //log(recruits per spawner)
+  vector[N] S; //spawners in time T
+ }
+parameters {
+  real<lower = 0> log_a;// initial productivity (on log scale) - fixed in this
+  real<upper = 0> b0; // rate capacity - fixed in this
+
+ //variance components  
+  real<lower = 0> sigma;
+  real<lower = 0> sigma_b;
+  
+  //time-varying parameters
+  vector[L-1] b_dev; //year-to-year deviations in a
+
+}
+
+transformed parameters{
+  vector[L] log_b; //b in each year
+  vector[L] b; //b in each year
+  
+  log_b[1] = b0;
+  for(t in 2:L){
+    log_b[t] = log_b[t-1] + b_dev[t-1]*sigma_b;
+  } 
+  b=exp(log_b);
+}  
+
+model{
+  //priors
+  log_a ~ gamma(3,1.5); //productivity
+  b0 ~ normal(-12,3); //capacity
+  
+  //variance terms
+   target += normal_lpdf(sigma | 0, 1) - normal_lcdf(0 | 0, 1); //remove density below zero   
+   target += normal_lpdf(sigma_b| 0, 1) - normal_lcdf(0 | 0, 1); //remove density below zero  
+   
+  b_dev ~ std_normal();
+ for(n in 1:N) R_S[n] ~ normal(log_a-b[ii[n]]*S[n], sigma);
+}
+ generated quantities{
+     vector[N] log_lik;
+     vector[L] S_max;
+     real U_msy;
+     vector[L] S_msy;
+     
+    for(n in 1:N) log_lik[n] = normal_lpdf(R_S[n]|log_a - b[ii[n]]*S[n], sigma);
+     
+    for(l in 1:L){ S_max[l] = 1/b[l];
+                   S_msy[l] = (1-lambert_w0(exp(1-log_a)))/b[l];
+    }
+    U_msy = 1-lambert_w0(exp(1-log_a));
+    }
+ "
+  }
+if(lfo==TRUE){
+  m="data{
+  int<lower=1> N;//number of annual samples
+  int<lower=1> L;//number years in the data series(time-series length)
+  int ii[N];//index of years with data
+  vector[N] R_S; //log(recruits per spawner)
+  vector[N] S; //spawners in time T
+  real y_oos; //log(recruits per spawner)
+  real x_oos; //spawners in time T
+ }
+parameters {
+  real<lower = 0> log_a;// initial productivity (on log scale) - fixed in this
+  real<upper = 0> b0; // rate capacity - fixed in this
+
+ //variance components  
+  real<lower = 0> sigma;
+  real<lower = 0> sigma_b;
+  
+  //time-varying parameters
+  vector[L-1] b_dev; //year-to-year deviations in a
+
+}
+
+transformed parameters{
+  vector[L] log_b; //b in each year
+  vector[L] b; //b in each year
+  
+  log_b[1] = b0;
+  for(t in 2:L){
+    log_b[t] = log_b[t-1] + b_dev[t-1]*sigma_b;
+  } 
+  b=exp(log_b);
+}  
+
+model{
+  //priors
+  log_a ~ gamma(3,1.5); //productivity
+  b0 ~ normal(-12,3); //initial capacity
+  
+  //variance terms
+   target += normal_lpdf(sigma | 0, 1) - normal_lcdf(0 | 0, 1); //remove density below zero   
+  target += normal_lpdf(sigma_b| 0, 1) - normal_lcdf(0 | 0, 1); //remove density below zero  
+   
+  b_dev ~ std_normal();
+  
+  for(n in 1:N) R_S[n] ~ normal(log_a-S[n]*b[ii[n]], sigma);
+}
+generated quantities{
+  real b_3b;
+  real b_5b;
+  real log_lik_oos_1b;
+  real log_lik_oos_3b;
+  real log_lik_oos_5b;
+  
+  b_3b = exp((log_b[ii[N]]+log_b[ii[N-1]]+log_b[ii[N-2]])/3);
+  b_5b = exp((log_b[ii[N]]+log_b[ii[N-1]]+log_b[ii[N-2]]+log_b[ii[N-3]]+log_b[ii[N-4]])/5);
+  
+  log_lik_oos_1b = normal_lpdf(y_oos|log_a - x_oos*b[ii[N]], sigma);
+  log_lik_oos_3b = normal_lpdf(y_oos|log_a - x_oos*b_3b, sigma);
+  log_lik_oos_5b = normal_lpdf(y_oos|log_a - x_oos*b_5b, sigma);
+ }
+ "}
+}
+#M5: TV ProdCap S-R####
+if(type=='rw'&par=='both'){
+  if(lfo==FALSE){
+    m="data{
+  int<lower=1> N;//number of annual samples (time-series length)
+  int L; //total years covered by time-series
+  int ii[N];//index of years with data
+  vector[N] R_S; //log(recruits per spawner)
+  vector[N] S; //spawners in time T
+ }
+parameters {
+  real<lower=0> log_a0;// initial productivity (on log scale) - fixed in this
+  real<upper=0> log_b0; // rate capacity - fixed in this
+
+ //variance components  
+  real<lower = 0> sigma;
+  real<lower = 0> sigma_a;
+  real<lower = 0> sigma_b;
+  
+  //time-varying parameters
+  vector[L-1] a_dev; //year-to-year deviations in a
+  vector[L-1] b_dev; //year-to-year deviations in a
+}
+
+transformed parameters{
+  vector[L] log_a; //a in each year (log scale)
+  vector[L] log_b; //b in each year (log scale)
+  vector[L] b; //b in each year
+  
+  log_a[1] = log_a0;
+  log_b[1] = log_b0;
+  for(t in 2:L){
+    log_a[t] = log_a[t-1] + a_dev[t-1]*sigma_a;
+    log_b[t] = log_b[t-1] + b_dev[t-1]*sigma_b;
+  } 
+  b=exp(log_b);
+}  
+
+model{
+  //priors
+  log_a0 ~ gamma(3,1.5); //initial productivity
+  log_b0 ~ normal(-12,3); //initial capacity
+  
+  //variance terms
+   target += normal_lpdf(sigma | 0, 1) - normal_lcdf(0 | 0, 1); //remove density below zero   
+  target += normal_lpdf(sigma_a| 0, 1) - normal_lcdf(0 | 0, 1); //remove density below zero  
+  target += normal_lpdf(sigma_b| 0, 1) - normal_lcdf(0 | 0, 1); //remove density below zero  
+  
+  a_dev ~ std_normal();
+  b_dev ~ std_normal();
+  
+  for(n in 1:N) R_S[n] ~ normal(log_a[ii[n]]-b[ii[n]]*S[n], sigma);
+}
+ generated quantities{
+     vector[N] log_lik;
+     vector[L] S_max;
+     vector[L] U_msy;
+     vector[L] S_msy;
+     
+   for(n in 1:N) log_lik[n] = normal_lpdf(R_S[n]|log_a[ii[n]] - S[n]*b[ii[n]], sigma);
+   
+   for(l in 1:L){ S_max[l] = 1/b[l];
+    U_msy[l] = 1-lambert_w0(exp(1-log_a[l]));
+    S_msy[l] = (1-lambert_w0(exp(1-log_a[l])))/b[l];
+   }
+    }
+"
+  }
+if(lfo==TRUE){
+  m="data{
+  int<lower=1> N;//number of annual samples (time-series length)
+  int L; //total years covered by time-series
+  int ii[N];//index of years with data
+  vector[N] R_S; //log(recruits per spawner)
+  vector[N] S; //spawners in time T
+  real y_oos; //log(recruits per spawner)
+  real x_oos; //spawners in time T
+ }
+parameters {
+  real<lower=0> log_a0;// initial productivity (on log scale) - fixed in this
+  real<upper=0> log_b0; // rate capacity - fixed in this
+
+ //variance components  
+  real<lower = 0> sigma;
+  real<lower = 0> sigma_a;
+  real<lower = 0> sigma_b;
+  
+  //time-varying parameters
+  vector[L-1] a_dev; //year-to-year deviations in a
+  vector[L-1] b_dev; //year-to-year deviations in a
+}
+
+transformed parameters{
+  vector<lower = 0>[L] log_a; //a in each year (log scale)
+  vector<upper = 0>[L] log_b; //b in each year (log scale)
+  vector[L] b; //b in each year
+  
+  log_a[1] = log_a0;
+  log_b[1] = log_b0;
+  for(t in 2:L){
+    log_a[t] = log_a[t-1] + a_dev[t-1]*sigma_a;
+    log_b[t] = log_b[t-1] + b_dev[t-1]*sigma_b;
+  } 
+  b=exp(log_b);
+}  
+
+model{
+  //priors
+  log_a0 ~ gamma(3,1.5); //initial productivity
+log_b0 ~ normal(-12,3); //initial capacity
+  
+  //variance terms
+   target += normal_lpdf(sigma | 0, 1) - normal_lcdf(0 | 0, 1); //remove density below zero   
+  target += normal_lpdf(sigma_a| 0, 1) - normal_lcdf(0 | 0, 1); //remove density below zero  
+  target += normal_lpdf(sigma_b| 0, 1) - normal_lcdf(0 | 0, 1); //remove density below zero  
+  
+  a_dev ~ std_normal();
+  b_dev ~ std_normal();
+  
+  for(n in 1:N) R_S ~ normal(log_a[ii[n]]-b[ii[n]]*S[n], sigma);
+}
+generated quantities{
+  real b_3b;
+  real b_5b;
+  real log_a_3b;
+  real log_a_5b;
+  real log_lik_oos_1b;
+  real log_lik_oos_3b;
+  real log_lik_oos_5b;
+  
+  log_a_3b = (log_a[ii[N]]+log_a[ii[N-1]]+log_a[ii[N-2]])/3;
+  log_a_5b = (log_a[ii[N]]+log_a[ii[N-1]]+log_a[ii[N-2]]+log_a[ii[N-3]]+log_a[ii[N-4]])/5;
+  
+  b_3b = exp((log_b[ii[N]]+log_b[ii[N-1]]+log_b[ii[N-2]])/3);
+  b_5b = exp((log_b[ii[N]]+log_b[ii[N-1]]+log_b[ii[N-2]]+log_b[ii[N-3]]+log_b[ii[N-4]])/5);
+  
+  log_lik_oos_1b = normal_lpdf(y_oos|log_a[ii[N]] - x_oos*b[ii[N]], sigma);
+  log_lik_oos_3b = normal_lpdf(y_oos|log_a_3b - x_oos*b_3b, sigma);
+  log_lik_oos_5b = normal_lpdf(y_oos|log_a_5b - x_oos*b_5b, sigma);
+ }
+ "}
+}
+m2=rstan::stan_model(model_code = m)
+
+if(modelcode){
+  return(m)  
+  
+}else{
+  return(m2)  
+  
+}
+}
