@@ -76,7 +76,8 @@ Type objective_function<Type>::operator() ()
   DATA_VECTOR(obs_logRS);   // observed recruitment
   DATA_INTEGER(priors_flag); //flag indicating wether or not priors should be used
   DATA_INTEGER(stan_flag); //flag indicating wether or not tmbstan is used 
-  
+  DATA_SCALAR(sig_p_sd); //sd for sigma prior
+  DATA_SCALAR(siga_p_sd); //sd for siga prior
 
   PARAMETER(alphao); //initial alpha value
   PARAMETER(logbeta); //log of beta from ricker curve
@@ -114,8 +115,8 @@ Type objective_function<Type>::operator() ()
     //pnll  -= dgamma(sigobs,Type(2.0),Type(1.0)/Type(3.0),true);  
     //pnll  -= dgamma(siga,Type(2.0),Type(1.0)/Type(3.0),true);
 
-    pnll  -= dnorm(sigobs,Type(0.0),Type(1.0),true) - log(pnorm(Type(0.0), Type(0.0),Type(1.0)));
-    pnll  -= dnorm(siga,Type(0.0),Type(1.0),true) - log(pnorm(Type(0.0), Type(0.0),Type(1.0)));
+    pnll  -= dnorm(sigobs,Type(0.0),sig_p_sd,true) - log(pnorm(Type(0.0), Type(0.0),sig_p_sd));
+    pnll  -= dnorm(siga,Type(0.0),siga_p_sd,true) - log(pnorm(Type(0.0), Type(0.0),siga_p_sd));
     if(stan_flag){
       pnll -= logsigobs;
       pnll -= logsiga;

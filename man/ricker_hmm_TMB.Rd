@@ -15,7 +15,8 @@ ricker_hmm_TMB(
   ini_param = NULL,
   tmb_map = list(),
   priors_flag = 1,
-  stan_flag = 0
+  stan_flag = 0,
+  sig_p_sd = 1
 )
 }
 \arguments{
@@ -43,6 +44,8 @@ See details for priors documentation. See details for priors documentation.}
 
 \item{stan_flag}{Integer, flag indicating wether or not TMB code will be used with TMBstan - Jacobian
 adjustment implemented. Default is 0, jacobian adjustment not included.}
+
+\item{sig_p_sd}{sd for half normal prior on sigma parameter. default is 1.}
 }
 \value{
 a list containing several model outputs:

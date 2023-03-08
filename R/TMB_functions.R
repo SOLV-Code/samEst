@@ -17,8 +17,10 @@
 #'  See details for priors documentation. See details for priors documentation.
 #' @param stan_flag Integer, flag indicating wether or not TMB code will be used with TMBstan - Jacobian
 #' adjustment implemented. Default is 0, jacobian adjustment not included.
-#'  
+#' @param sig_p_sd sd for half normal prior on sigma parameter. default is 1.
 #' 
+#'
+#'
 #' @details Priors: Weakly informative priors are included for the main parameterst of the model:
 #' alpha ~ gamma(3,1)
 #' logbeta ~ N(-12,3)
@@ -51,14 +53,15 @@
 #' rickerTMB(data=harck)
 #' 
 ricker_TMB <- function(data,  silent = FALSE, control = TMBcontrol(), 
-  tmb_map = list(), AC=FALSE, priors_flag=1, stan_flag=0) {
+  tmb_map = list(), AC=FALSE, priors_flag=1, stan_flag=0,sig_p_sd=1) {
 
   
   tmb_data <- list(
     obs_S = data$S,
     obs_logRS = data$logRS,
     priors_flag=priors_flag,
-    stan_flag=stan_flag
+    stan_flag=stan_flag,
+    sig_p_sd=sig_p_sd
   )
   
   magS <- log10_ceiling(max(data$S))
@@ -141,7 +144,7 @@ ricker_TMB <- function(data,  silent = FALSE, control = TMBcontrol(),
 
 
 
-#' Ricker model with random walk in alpha parameter with TMB
+#' Ricker model with random walk in a, b or both parameters with TMB
 #'
 #' @param data A list or data frame containing Spawners (S) and log(Recruits/Spawners) (logRS) time series. 
 #' @param tv.par Which parameters should vary? Either productivity (intercept, a), capacity (slope, b) or both parameters
@@ -155,6 +158,9 @@ ricker_TMB <- function(data,  silent = FALSE, control = TMBcontrol(),
 #'  See details for priors documentation. See details for priors documentation.
 #' @param stan_flag Integer, flag indicating wether or not TMB code will be used with TMBstan - Jacobian
 #' adjustment implemented. Default is 0, jacobian adjustment not included.
+#' @param sig_p_sd sd for half normal prior on sigma parameter. default is 1.
+#' @param siga_p_sd sd for half normal prior on sigma for alpha random walk parameter. default is 1.
+#' @param sigb_p_sd sd for half normal prior on sigma for beta random walk parameter. default is 1.
 #' 
 #' @details Priors: Weakly informative priors are included for the main parameterst of the model:
 #' alpha ~ gamma(3,1)
@@ -191,7 +197,8 @@ ricker_TMB <- function(data,  silent = FALSE, control = TMBcontrol(),
 #' 
 #' 
 ricker_rw_TMB <- function(data, tv.par=c('a','b','both'), silent = FALSE, 
-  control = TMBcontrol(), ini_param=NULL, tmb_map = list(), priors_flag=1, stan_flag=0 ) {
+  control = TMBcontrol(), ini_param=NULL, tmb_map = list(), priors_flag=1, stan_flag=0,
+  sig_p_sd=1, siga_p_sd=1, sigb_p_sd=1 ) {
 
   #===================================
   #prepare TMB input and options
@@ -200,7 +207,8 @@ ricker_rw_TMB <- function(data, tv.par=c('a','b','both'), silent = FALSE,
     obs_S = data$S,
     obs_logRS = data$logRS,
     priors_flag=priors_flag,
-    stan_flag=stan_flag
+    stan_flag=stan_flag,
+    sig_p_sd=sig_p_sd
   )
 
   if(is.null(ini_param)){
@@ -209,6 +217,8 @@ ricker_rw_TMB <- function(data, tv.par=c('a','b','both'), silent = FALSE,
   }
 
   if(tv.par=="a"){
+
+    tmb_data$siga_p_sd=siga_p_sd
 
     if(is.null(ini_param)){
       tmb_params <- list(alphao   = initlm$coefficients[[1]],
@@ -237,6 +247,8 @@ ricker_rw_TMB <- function(data, tv.par=c('a','b','both'), silent = FALSE,
    npar <- 4
 
   }else if(tv.par=="b"){
+
+    tmb_data$sigb_p_sd=sigb_p_sd
 
     if(is.null(ini_param)){
      
@@ -271,6 +283,9 @@ ricker_rw_TMB <- function(data, tv.par=c('a','b','both'), silent = FALSE,
     npar <- 4
 
   }else if(tv.par=="both"){
+
+    tmb_data$siga_p_sd=siga_p_sd
+    tmb_data$sigb_p_sd=sigb_p_sd
     
     if(is.null(ini_param)){    
       tmb_params <- list(logbetao = ifelse(initlm$coefficients[[2]]>0,
@@ -383,7 +398,7 @@ ricker_rw_TMB <- function(data, tv.par=c('a','b','both'), silent = FALSE,
 #'  See details for priors documentation. See details for priors documentation.
 #' @param stan_flag Integer, flag indicating wether or not TMB code will be used with TMBstan - Jacobian
 #' adjustment implemented. Default is 0, jacobian adjustment not included.
-#' 
+#' @param sig_p_sd sd for half normal prior on sigma parameter. default is 1.
 #' 
 #' 
 #' @details This model was published in Tang et al. 2021 Identification of recruitment regime shifts with a hidden Markov stock-recruitment model. 
@@ -434,7 +449,8 @@ ricker_hmm_TMB <- function(data,
                            ini_param = NULL, 
                            tmb_map = list(), 
                            priors_flag = 1,
-                           stan_flag = 0) {
+                           stan_flag = 0,
+                           sig_p_sd=1) {
 
   #===================================
   #prepare TMB input and options
@@ -447,7 +463,8 @@ ricker_hmm_TMB <- function(data,
     beta_u=beta_upper,
     alpha_dirichlet=rep(1,k_regime),
     priors_flag=priors_flag,
-    stan_flag=stan_flag  
+    stan_flag=stan_flag,
+    sig_p_sd=sig_p_sd  
   )
 
   if(is.null(ini_param)){

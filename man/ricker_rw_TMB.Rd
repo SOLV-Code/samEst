@@ -2,7 +2,7 @@
 % Please edit documentation in R/TMB_functions.R
 \name{ricker_rw_TMB}
 \alias{ricker_rw_TMB}
-\title{Ricker model with random walk in alpha parameter with TMB}
+\title{Ricker model with random walk in a, b or both parameters with TMB}
 \usage{
 ricker_rw_TMB(
   data,
@@ -12,7 +12,10 @@ ricker_rw_TMB(
   ini_param = NULL,
   tmb_map = list(),
   priors_flag = 1,
-  stan_flag = 0
+  stan_flag = 0,
+  sig_p_sd = 1,
+  siga_p_sd = 1,
+  sigb_p_sd = 1
 )
 }
 \arguments{
@@ -35,6 +38,12 @@ See details for priors documentation. See details for priors documentation.}
 
 \item{stan_flag}{Integer, flag indicating wether or not TMB code will be used with TMBstan - Jacobian
 adjustment implemented. Default is 0, jacobian adjustment not included.}
+
+\item{sig_p_sd}{sd for half normal prior on sigma parameter. default is 1.}
+
+\item{siga_p_sd}{sd for half normal prior on sigma for alpha random walk parameter. default is 1.}
+
+\item{sigb_p_sd}{sd for half normal prior on sigma for beta random walk parameter. default is 1.}
 }
 \value{
 a list containing several model outputs:
@@ -59,7 +68,7 @@ a list containing several model outputs:
 }
 }
 \description{
-Ricker model with random walk in alpha parameter with TMB
+Ricker model with random walk in a, b or both parameters with TMB
 }
 \details{
 Priors: Weakly informative priors are included for the main parameterst of the model:

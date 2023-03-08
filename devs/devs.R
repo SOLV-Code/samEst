@@ -41,6 +41,7 @@ plot(harck$S,harck$R)
 ##testing functions
 
 p <- ricker_TMB(data=harck)
+
 simple_mod <- samEst::compile_code(type='static', ac=FALSE, par='n',lambertW = FALSE)
 b <- ricker_stan(data=harck,iter = 800, mod=simple_mod)
 
@@ -71,7 +72,9 @@ sum(lfoac)
 names(p)
 
 
-ptva<- ricker_rw_TMB(data=harck,tv.par="a")
+ptva<- ricker_rw_TMB(data=harck,tv.par="a",sig_p_sd=1)
+
+
 ptva[1:6]
 pac$tmb_obj$report()$nll
 
@@ -146,8 +149,8 @@ lfohmm <- tmb_mod_lfo_cv(data=harck,model='HMM', L=round((2/3)*nrow(harck)))
 p <- ricker_TMB(data=harck)
 pac<-ricker_TMB(data=harck, AC=TRUE)
 ptva<- ricker_rw_TMB(data=harck,tv.par="a")
-ptvb <- ricker_rw_TMB(data=harck,tv.par="b")
-ptvab <- ricker_rw_TMB(data=harck,tv.par="both")
+ptvb <- ricker_rw_TMB(data=harck,tv.par="b",sig_p_sd=1)
+ptvab <- ricker_rw_TMB(data=harck,tv.par="both",sig_p_sd=.5)
 phmma <- ricker_hmm_TMB(data=harck, tv.par='a')
 phmmb <- ricker_hmm_TMB(data=harck, tv.par='b')
 phmm <- ricker_hmm_TMB(data=harck, tv.par='both')
