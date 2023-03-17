@@ -149,10 +149,11 @@ Type objective_function<Type>::operator() ()
 
   DATA_VECTOR(yt);
   DATA_VECTOR(st);
-  DATA_SCALAR(alpha_u); //upper bound for b
-  DATA_SCALAR(alpha_l); //lower bound for b
-  DATA_SCALAR(beta_u);  //upper bound for a
-  //DATA_SCALAR(sigma_u); //upper bound for sigma
+  DATA_SCALAR(alpha_u); //upper bound for a
+  DATA_SCALAR(alpha_l); //lower bound for a
+  DATA_SCALAR(beta_u);  //upper bound for b
+  DATA_SCALAR(beta_l);  //upper bound for b
+  //DATA_SCALAR(sigma_u); //lower bound for sigma
   DATA_VECTOR(alpha_dirichlet); //prior inputs for dirichlet 
   DATA_INTEGER(priors_flag); //flag indicating wether or not priors should be used
   DATA_INTEGER(stan_flag); //flag indicating wether or not tmbstan is used 
@@ -166,7 +167,7 @@ Type objective_function<Type>::operator() ()
 
   int k_regime = lbeta.size();
   
-  vector<Type> beta = beta_u/(1+exp(-lbeta));// when lbeta is negative infinity, beta=0; when lbeta is positive infinity, beta=beta_u
+  vector<Type> beta = (beta_u-beta_l)/(1+exp(-lbeta))+beta_l;// when lbeta is negative infinity, beta=beta_l; when lbeta is positive infinity, beta=beta_u
   vector<Type> alpha(k_regime), Smsy(k_regime), umsy(k_regime), Smax(k_regime);
 
 

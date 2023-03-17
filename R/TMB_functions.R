@@ -385,7 +385,7 @@ ricker_rw_TMB <- function(data, tv.par=c('a','b','both'), silent = FALSE,
 #' @param tv.par Which parameters should vary? Either productivity (intercept, a), capacity (slope, b) or both parameters
 #' @param k_regime Number of regimes to be considered
 #' @param alpha_limits vector containing two values: upper and lower limit for alpha parameters. default is c(0,20)
-#' @param beta_upper upper limit for beta parameter. default is 1
+#' @param beta_limits vector containing two values: upper and lower limit for alpha parameters. default is c(1e-10,.1)
 #' @param silent Logical Silent or optimization details? default is FALSE
 #' @param control output from TMBcontrol() function, to be passed to nlminb()
 #' @param ini_param Optional. A list with initial parameter guesses. The list should contain: lalpha (vector of length k_regime),
@@ -441,7 +441,7 @@ ricker_hmm_TMB <- function(data,
                            tv.par = c('a','b','both'), 
                            k_regime = 2, 
                            alpha_limits = c(0.01,20), 
-                           beta_upper=.1,  
+                           beta_limits=c(1e-10,.1),  
                            silent = FALSE, 
                            control = TMBcontrol(), 
                            ini_param = NULL, 
@@ -458,7 +458,8 @@ ricker_hmm_TMB <- function(data,
     st=data$S, 
     alpha_u= alpha_limits[2],
     alpha_l=alpha_limits[1],
-    beta_u=beta_upper,
+    beta_u=beta_limits[2],
+    beta_l=beta_limits[1],
     alpha_dirichlet=rep(1,k_regime),
     priors_flag=priors_flag,
     stan_flag=stan_flag,
@@ -478,7 +479,7 @@ ricker_hmm_TMB <- function(data,
                                   alpha_limits[1],
                                   max(initlm$coefficients[[1]],.5)),
                    k_regime),
-          lbeta = find_linit(beta_upper,0,-bguess),
+          lbeta = find_linit(beta_limits[2],beta_limits[1],-bguess),
           logsigma = log(.6),
           pi1_tran = rep(0.5,k_regime-1),
           qij_tran = matrix(0.1,nrow=k_regime,ncol=k_regime-1)          
@@ -499,7 +500,7 @@ ricker_hmm_TMB <- function(data,
     if(is.null(ini_param)){      
       tmb_params <- list(        
           lalpha = find_linit(alpha_limits[2],alpha_limits[1],max(initlm$coefficients[[1]],.5)),
-          lbeta = rep(find_linit(beta_upper,0,-bguess),k_regime),
+          lbeta = rep(find_linit(beta_limits[2],beta_limits[1],-bguess),k_regime),
           logsigma = log(.6),
           pi1_tran = rep(0.5,k_regime-1),
           qij_tran = matrix(0.5,nrow=k_regime,ncol=k_regime-1)          
@@ -519,7 +520,7 @@ ricker_hmm_TMB <- function(data,
       tmb_params <- list(        
         lalpha = rep(find_linit(alpha_limits[2],alpha_limits[1],max(initlm$coefficients[[1]],.5)),
           k_regime),
-        lbeta = rep(find_linit(beta_upper,0,-bguess),k_regime),
+        lbeta = rep(find_linit(beta_limits[2],beta_limits[1],-bguess),k_regime),
         logsigma = log(.6),
         pi1_tran = rep(0.5,k_regime-1),
         qij_tran = matrix(0.1,nrow=k_regime,ncol=k_regime-1)          

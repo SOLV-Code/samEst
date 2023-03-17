@@ -132,9 +132,10 @@ Type objective_function<Type>::operator() ()
 
   DATA_VECTOR(yt);
   DATA_VECTOR(st);
-  DATA_SCALAR(alpha_u); //upper bound for b
-  DATA_SCALAR(alpha_l); //lower bound for b
-  DATA_SCALAR(beta_u);  //upper bound for a
+  DATA_SCALAR(alpha_u); //upper bound for a
+  DATA_SCALAR(alpha_l); //lower bound for a
+  DATA_SCALAR(beta_u);  //upper bound for b
+  DATA_SCALAR(beta_l); //lower bound for b
   //DATA_SCALAR(sigma_u); //upper bound for sigma
   DATA_VECTOR(alpha_dirichlet); //prior inputs for dirichlet 
   DATA_INTEGER(priors_flag);
@@ -152,7 +153,7 @@ Type objective_function<Type>::operator() ()
   // alpha(i) = alpha(i-1) + exp(alpha_tr(i));
   // }
 
-  Type beta = beta_u/(1+exp(-lbeta));// when lbeta is negative infinity, beta=0; when lbeta is positive infinity, beta=beta_u
+  Type beta = (beta_u-beta_l)/(1+exp(-lbeta))+beta_l;// when lbeta is negative infinity, beta=0; when lbeta is positive infinity, beta=beta_u
   Type Smax = Type(1.0)/beta;
   vector<Type> alpha(k_regime), Smsy(k_regime), umsy(k_regime);
   

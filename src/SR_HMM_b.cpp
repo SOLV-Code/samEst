@@ -135,6 +135,7 @@ Type objective_function<Type>::operator() ()
   DATA_SCALAR(alpha_u); //upper bound for b
   DATA_SCALAR(alpha_l); //lower bound for b
   DATA_SCALAR(beta_u);  //upper bound for a
+  DATA_SCALAR(beta_l); //lower bound for b
   //DATA_SCALAR(sigma_u); //upper bound for sigma
   DATA_VECTOR(alpha_dirichlet); //prior inputs for dirichlet 
   DATA_INTEGER(priors_flag);
@@ -156,8 +157,9 @@ Type objective_function<Type>::operator() ()
   vector<Type> beta(k_regime), Smsy(k_regime), Smax(k_regime);
   
   Type alpha = (alpha_u-alpha_l)/(1+exp(-lalpha))+alpha_l;
-  
-  beta(0) = beta_u/(1+exp(-lbeta(0)));
+            (beta_u-beta_l)/(1+exp(-lbeta(0)))+beta_l;
+   
+  beta(0) = (beta_u-beta_l)/(1+exp(-lbeta(0)))+beta_l;
 
   for(int i = 1;i < k_regime;++i){
      beta(i) = beta(i-1) + (beta_u-beta(i-1))/(1+exp(-lbeta(i)));

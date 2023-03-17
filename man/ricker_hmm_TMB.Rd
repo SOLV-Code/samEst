@@ -9,7 +9,7 @@ ricker_hmm_TMB(
   tv.par = c("a", "b", "both"),
   k_regime = 2,
   alpha_limits = c(0.01, 20),
-  beta_upper = 0.1,
+  beta_limits = c(1e-10, 0.1),
   silent = FALSE,
   control = TMBcontrol(),
   ini_param = NULL,
@@ -28,7 +28,7 @@ ricker_hmm_TMB(
 
 \item{alpha_limits}{vector containing two values: upper and lower limit for alpha parameters. default is c(0,20)}
 
-\item{beta_upper}{upper limit for beta parameter. default is 1}
+\item{beta_limits}{vector containing two values: upper and lower limit for alpha parameters. default is c(1e-10,.1)}
 
 \item{silent}{Logical Silent or optimization details? default is FALSE}
 
