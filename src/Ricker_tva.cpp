@@ -105,6 +105,10 @@ Type objective_function<Type>::operator() ()
   Type nll = Type(0.0);
   Type renll = Type(0.0);
   Type pnll = Type(0.0);
+  Type pnlla = Type(0.0);
+  Type pnllb = Type(0.0);
+  Type pnllc = Type(0.0);
+  Type pnlld = Type(0.0);
 
   if(priors_flag == 1){
     //ans -=dnorm(alphao,Type(0.0),Type(2.5),true);
@@ -117,6 +121,7 @@ Type objective_function<Type>::operator() ()
 
     pnll  -= dnorm(sigobs,Type(0.0),sig_p_sd,true) - log(pnorm(Type(0.0), Type(0.0),sig_p_sd));
     pnll  -= dnorm(siga,Type(0.0),siga_p_sd,true) - log(pnorm(Type(0.0), Type(0.0),siga_p_sd));
+    
     if(stan_flag){
       pnll -= logsigobs;
       pnll -= logsiga;
@@ -162,6 +167,10 @@ Type objective_function<Type>::operator() ()
   REPORT(Srep)
   REPORT(nll);
   REPORT(pnll);  
+  REPORT(pnlla);  
+  REPORT(pnllb);  
+  REPORT(pnllc);  
+  REPORT(pnlld);  
 
   ADREPORT(alpha);
   ADREPORT(beta);

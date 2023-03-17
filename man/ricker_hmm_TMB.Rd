@@ -8,7 +8,7 @@ ricker_hmm_TMB(
   data,
   tv.par = c("a", "b", "both"),
   k_regime = 2,
-  alpha_limits = c(0, 20),
+  alpha_limits = c(0.01, 20),
   beta_upper = 0.1,
   silent = FALSE,
   control = TMBcontrol(),

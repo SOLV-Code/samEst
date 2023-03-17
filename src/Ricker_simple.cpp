@@ -75,7 +75,7 @@ Type objective_function<Type>::operator() ()
     //pnll -= dgamma(sigobs,Type(2.0),Type(1.0)/Type(3.0),true);
     
     pnll -= dnorm(sigobs,Type(0.0),sig_p_sd,true) - log(pnorm(Type(0.0), Type(0.0),sig_p_sd));
-    if(stan_flag) pnll -= logsigobs;
+    if(stan_flag) pnll -= logsigobs; //Jacobian for half normal prior
   }
 
   //ans -= dnorm(logsigobs,Type(0.0),Type(2.0),true);

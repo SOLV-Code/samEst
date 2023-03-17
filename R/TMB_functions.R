@@ -223,12 +223,11 @@ ricker_rw_TMB <- function(data, tv.par=c('a','b','both'), silent = FALSE,
     if(is.null(ini_param)){
       tmb_params <- list(alphao   = initlm$coefficients[[1]],
                    logbeta = ifelse(initlm$coefficients[[2]]>0,
-                                   log(magS),
+                                   log(1/magS),
                                    log(-initlm$coefficients[[2]])),
                    logsigobs = log(.5),
                    logsiga = log(.5),
-                   alpha = rep(1,length(tmb_data$obs_S))
-      )
+                   alpha = rep(1,length(tmb_data$obs_S)))
     }else{
       tmb_params <-ini_param
     }
@@ -240,7 +239,7 @@ ricker_rw_TMB <- function(data, tv.par=c('a','b','both'), silent = FALSE,
                               DLL = "Ricker_tva", 
                               silent = silent)
 
-    lowlimit <- c(0,-20,log(0.01),log(0.01))
+    lowlimit <- c(0.01,-20,log(0.01),log(0.01))
     hightlimit <- c(20,-4,log(2),log(2))
 
    clss <- "Ricker_tva"
@@ -253,7 +252,7 @@ ricker_rw_TMB <- function(data, tv.par=c('a','b','both'), silent = FALSE,
     if(is.null(ini_param)){
      
       tmb_params <- list(logbetao = ifelse(initlm$coefficients[[2]]>0,
-                                           magS,
+                                           log(1/magS),
                                            log(-initlm$coefficients[[2]])),
                         alpha   = max(initlm$coefficients[[1]],.5),                 
                         logsigobs = log(.6),
@@ -261,8 +260,7 @@ ricker_rw_TMB <- function(data, tv.par=c('a','b','both'), silent = FALSE,
                         logbeta=rep(ifelse(initlm$coefficients[[2]]>0,
                                            log(1/max(data$S)),
                                            log(-initlm$coefficients[[2]])),
-                                    length(data$S))                  
-      )
+                                    length(data$S)))
     }else{
       tmb_params <-ini_param
     }
@@ -276,7 +274,7 @@ ricker_rw_TMB <- function(data, tv.par=c('a','b','both'), silent = FALSE,
       DLL = "Ricker_tvlogb", 
       silent = silent)
 
-    lowlimit <- c(-20,0.0,log(0.01),log(0.01))
+    lowlimit <- c(-20,0.01,log(0.01),log(0.01))
     hightlimit <- c(-4,20,log(2),log(2))
 
     clss <- "Ricker_tvlogb"
@@ -289,7 +287,7 @@ ricker_rw_TMB <- function(data, tv.par=c('a','b','both'), silent = FALSE,
     
     if(is.null(ini_param)){    
       tmb_params <- list(logbetao = ifelse(initlm$coefficients[[2]]>0,
-                                           log(magS),
+                                           log(1/magS),
                                            log(-initlm$coefficients[[2]])),
                         alphao   = max(initlm$coefficients[[1]],.5),                 
                         logsigobs = log(.6),
@@ -314,7 +312,7 @@ ricker_rw_TMB <- function(data, tv.par=c('a','b','both'), silent = FALSE,
       DLL = "Ricker_tva_tvb", 
       silent = silent)
   
-    lowlimit <- c(-20,0.0,log(0.0),log(0.01),log(0.01))
+    lowlimit <- c(-20,0.01,log(0.0),log(0.01),log(0.01))
     hightlimit <- c(-4,20,log(2),log(2),log(2))
     
     clss <- "Ricker_tva_tvb"
@@ -442,7 +440,7 @@ ricker_rw_TMB <- function(data, tv.par=c('a','b','both'), silent = FALSE,
 ricker_hmm_TMB <- function(data, 
                            tv.par = c('a','b','both'), 
                            k_regime = 2, 
-                           alpha_limits = c(0,20), 
+                           alpha_limits = c(0.01,20), 
                            beta_upper=.1,  
                            silent = FALSE, 
                            control = TMBcontrol(), 
