@@ -204,6 +204,7 @@ Type objective_function<Type>::operator() ()
   REPORT(Srep)
   REPORT(nll);
   REPORT(pnll);  
+  REPORT(renll);
 
   ADREPORT(alpha);
   ADREPORT(beta);

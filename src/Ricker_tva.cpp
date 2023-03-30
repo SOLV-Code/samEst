@@ -166,11 +166,9 @@ Type objective_function<Type>::operator() ()
   REPORT(Smsy)
   REPORT(Srep)
   REPORT(nll);
+  REPORT(renll);
   REPORT(pnll);  
-  REPORT(pnlla);  
-  REPORT(pnllb);  
-  REPORT(pnllc);  
-  REPORT(pnlld);  
+   
 
   ADREPORT(alpha);
   ADREPORT(beta);
