@@ -50,7 +50,7 @@ tmb_mod_lfo_cv=function(data, model=c('static','staticAC','rw_a','rw_b','rw_both
       df_oos <- data[c(past, oos), , drop = FALSE]
       
       
-      fit_past_tmb <-tryCatch({ricker_TMB(data=df_past, AC=TRUE)},
+      fit_past_tmb <-tryCatch({ricker_TMB(data=df_past)},
                                   error=function(cond){
                                     message(cond)
                                     return(list(conv_problem=1))}
