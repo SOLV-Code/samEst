@@ -50,7 +50,7 @@ tmb_mod_lfo_cv=function(data, model=c('static','staticAC','rw_a','rw_b','rw_both
       df_oos <- data[c(past, oos), , drop = FALSE]
       
       
-      fit_past_tmb <-tryCatch({ricker_TMB(data=df_past)},
+      fit_past_tmb <-tryCatch({ricker_TMB(data=df_past,silent = TRUE)},
                                   error=function(cond){
                                     message(cond)
                                     return(list(conv_problem=1))}
@@ -76,7 +76,7 @@ tmb_mod_lfo_cv=function(data, model=c('static','staticAC','rw_a','rw_b','rw_both
       df_oos <- data[c(past, oos), , drop = FALSE]
       
       #fit_past_tmb<- ricker_TMB(data=df_past,AC=TRUE)
-      fit_past_tmb <- tryCatch({ricker_TMB(data=df_past, AC=TRUE)},
+      fit_past_tmb <- tryCatch({ricker_TMB(data=df_past, AC=TRUE,silent = TRUE)},
                                   error=function(cond){
                                     message(cond)
                                     return(list(conv_problem=1))}
@@ -104,7 +104,7 @@ tmb_mod_lfo_cv=function(data, model=c('static','staticAC','rw_a','rw_b','rw_both
       df_past <- data[past, , drop = FALSE]
       df_oos <- data[c(past, oos), , drop = FALSE]
       
-      fit_past_tv_a_tmb <- tryCatch({ricker_rw_TMB(data=df_past,tv.par='a')},
+      fit_past_tv_a_tmb <- tryCatch({ricker_rw_TMB(data=df_past,tv.par='a',silent = TRUE)},
                                   error=function(cond){
                                     message(cond)
                                     return(list(conv_problem=1))}
@@ -153,7 +153,7 @@ tmb_mod_lfo_cv=function(data, model=c('static','staticAC','rw_a','rw_b','rw_both
       df_past <- data[past, , drop = FALSE]
       df_oos <- data[c(past, oos), , drop = FALSE]
       
-      fit_past_tv_b_tmb <- tryCatch({ricker_rw_TMB(data=df_past,tv.par='b')},
+      fit_past_tv_b_tmb <- tryCatch({ricker_rw_TMB(data=df_past,tv.par='b',silent = TRUE)},
                                   error=function(cond){
                                     message(cond)
                                     return(list(conv_problem=1))}
@@ -205,7 +205,7 @@ tmb_mod_lfo_cv=function(data, model=c('static','staticAC','rw_a','rw_b','rw_both
       df_oos <- data[c(past, oos), , drop = FALSE]
       
      
-      fit_past_tv_ab_tmb <- tryCatch({ricker_rw_TMB(data=df_past,tv.par='both')},
+      fit_past_tv_ab_tmb <- tryCatch({ricker_rw_TMB(data=df_past,tv.par='both',silent = TRUE)},
                                   error=function(cond){
                                     message(cond)
                                     return(list(conv_problem=1))}
@@ -247,7 +247,7 @@ tmb_mod_lfo_cv=function(data, model=c('static','staticAC','rw_a','rw_b','rw_both
       df_oos <- data[c(past, oos), , drop = FALSE]
       
       
-      fit_past_hmm_tmb <- tryCatch({ricker_hmm_TMB(data=df_past,tv.par='both')},
+      fit_past_hmm_tmb <- tryCatch({ricker_hmm_TMB(data=df_past,tv.par='both',silent = TRUE)},
                                   error=function(cond){
                                     message(cond)
                                     return(list(conv_problem=1))}
@@ -294,7 +294,7 @@ tmb_mod_lfo_cv=function(data, model=c('static','staticAC','rw_a','rw_b','rw_both
       df_past <- data[past, , drop = FALSE]
       df_oos <- data[c(past, oos), , drop = FALSE]
       
-      fit_past_hmm_tmb<- tryCatch({ricker_hmm_TMB(data=df_past,tv.par='a')},
+      fit_past_hmm_tmb<- tryCatch({ricker_hmm_TMB(data=df_past,tv.par='a',silent = TRUE)},
                                   error=function(cond){
                                     message(cond)
                                     return(list(conv_problem=1))}
@@ -341,7 +341,7 @@ tmb_mod_lfo_cv=function(data, model=c('static','staticAC','rw_a','rw_b','rw_both
       df_past <- data[past, , drop = FALSE]
       df_oos <- data[c(past, oos), , drop = FALSE]
       
-      fit_past_hmm_tmb <- tryCatch({ricker_hmm_TMB(data=df_past,tv.par='b')},
+      fit_past_hmm_tmb <- tryCatch({ricker_hmm_TMB(data=df_past,tv.par='b',silent = TRUE)},
                                   error=function(cond){
                                     message(cond)
                                     return(list(conv_problem=1))}
