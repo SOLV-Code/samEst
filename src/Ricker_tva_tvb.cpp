@@ -127,7 +127,7 @@ Type objective_function<Type>::operator() ()
   if(priors_flag == 1){
     //prior on parameters
     //ans -=dnorm(alphao,Type(0.0),Type(2.5),true);
-    pnll -=dgamma(alphao,Type(3.0),Type(1.0),true);
+    pnll -=dgamma(alphao,Type(3.0),Type(1.5),true);
     pnll -=dnorm(logbetao,Type(-12.0),Type(3.0),true);
     //prior on observation and process variance ratio
     //Type ans= -dbeta(rho,prbeta1,prbeta2,true); 
@@ -204,6 +204,7 @@ Type objective_function<Type>::operator() ()
   REPORT(Srep)
   REPORT(nll);
   REPORT(pnll);  
+  REPORT(renll);
 
   ADREPORT(alpha);
   ADREPORT(beta);

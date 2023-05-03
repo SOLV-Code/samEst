@@ -112,7 +112,7 @@ Type objective_function<Type>::operator() ()
 
   if(priors_flag == 1){
     //ans -=dnorm(alphao,Type(0.0),Type(2.5),true);
-    pnll -=dgamma(alphao,Type(3.0),Type(1.0),true);
+    pnll -=dgamma(alphao,Type(3.0),Type(1.5),true);
     pnll -=dnorm(logbeta,Type(-12.0),Type(3.0),true); 
     //ans -= dnorm(logsigobs,Type(0.0),Type(2.0),true);
     //ans -= dnorm(logsiga,Type(0.0),Type(2.0),true);
@@ -166,11 +166,9 @@ Type objective_function<Type>::operator() ()
   REPORT(Smsy)
   REPORT(Srep)
   REPORT(nll);
+  REPORT(renll);
   REPORT(pnll);  
-  REPORT(pnlla);  
-  REPORT(pnllb);  
-  REPORT(pnllc);  
-  REPORT(pnlld);  
+   
 
   ADREPORT(alpha);
   ADREPORT(beta);

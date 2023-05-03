@@ -244,6 +244,7 @@ ricker_rw_TMB <- function(data, tv.par=c('a','b','both'), silent = FALSE,
 
    clss <- "Ricker_tva"
    npar <- 4
+   npar_all <- 4+(length(data$S)-1)
 
   }else if(tv.par=="b"){
 
@@ -279,6 +280,7 @@ ricker_rw_TMB <- function(data, tv.par=c('a','b','both'), silent = FALSE,
 
     clss <- "Ricker_tvlogb"
     npar <- 4
+    npar_all <- 4+(length(data$S)-1)
 
   }else if(tv.par=="both"){
 
@@ -317,6 +319,7 @@ ricker_rw_TMB <- function(data, tv.par=c('a','b','both'), silent = FALSE,
     
     clss <- "Ricker_tva_tvb"
     npar <- 5
+    npar_all <- 5+(length(data$S)-1)*2
 
   }else{
     stop(paste("tv.par",tv.par,"not recognized."))
@@ -339,9 +342,15 @@ ricker_rw_TMB <- function(data, tv.par=c('a','b','both'), silent = FALSE,
   conv <- get_convergence_diagnostics(sd_report)
 
   nll <- tmb_obj$report()$nll
+  renll <- tmb_obj$report()$renll
+  allnll<- nll + renll
   
   AICc  <- 2*nll + 2*npar +(2*npar*(npar+1)/(nrow(data)-npar-1))
+  AICc_fullll  <- 2*allnll + 2*npar +(2*npar*(npar+1)/(nrow(data)-npar-1))
+  AICc_allparam  <- 2*nll + 2*npar_all +(2*npar_all*(npar_all+1)/(nrow(data)-npar_all-1))
   BIC  <- 2*nll + npar*log(nrow(data))
+  BIC_fullll  <- 2*allnll + npar*log(nrow(data))
+  BIC_allparam  <- 2*nll + npar_all*log(nrow(data))
 
   #todo add alpha, beta and sigma parameter esitimates
   structure(list(
@@ -365,6 +374,10 @@ ricker_rw_TMB <- function(data, tv.par=c('a','b','both'), silent = FALSE,
     tmb_obj    = tmb_obj,
     AICc       = AICc,
     BIC        = BIC,
+    AICc_fullll=AICc_fullll,
+    AICc_allparam=AICc_allparam,
+    BIC_fullll =BIC_fullll,
+    BIC_allparam=BIC_allparam,
     residuals  = tmb_obj$report()$residuals,
     gradients  = conv$final_grads,
     bad_eig    = conv$bad_eig,

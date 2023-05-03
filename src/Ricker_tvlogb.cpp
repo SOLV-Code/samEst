@@ -132,7 +132,7 @@ Type objective_function<Type>::operator() ()
 
   if(priors_flag == 1){
     //ans -= dnorm(alpha,Type(0.0),Type(2.5),true);
-    pnll -= dgamma(alpha,Type(3.0),Type(1.0),true);
+    pnll -= dgamma(alpha,Type(3.0),Type(1.5),true);
     pnll -= dnorm(logbetao,Type(-12.0),Type(3.0),true);
     //ans -= dnorm(logsigobs,Type(0.0),Type(2.0),true);
     //ans -= dnorm(logsigb,Type(0.0),Type(2.0),true);
@@ -191,7 +191,8 @@ Type objective_function<Type>::operator() ()
   REPORT(Smsy)
   REPORT(Srep)
   REPORT(nll);
-  REPORT(pnll);  
+  REPORT(pnll); 
+  REPORT(renll); 
 
   ADREPORT(alpha);
   ADREPORT(beta);
