@@ -10,38 +10,37 @@
 #' @export
 #' @examples
 #' r=stan_refit(sm=mod3,newdata=df,oos=12)
-stan_refit<- function(sm,newdata,oos,regime=FALSE,K=NULL){
+stan_refit<- function(mod,newdata,oos,K=2){
   #mod = model file name - eg. 'ricker_linear_oos.stan'
   #newdata = data to train model
   #oosdata = data to predict onto
   #regime = TRUE or FALSE for regime shift models (have different data inputs)
   #K = number of potential regimes (2 or 3)
-  
+    
   oosdata=newdata[oos,]
   newdata=newdata[-oos,]
-  if(regime==FALSE){
-    r = rstan::sampling(sm, 
-                        data = list(N=nrow(newdata),
-                                    L=max(newdata$by)-min(newdata$by)+1,
-                                    ii=newdata$by-min(newdata$by)+1,
-                                    R_S =newdata$logRS,
-                                    S=newdata$S,
-                                    y_oos=oosdata$logRS,
-                                    x_oos=oosdata$S),
-                        control = list(adapt_delta = 0.99,max_treedepth=15), warmup = 200, chains = 6, iter = 700)
-  }
-  if(regime==TRUE){
-    r = rstan::sampling(sm, 
-                        data = list(N=nrow(newdata),
-                                    R_S=newdata$logRS,
-                                    S=newdata$S,
-                                    K=K,
-                                    alpha_dirichlet=rep(1,K),
-                                    y_oos=oosdata$logRS,
-                                    x_oos=oosdata$S), #prior for state transition probabilities (this makes them equal)
-                        control = list(adapt_delta = 0.99,max_treedepth=15), warmup = 200, chains = 6, iter = 700)
-  }
   
+  df=list(
+    by=newdata$by,
+    N=nrow(newdata),
+    L=max(newdata$by)-min(newdata$by)+1,
+    ii=newdata$by-min(newdata$by)+1,
+    R_S =newdata$logRS,
+    S=newdata$S,
+    y_oos=oosdata$logRS,
+    x_oos=oosdata$S,
+    K=K,
+    alpha_dirichlet=c(1,1)
+  )
+  
+  r = mod$sample(data=df,
+                            seed=123,
+                            chains=6,
+                            iter_warmup=200,
+                            iter_sampling=500,
+                            refresh=0,
+                            adapt_delta=0.95,
+                            max_treedepth=15)
   return(r)
 }
 
@@ -84,21 +83,21 @@ stan_lfo_cv=function(mod,type=c('static','tv','regime'),df,L=10,K=NULL){
     df_past <- df[past, , drop = FALSE]
     df_oos <- df[c(past, oos), , drop = FALSE]
     if(type=='static'){
-      fit_past<- stan_refit(sm=mod,newdata=df_oos,oos=i+1)
-      ll=rstan::extract(fit_past,pars=c('log_lik_oos'))
+      fit_past<- stan_refit(mod=mod,newdata=df_oos,oos=i+1)
+      ll=as.data.frame(fit_past$draws(variables=c('log_lik_oos'),format='draws_matrix'))
       loglik_exact[,i+1]<- ll$log_lik_oos
-      
     }
     if(type=='tv'){
-      fit_past<- stan_refit(sm=mod,newdata=df_oos,oos=i+1)
-      ll=rstan::extract(fit_past,pars=c('log_lik_oos_1b','log_lik_oos_3b','log_lik_oos_5b'))
+      fit_past<- stan_refit(mod=mod,newdata=df_oos,oos=i+1)
+      ll=as.data.frame(fit_past$draws(variables=c('log_lik_oos_1b','log_lik_oos_3b','log_lik_oos_5b'),format='draws_matrix'))
+      
       loglik_exact_1b[, i + 1] <-ll$log_lik_oos_1b
       loglik_exact_3b[, i + 1] <-ll$log_lik_oos_3b
       loglik_exact_5b[, i + 1] <-ll$log_lik_oos_5b
     }
     if(type=='regime'){
-      fit_past<- stan_refit(sm=mod,newdata=df_oos,oos=i+1,regime=TRUE,K=K)
-      ll=rstan::extract(fit_past,pars=c('log_lik_oos_1b','log_lik_oos_3b','log_lik_oos_5b'))
+      fit_past<- stan_refit(mod=mod,newdata=df_oos,oos=i+1)
+      ll=as.data.frame(fit_past$draws(variables=c('log_lik_oos_1b','log_lik_oos_3b','log_lik_oos_5b'),format='draws_matrix'))
       loglik_exact_1b[, i + 1] <- ll$log_lik_oos_1b
       loglik_exact_3b[, i + 1] <- ll$log_lik_oos_3b
       loglik_exact_5b[, i + 1] <- ll$log_lik_oos_5b
