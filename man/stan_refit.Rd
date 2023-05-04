@@ -4,18 +4,18 @@
 \alias{stan_refit}
 \title{stan_refit function}
 \usage{
-stan_refit(sm, newdata, oos, regime = FALSE, K = NULL)
+stan_refit(mod, newdata, oos, K = 2)
 }
 \arguments{
-\item{sm}{Compiled stan model, which can be generated with sr_mod function.}
-
 \item{newdata}{new data to feed to refit models.}
 
 \item{oos}{What row of the new data should be treated as the out-of-sample test}
 
-\item{regime}{TRUE or FALSE statement - is this a regime shift model or not}
-
 \item{K}{Number of potential regime shifts - default NULL}
+
+\item{sm}{Compiled stan model, which can be generated with sr_mod function.}
+
+\item{regime}{TRUE or FALSE statement - is this a regime shift model or not}
 }
 \value{
 returns the model fit
