@@ -230,9 +230,10 @@ Type objective_function<Type>::operator() ()
     vector<Type> pi_prior(k_regime);
  
     //pnll -= dgamma(sigma,Type(2.0),Type(1.0)/Type(3.0),true);
+    pnll -=dnorm(alpha,Type(1.5),Type(2.5),true);
     //pnll -= dnorm(alpha,Type(0.0),Type(2.5),true);
-    
-    pnll -= dgamma(alpha,Type(3.0),Type(1.5),true);
+    //pnll -=dnorm(alpha,Type(2.5),Type(3.0),true)- log(pnorm(Type(-2.0), Type(2.5),Type(3.0)));
+    //pnll -= dgamma(alpha,Type(3.0),Type(1.5),true);
     pnll -= dnorm(sigma,Type(0.0),Type(1.0),true) - log(pnorm(Type(0.0), Type(0.0),Type(1.0)));
     if(stan_flag) pnll -= logsigma;
 

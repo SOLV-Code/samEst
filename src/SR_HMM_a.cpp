@@ -224,6 +224,7 @@ Type objective_function<Type>::operator() ()
  
     Type logbeta = log(beta);
     pnll -= dnorm(logbeta,Type(-12.0),Type(3.0),true);
+
     //pnll -= dgamma(sigma,Type(2.0),Type(1.0)/Type(3.0),true);
     pnll -= dnorm(sigma,Type(0.0),Type(1.0),true) - log(pnorm(Type(0.0), Type(0.0),Type(1.0)));
     if(stan_flag) pnll -= logsigma;
@@ -231,7 +232,9 @@ Type objective_function<Type>::operator() ()
     for(int j = 0;j < k_regime;++j){
       pi_prior(j) = Type(1.0);
       //pnll -= dnorm(alpha(j),Type(0.0),Type(2.5),true);
-      pnll -= dgamma(alpha(j),Type(3.0),Type(1.5),true);  
+      pnll -=dnorm(alpha(j),Type(1.5),Type(2.5),true);
+      //pnll -= dgamma(alpha(j),Type(3.0),Type(1.5),true);  
+      //pnll -=dnorm(alpha(j),Type(2.5),Type(3.0),true)- log(pnorm(Type(-2.0), Type(2.5),Type(3.0)));
       vector<Type> qijtmp = qij.row(j);
       pnll -= ddirichlet(qijtmp,alpha_dirichlet,true);   
     }

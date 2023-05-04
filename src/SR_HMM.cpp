@@ -251,7 +251,9 @@ Type objective_function<Type>::operator() ()
       pi_prior(j) = Type(1.0);
       Type logbeta = log(beta(j));
       //pnll -= dnorm(alpha(j),Type(0.0),Type(2.5),true);
-      pnll -= dgamma(alpha(j),Type(3.0),Type(1.5),true);
+      pnll -=dnorm(alpha(j),Type(1.5),Type(2.5),true);
+      //pnll -= dgamma(alpha(j),Type(3.0),Type(1.5),true);
+      //pnll -=dnorm(alpha(j),Type(2.5),Type(3.0),true)- log(pnorm(Type(-2.0), Type(2.5),Type(3.0)));
       pnll -= dnorm(logbeta,Type(-12.0),Type(3.0),true);
     
       vector<Type> qijtmp = qij.row(j);
