@@ -96,7 +96,7 @@ stan_lfo_cv=function(mod,type=c('static','tv','regime'),df,L=10,K=NULL){
       loglik_exact_5b[, i + 1] <-ll$log_lik_oos_5b
     }
     if(type=='regime'){
-      fit_past<- stan_refit(mod=mod,newdata=df_oos,oos=i+1,regime=TRUE,K=K)
+      fit_past<- stan_refit(mod=mod,newdata=df_oos,oos=i+1)
       ll=as.data.frame(fit_past$draws(variables=c('log_lik_oos_1b','log_lik_oos_3b','log_lik_oos_5b'),format='draws_matrix'))
       loglik_exact_1b[, i + 1] <- ll$log_lik_oos_1b
       loglik_exact_3b[, i + 1] <- ll$log_lik_oos_3b
