@@ -40,6 +40,7 @@ tmb_mod_lfo_cv=function(data, model=c('static','staticAC','rw_a','rw_b','rw_both
   }
   
   conv_problem<-numeric(length(L:(nrow(data) - 1)))
+  fail_conv<-numeric(length(L:(nrow(data) - 1)))
   
   if(model=='static'){
     exact_elpds_1b <- numeric(nrow(data)) #loglik for 1-year back estimates of productivity/capacity
@@ -53,10 +54,12 @@ tmb_mod_lfo_cv=function(data, model=c('static','staticAC','rw_a','rw_b','rw_both
       fit_past_tmb <-tryCatch({ricker_TMB(data=df_past,silent = TRUE)},
                                   error=function(cond){
                                     message(cond)
-                                    return(list(conv_problem=1))}
+                                    return(list(fail_conv=1))}
                                   )
       conv_problem[i-(L-1)] <- fit_past_tmb$conv_problem
-      if(conv_problem[i-(L-1)]==0){
+      fail_conv[i-(L-1)] <- ifelse(is.null(fit_past_tmb$fail_conv),0,fit_past_tmb$fail_conv)
+
+      if(fail_conv[i-(L-1)]==0){
         rs_pred_1b=fit_past_tmb$alpha-fit_past_tmb$beta*df_oos$S[i + 1]
         exact_elpds_1b[i+1] <- log(dnorm(df_oos$logRS[i+1],mean=rs_pred_1b,sd=fit_past_tmb$sig))
       }else{
@@ -65,7 +68,8 @@ tmb_mod_lfo_cv=function(data, model=c('static','staticAC','rw_a','rw_b','rw_both
     }
     exact_elpds_1b=exact_elpds_1b[-(1:L)]
     return(list(lastparam=exact_elpds_1b,
-                conv_problem=conv_problem)
+                conv_problem=conv_problem,
+                fail_conv=fail_conv)
     )
   }else if(model=='staticAC'){
     exact_elpds_1b <- numeric(nrow(data)) #loglik for 1-year back estimates of productivity/capacity
@@ -79,11 +83,13 @@ tmb_mod_lfo_cv=function(data, model=c('static','staticAC','rw_a','rw_b','rw_both
       fit_past_tmb <- tryCatch({ricker_TMB(data=df_past, AC=TRUE,silent = TRUE)},
                                   error=function(cond){
                                     message(cond)
-                                    return(list(conv_problem=1))}
+                                    return(list(fail_conv=1))}
                                   )
 
       conv_problem[i-(L-1)] <- fit_past_tmb$conv_problem
-      if(conv_problem[i-(L-1)]==0){
+      fail_conv[i-(L-1)] <- ifelse(is.null(fit_past_tmb$fail_conv),0,fit_past_tmb$fail_conv)
+
+      if(fail_conv[i-(L-1)]==0){
         rs_pred_1b<-fit_past_tmb$alpha-fit_past_tmb$beta*df_oos$S[i + 1] + fit_past_tmb$residuals[i] * fit_past_tmb$rho
         exact_elpds_1b[i+1] <- log(dnorm(df_oos$logRS[i+1],mean=rs_pred_1b,sd=fit_past_tmb$sigar))
       }else{
@@ -92,7 +98,8 @@ tmb_mod_lfo_cv=function(data, model=c('static','staticAC','rw_a','rw_b','rw_both
     }
     exact_elpds_1b=exact_elpds_1b[-(1:L)]
     return(list(lastparam=exact_elpds_1b,
-                conv_problem=conv_problem))
+                conv_problem=conv_problem,
+                fail_conv=fail_conv))
   }else if(model=='rw_a'){
     
     exact_elpds_1b <- numeric(nrow(data)) #loglik for 1-year back estimates of productivity/capacity
@@ -107,11 +114,13 @@ tmb_mod_lfo_cv=function(data, model=c('static','staticAC','rw_a','rw_b','rw_both
       fit_past_tv_a_tmb <- tryCatch({ricker_rw_TMB(data=df_past,tv.par='a',silent = TRUE)},
                                   error=function(cond){
                                     message(cond)
-                                    return(list(conv_problem=1))}
+                                    return(list(fail_conv=1))}
                                   )
       conv_problem[i-(L-1)] <- fit_past_tv_a_tmb$conv_problem
+      fail_conv[i-(L-1)] <- ifelse(is.null(fit_past_tv_a_tmb$fail_conv),0,fit_past_tv_a_tmb$fail_conv)
       
-      if(conv_problem[i-(L-1)]==0){ 
+
+      if(fail_conv[i-(L-1)]==0){ 
         rs_pred_1b=fit_past_tv_a_tmb$alpha[i]-fit_past_tv_a_tmb$beta*df_oos$S[i + 1]
         rs_pred_3b=mean(fit_past_tv_a_tmb$alpha[(i-2):i])-fit_past_tv_a_tmb$beta*df_oos$S[i + 1]
         rs_pred_5b=mean(fit_past_tv_a_tmb$alpha[(i-4):i])-fit_past_tv_a_tmb$beta*df_oos$S[i + 1]
@@ -141,7 +150,8 @@ tmb_mod_lfo_cv=function(data, model=c('static','staticAC','rw_a','rw_b','rw_both
     return(list(lastparam=exact_elpds_1b,
                 last3paramavg=exact_elpds_3b,
                 last5paramavg=exact_elpds_5b,
-                conv_problem=conv_problem))
+                conv_problem=conv_problem,
+                fail_conv=fail_conv))
   }else if(model=='rw_b'){
     #stop("not defined")
     exact_elpds_1b <- numeric(nrow(data)) #loglik for 1-year back estimates of productivity/capacity
@@ -156,11 +166,13 @@ tmb_mod_lfo_cv=function(data, model=c('static','staticAC','rw_a','rw_b','rw_both
       fit_past_tv_b_tmb <- tryCatch({ricker_rw_TMB(data=df_past,tv.par='b',silent = TRUE)},
                                   error=function(cond){
                                     message(cond)
-                                    return(list(conv_problem=1))}
+                                    return(list(fail_conv=1))}
                                   )
       conv_problem[i-(L-1)] <- fit_past_tv_b_tmb$conv_problem
+      fail_conv[i-(L-1)] <- ifelse(is.null(fit_past_tv_b_tmb$fail_conv),0,fit_past_tv_b_tmb$fail_conv)
       
-      if(conv_problem[i-(L-1)]==0){ 
+      
+      if(fail_conv[i-(L-1)]==0){ 
         rs_pred_1b=fit_past_tv_b_tmb$alpha-fit_past_tv_b_tmb$beta[i]*df_oos$S[i + 1]
         rs_pred_3b=fit_past_tv_b_tmb$alpha-mean(fit_past_tv_b_tmb$beta[(i-2):i])*df_oos$S[i + 1]
         rs_pred_5b=fit_past_tv_b_tmb$alpha-mean(fit_past_tv_b_tmb$beta[(i-4):i])*df_oos$S[i + 1]
@@ -192,7 +204,8 @@ tmb_mod_lfo_cv=function(data, model=c('static','staticAC','rw_a','rw_b','rw_both
     return(list(lastparam=exact_elpds_1b,
                 last3paramavg=exact_elpds_3b,
                 last5paramavg=exact_elpds_5b,
-                conv_problem=conv_problem))
+                conv_problem=conv_problem,
+                fail_conv=fail_conv))
   }else if(model=='rw_both'){
     
     exact_elpds_1b <- numeric(nrow(data)) #loglik for 1-year back estimates of productivity/capacity
@@ -208,11 +221,12 @@ tmb_mod_lfo_cv=function(data, model=c('static','staticAC','rw_a','rw_b','rw_both
       fit_past_tv_ab_tmb <- tryCatch({ricker_rw_TMB(data=df_past,tv.par='both',silent = TRUE)},
                                   error=function(cond){
                                     message(cond)
-                                    return(list(conv_problem=1))}
+                                    return(list(fail_conv=1))}
                                   )
       conv_problem[i-(L-1)] <- fit_past_tv_ab_tmb$conv_problem
+      fail_conv[i-(L-1)] <- ifelse(is.null(fit_past_tv_ab_tmb$fail_conv),0,fit_past_tv_ab_tmb$fail_conv)
     
-      if(conv_problem[i-(L-1)]==0){ 
+      if(fail_conv[i-(L-1)]==0){ 
         rs_pred_1b=fit_past_tv_ab_tmb$alpha[i]-fit_past_tv_ab_tmb$beta[i]*df_oos$S[i + 1]
         rs_pred_3b=mean(fit_past_tv_ab_tmb$alpha[(i-2):i])-mean(fit_past_tv_ab_tmb$beta[(i-2):i])*df_oos$S[i + 1]
         rs_pred_5b=mean(fit_past_tv_ab_tmb$alpha[(i-4):i])-mean(fit_past_tv_ab_tmb$beta[(i-4):i])*df_oos$S[i + 1]
@@ -232,7 +246,8 @@ tmb_mod_lfo_cv=function(data, model=c('static','staticAC','rw_a','rw_b','rw_both
     return(list(lastparam=exact_elpds_1b,
                 last3paramavg=exact_elpds_3b,
                 last5paramavg=exact_elpds_5b,
-                conv_problem=conv_problem))
+                conv_problem=conv_problem,
+                fail_conv=fail_conv))
     
   }else if(model=='HMM'){
     #stop("not defined")
@@ -250,11 +265,12 @@ tmb_mod_lfo_cv=function(data, model=c('static','staticAC','rw_a','rw_b','rw_both
       fit_past_hmm_tmb <- tryCatch({ricker_hmm_TMB(data=df_past,tv.par='both',silent = TRUE)},
                                   error=function(cond){
                                     message(cond)
-                                    return(list(conv_problem=1))}
+                                    return(list(fail_conv=1))}
                                   )
       conv_problem[i-(L-1)] <- fit_past_hmm_tmb$conv_problem
+      fail_conv[i-(L-1)] <- ifelse(is.null(fit_past_hmm_tmb$fail_conv),0,fit_past_hmm_tmb$fail_conv)
       
-      if(conv_problem[i-(L-1)]==0){
+      if(fail_conv[i-(L-1)]==0){
         alpha <- fit_past_hmm_tmb$alpha[fit_past_hmm_tmb$regime]
         beta <- fit_past_hmm_tmb$beta[fit_past_hmm_tmb$regime]
         sigma <- fit_past_hmm_tmb$sigma
@@ -280,7 +296,8 @@ tmb_mod_lfo_cv=function(data, model=c('static','staticAC','rw_a','rw_b','rw_both
     return(list(lastregime_pick=exact_elpds_1k, 
                 last3regime_pick=exact_elpds_3k, 
                 last5regime_pick=exact_elpds_5k,
-                conv_problem=conv_problem))
+                conv_problem=conv_problem,
+                fail_conv=fail_conv))
     
   }else if(model=='HMM_a'){
     #stop("not defined")
@@ -297,11 +314,12 @@ tmb_mod_lfo_cv=function(data, model=c('static','staticAC','rw_a','rw_b','rw_both
       fit_past_hmm_tmb<- tryCatch({ricker_hmm_TMB(data=df_past,tv.par='a',silent = TRUE)},
                                   error=function(cond){
                                     message(cond)
-                                    return(list(conv_problem=1))}
+                                    return(list(fail_conv=1))}
                                   )
       conv_problem[i-(L-1)] <- fit_past_hmm_tmb$conv_problem
+      fail_conv[i-(L-1)] <- ifelse(is.null(fit_past_hmm_tmb$fail_conv),0,fit_past_hmm_tmb$fail_conv)
       
-      if(conv_problem[i-(L-1)]==0){
+      if(fail_conv[i-(L-1)]==0){
         alpha <- fit_past_hmm_tmb$alpha[fit_past_hmm_tmb$regime]
         beta <- fit_past_hmm_tmb$beta
         sigma <- fit_past_hmm_tmb$sigma
@@ -327,7 +345,8 @@ tmb_mod_lfo_cv=function(data, model=c('static','staticAC','rw_a','rw_b','rw_both
     return(list(lastregime_pick=exact_elpds_1k, 
                 last3regime_pick=exact_elpds_3k, 
                 last5regime_pick=exact_elpds_5k,
-                conv_problem=conv_problem))
+                conv_problem=conv_problem,
+                fail_conv=fail_conv))
     
   }else if(model=='HMM_b'){
     #stop("not defined")
@@ -344,12 +363,13 @@ tmb_mod_lfo_cv=function(data, model=c('static','staticAC','rw_a','rw_b','rw_both
       fit_past_hmm_tmb <- tryCatch({ricker_hmm_TMB(data=df_past,tv.par='b',silent = TRUE)},
                                   error=function(cond){
                                     message(cond)
-                                    return(list(conv_problem=1))}
+                                    return(list(fail_conv=1))}
                                   )
 
-      fit_past_hmm_tmb$conv_problem
+      conv_problem[i-(L-1)] <- fit_past_hmm_tmb$conv_problem
+      fail_conv[i-(L-1)] <- ifelse(is.null(fit_past_hmm_tmb$fail_conv),0,fit_past_hmm_tmb$fail_conv)
       
-      if(conv_problem[i-(L-1)]==0){
+      if(fail_conv[i-(L-1)]==0){
         alpha <- fit_past_hmm_tmb$alpha
         beta <- fit_past_hmm_tmb$beta[fit_past_hmm_tmb$regime]
         sigma <- fit_past_hmm_tmb$sigma
@@ -374,7 +394,8 @@ tmb_mod_lfo_cv=function(data, model=c('static','staticAC','rw_a','rw_b','rw_both
     return(list(lastregime_pick=exact_elpds_1k, 
                 last3regime_pick=exact_elpds_3k, 
                 last5regime_pick=exact_elpds_5k,
-                conv_problem=conv_problem))
+                conv_problem=conv_problem,
+                fail_conv=fail_conv))
     
   }else{
     stop(paste("model", model,"not defined, valid options are c('static','rw_a','rw_b','rw_both', 'HMM', 'HMM_a','HMM_b')"))
