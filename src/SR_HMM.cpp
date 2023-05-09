@@ -154,7 +154,10 @@ Type objective_function<Type>::operator() ()
   DATA_SCALAR(beta_u);  //upper bound for b
   DATA_SCALAR(beta_l);  //upper bound for b
   //DATA_SCALAR(sigma_u); //lower bound for sigma
-  DATA_VECTOR(alpha_dirichlet); //prior inputs for dirichlet 
+  
+  DATA_MATRIX(alpha_dirichlet); //prior inputs for dirichlet 
+  
+  
   DATA_INTEGER(priors_flag); //flag indicating wether or not priors should be used
   DATA_INTEGER(stan_flag); //flag indicating wether or not tmbstan is used 
   DATA_SCALAR(sig_p_sd); //sd for sigma prior
@@ -257,7 +260,10 @@ Type objective_function<Type>::operator() ()
       pnll -= dnorm(logbeta,Type(-12.0),Type(3.0),true);
     
       vector<Type> qijtmp = qij.row(j);
-      pnll -= ddirichlet(qijtmp,alpha_dirichlet,true);   
+      vector<Type> alpha_dirichlettmp = alpha_dirichlet.row(j);
+      
+
+      pnll -= ddirichlet(qijtmp,alpha_dirichlettmp,true);   
     }
     pnll -= ddirichlet(pi1,pi_prior,true);
   }

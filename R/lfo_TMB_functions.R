@@ -13,7 +13,8 @@
 #' @param siglfo string. Incating whether full variance should be used for lfo of models with random walks in parameters
 #' "obs" incates that only observation variance is considered for lfo calculations, "total" indicates that sum of 
 #' process and observation variances are used. Option valud only for 'alpha' tv par. 
-#' 
+#'@param dirichlet_prior Prior for transition probability matrix in HMM models
+#' k_regime x k_regime matrix. If NULL prior is set to matrix(1,nrow=k_regime,ncol=k_regime). 
 #' 
 #' @returns vector of lfo by year
 #' 
@@ -26,7 +27,7 @@
 #' tmb_mod_lfo_cv(data=harck, model=c('static'))
 #' 
 tmb_mod_lfo_cv=function(data, model=c('static','staticAC','rw_a','rw_b','rw_both', 'HMM', 'HMM_a','HMM_b'), 
-                        L=10, siglfo=c("obs","total")){
+                        L=10, siglfo=c("obs","total"),dirichlet_prior=NULL){
   #df = full data frame
   #ac = autocorrelation, if ac=T then implement AR-1
   #L = starting point for LFO-CV (min. 10)
@@ -262,7 +263,8 @@ tmb_mod_lfo_cv=function(data, model=c('static','staticAC','rw_a','rw_b','rw_both
       df_oos <- data[c(past, oos), , drop = FALSE]
       
       
-      fit_past_hmm_tmb <- tryCatch({ricker_hmm_TMB(data=df_past,tv.par='both',silent = TRUE)},
+      fit_past_hmm_tmb <- tryCatch({ricker_hmm_TMB(data=df_past,tv.par='both',silent = TRUE,
+                                          dirichlet_prior=dirichlet_prior)},
                                   error=function(cond){
                                     message(cond)
                                     return(list(fail_conv=1))}
@@ -311,7 +313,8 @@ tmb_mod_lfo_cv=function(data, model=c('static','staticAC','rw_a','rw_b','rw_both
       df_past <- data[past, , drop = FALSE]
       df_oos <- data[c(past, oos), , drop = FALSE]
       
-      fit_past_hmm_tmb<- tryCatch({ricker_hmm_TMB(data=df_past,tv.par='a',silent = TRUE)},
+      fit_past_hmm_tmb<- tryCatch({ricker_hmm_TMB(data=df_past,tv.par='a',silent = TRUE,
+                                            dirichlet_prior=dirichlet_prior)},
                                   error=function(cond){
                                     message(cond)
                                     return(list(fail_conv=1))}
@@ -360,7 +363,8 @@ tmb_mod_lfo_cv=function(data, model=c('static','staticAC','rw_a','rw_b','rw_both
       df_past <- data[past, , drop = FALSE]
       df_oos <- data[c(past, oos), , drop = FALSE]
       
-      fit_past_hmm_tmb <- tryCatch({ricker_hmm_TMB(data=df_past,tv.par='b',silent = TRUE)},
+      fit_past_hmm_tmb <- tryCatch({ricker_hmm_TMB(data=df_past,tv.par='b',silent = TRUE,
+                                        dirichlet_prior=dirichlet_prior)},
                                   error=function(cond){
                                     message(cond)
                                     return(list(fail_conv=1))}

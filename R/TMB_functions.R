@@ -410,7 +410,9 @@ ricker_rw_TMB <- function(data, tv.par=c('a','b','both'), silent = FALSE,
 #' @param stan_flag Integer, flag indicating wether or not TMB code will be used with TMBstan - Jacobian
 #' adjustment implemented. Default is 0, jacobian adjustment not included.
 #' @param sig_p_sd sd for half normal prior on sigma parameter. default is 1.
-#' 
+#' @param dirichlet_prior k_regime x k_regime matrix. Prior for transition probability matrix, 
+#' if NULL prior is set to matrix(1,nrow=k_regime,ncol=k_regime)
+ 
 #' 
 #' @details This model was published in Tang et al. 2021 Identification of recruitment regime shifts with a hidden Markov stock-recruitment model. 
 #' The code for this model was a contribution by Xiaozhuo Tang. 
@@ -461,11 +463,19 @@ ricker_hmm_TMB <- function(data,
                            tmb_map = list(), 
                            priors_flag = 1,
                            stan_flag = 0,
-                           sig_p_sd=1) {
+                           sig_p_sd=1,
+                           dirichlet_prior=NULL) {
 
   #===================================
   #prepare TMB input and options
   #===================================
+
+  if(is.null(dirichlet_prior)){
+    dirichlet_prior<-matrix(1,nrow=k_regime,ncol=k_regime)
+  }else if(nrow(dirichlet_prior)!=k_regime |ncol(dirichlet_prior)!=k_regime){
+    stop("dirichlet_prior should be a k_regime x k_regime matrix")
+  }
+
   
   tmb_data<-list(yt=data$logRS,
     st=data$S, 
@@ -473,7 +483,7 @@ ricker_hmm_TMB <- function(data,
     alpha_l=alpha_limits[1],
     beta_u=beta_limits[2],
     beta_l=beta_limits[1],
-    alpha_dirichlet=rep(1,k_regime),
+    alpha_dirichlet=dirichlet_prior,
     priors_flag=priors_flag,
     stan_flag=stan_flag,
     sig_p_sd=sig_p_sd  

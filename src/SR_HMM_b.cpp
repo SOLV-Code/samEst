@@ -137,7 +137,9 @@ Type objective_function<Type>::operator() ()
   DATA_SCALAR(beta_u);  //upper bound for a
   DATA_SCALAR(beta_l); //lower bound for b
   //DATA_SCALAR(sigma_u); //upper bound for sigma
-  DATA_VECTOR(alpha_dirichlet); //prior inputs for dirichlet 
+  //DATA_VECTOR(alpha_dirichlet); //prior inputs for dirichlet 
+   DATA_MATRIX(alpha_dirichlet); //prior inputs for dirichlet 
+  
   DATA_INTEGER(priors_flag);
   DATA_INTEGER(stan_flag);
 
@@ -243,7 +245,10 @@ Type objective_function<Type>::operator() ()
       pnll -= dnorm(logbeta,Type(-12.0),Type(3.0),true);
     
       vector<Type> qijtmp = qij.row(j);
-      pnll -= ddirichlet(qijtmp,alpha_dirichlet,true);   
+      vector<Type> alpha_dirichlettmp = alpha_dirichlet.row(j);
+      
+      pnll -= ddirichlet(qijtmp,alpha_dirichlettmp,true);   
+      
     }
     pnll -=ddirichlet(pi1,pi_prior,true);
   }
