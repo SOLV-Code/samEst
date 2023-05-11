@@ -132,7 +132,9 @@ Type objective_function<Type>::operator() ()
 
   if(priors_flag == 1){
     //ans -= dnorm(alpha,Type(0.0),Type(2.5),true);
-    pnll -= dgamma(alpha,Type(3.0),Type(1.5),true);
+    pnll -=dnorm(alpha,Type(1.5),Type(2.5),true);
+    //pnll -= dgamma(alpha,Type(3.0),Type(1.5),true);
+    //pnll -=dnorm(alpha,Type(2.5),Type(3.0),true)- log(pnorm(Type(-2.0), Type(2.5),Type(3.0)));
     pnll -= dnorm(logbetao,Type(-12.0),Type(3.0),true);
     //ans -= dnorm(logsigobs,Type(0.0),Type(2.0),true);
     //ans -= dnorm(logsigb,Type(0.0),Type(2.0),true);

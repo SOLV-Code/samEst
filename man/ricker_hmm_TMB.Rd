@@ -16,7 +16,8 @@ ricker_hmm_TMB(
   tmb_map = list(),
   priors_flag = 1,
   stan_flag = 0,
-  sig_p_sd = 1
+  sig_p_sd = 1,
+  dirichlet_prior = NULL
 )
 }
 \arguments{
@@ -46,6 +47,9 @@ See details for priors documentation. See details for priors documentation.}
 adjustment implemented. Default is 0, jacobian adjustment not included.}
 
 \item{sig_p_sd}{sd for half normal prior on sigma parameter. default is 1.}
+
+\item{dirichlet_prior}{k_regime x k_regime matrix. Prior for transition probability matrix,
+if NULL prior is set to matrix(1,nrow=k_regime,ncol=k_regime)}
 }
 \value{
 a list containing several model outputs:

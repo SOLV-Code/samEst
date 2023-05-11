@@ -91,7 +91,12 @@ sum(lfoalpha$last5paramavg)
 
 
 phmm <- ricker_hmm_TMB(data=harck, tv.par='both')
-phmm[1:8]
+phmm[1:10]
+
+dirpr<-matrix(c(4,1,1,4),2,2)
+phmm_dirpr <- ricker_hmm_TMB(data=harck, tv.par='both',dirichlet_prior=dirpr)
+phmm_dirpr[1:10]
+
 
 pbhmm <- ricker_hmm_stan(data, par='b')
 
@@ -114,6 +119,10 @@ sum(lfohmm$regime_average)
 
 
 phmma <- ricker_hmm_TMB(data=harck, tv.par='a')
+
+phmma <- ricker_hmm_TMB(data=harck, tv.par='a')
+
+
 phmma[1:5]
 
 lfohmma <- tmb_mod_lfo_cv(data=harck,tv.par='HMM_a')

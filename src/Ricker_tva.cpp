@@ -105,14 +105,12 @@ Type objective_function<Type>::operator() ()
   Type nll = Type(0.0);
   Type renll = Type(0.0);
   Type pnll = Type(0.0);
-  Type pnlla = Type(0.0);
-  Type pnllb = Type(0.0);
-  Type pnllc = Type(0.0);
-  Type pnlld = Type(0.0);
-
+  
   if(priors_flag == 1){
     //ans -=dnorm(alphao,Type(0.0),Type(2.5),true);
-    pnll -=dgamma(alphao,Type(3.0),Type(1.5),true);
+    //pnll -=dgamma(alphao,Type(3.0),Type(1.5),true);
+    pnll -=dnorm(alphao,Type(1.5),Type(2.5),true);
+    //pnll -=dnorm(alphao,Type(2.5),Type(3.0),true)- log(pnorm(Type(-2.0), Type(2.5),Type(3.0)));
     pnll -=dnorm(logbeta,Type(-12.0),Type(3.0),true); 
     //ans -= dnorm(logsigobs,Type(0.0),Type(2.0),true);
     //ans -= dnorm(logsiga,Type(0.0),Type(2.0),true);
