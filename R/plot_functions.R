@@ -542,7 +542,7 @@ sr_plot=function(df,mod,title,make.pdf=FALSE,path,type=c('static','rw','hmm'),pa
     }
     if(make.pdf==TRUE){
       if(type=='static'&ac==FALSE){ pdf(here(path,paste(paste(title,type,form,sep='_'),'.pdf',sep='')),width=8,height=6)}
-      if(type=='static'&ac==FALSE){ pdf(here(path,paste(paste(title,type,'ac',form,sep='_'),'.pdf',sep='')),width=8,height=6)}
+      if(type=='static'&ac==TRUE){ pdf(here(path,paste(paste(title,type,'ac',form,sep='_'),'.pdf',sep='')),width=8,height=6)}
       if(type=='rw'&par=='both'){ pdf(here(path,paste(paste(title,type,par,form,sep='_'),'.pdf',sep='')),width=10,height=10)}
       if(type=='rw'&par!='both'){ pdf(here(path,paste(paste(title,type,par,form,sep='_'),'.pdf',sep='')),width=14,height=6)}
       if(type=='hmm'&par=='both'){ pdf(here(path,paste(paste(title,type,par,form,sep='_'),'.pdf',sep='')),width=8,height=6)}
