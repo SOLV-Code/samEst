@@ -47,7 +47,7 @@ sr_plot=function(df,mod,title,make.pdf=FALSE,path,type=c('static','rw','hmm'),pa
         for(n in 1:length(by_q)){
           pred_df[,1+n]=exp(median(post$log_a[,match(by_q[n],df$by)])-median(post$b)*x_new)*x_new
         }
-          alpha_df=data.frame(by=df$by,med=apply(post$log_a,2,median),l90=apply(post$log_a,2,quantile,0.1),u90=apply(post$log_a,2,quantile,0.9))
+          alpha_df=data.frame(by=seq(min(df$by),max(df$by)),med=apply(post$log_a,2,median),l90=apply(post$log_a,2,quantile,0.1),u90=apply(post$log_a,2,quantile,0.9))
           plot2=ggplot2::ggplot(alpha_df, aes(by,med)) +
             geom_line(aes(x=by,y=med),linewidth=1.3)+
             geom_point(aes(colour = by),size=4) +
@@ -134,7 +134,7 @@ sr_plot=function(df,mod,title,make.pdf=FALSE,path,type=c('static','rw','hmm'),pa
               pred_df[,1+n]=exp(median(post$log_a)-median(post$b[,match(by_q[n],df$by)])*x_new)*x_new
             }
             
-            beta_df=data.frame(by=df$by,med=apply(post$S_max,2,median),l90=apply(post$S_max,2,quantile,0.1),u90=apply(post$S_max,2,quantile,0.9))
+            beta_df=data.frame(by=seq(min(df$by),max(df$by)),med=apply(post$S_max,2,median),l90=apply(post$S_max,2,quantile,0.1),u90=apply(post$S_max,2,quantile,0.9))
             
             plot2=ggplot2::ggplot(beta_df, aes(by,med)) +
               geom_line(aes(x=by,y=med),linewidth=1.3)+
@@ -220,7 +220,7 @@ sr_plot=function(df,mod,title,make.pdf=FALSE,path,type=c('static','rw','hmm'),pa
             pred_df[,1+n]=exp(median(post$log_a[,match(by_q[n],df$by)])-median(post$b[,match(by_q[n],df$by)])*x_new)*x_new
           }
           
-          alphabeta_df=data.frame(by=df$by,a_med=apply(post$log_a,2,median),a_l90=apply(post$log_a,2,quantile,0.15),a_u90=apply(post$log_a,2,quantile,0.85),b_med=apply(post$S_max,2,median),b_l90=apply(post$S_max,2,quantile,0.1),b_u90=apply(post$S_max,2,quantile,0.9))
+          alphabeta_df=data.frame(by=seq(min(df$by),max(df$by)),a_med=apply(post$log_a,2,median),a_l90=apply(post$log_a,2,quantile,0.15),a_u90=apply(post$log_a,2,quantile,0.85),b_med=apply(post$S_max,2,median),b_l90=apply(post$S_max,2,quantile,0.1),b_u90=apply(post$S_max,2,quantile,0.9))
          
           plot2=ggplot2::ggplot(alphabeta_df, aes(by,a_med)) +
             geom_line(aes(x=by,y=a_med),linewidth=1.3)+
@@ -545,9 +545,10 @@ sr_plot=function(df,mod,title,make.pdf=FALSE,path,type=c('static','rw','hmm'),pa
       if(type=='static'&ac==TRUE){ pdf(here(path,paste(paste(title,type,'ac',form,sep='_'),'.pdf',sep='')),width=8,height=6)}
       if(type=='rw'&par=='both'){ pdf(here(path,paste(paste(title,type,par,form,sep='_'),'.pdf',sep='')),width=10,height=10)}
       if(type=='rw'&par!='both'){ pdf(here(path,paste(paste(title,type,par,form,sep='_'),'.pdf',sep='')),width=14,height=6)}
-      if(type=='hmm'&par=='both'){ pdf(here(path,paste(paste(title,type,par,form,sep='_'),'.pdf',sep='')),width=8,height=6)}
-      if(type=='hmm'&par!='both'){ pdf(here(path,paste(paste(title,type,par,form,sep='_'),'.pdf',sep='')),width=14,height=6)}
+      if(type=='hmm'){ pdf(here(path,paste(paste(title,type,par,form,sep='_'),'.pdf',sep='')),width=14,height=6)}
       return(plot)
+      
+      dev.off()
       dev.off()
     }
   if(make.pdf==FALSE){
@@ -592,7 +593,7 @@ sr_plot2=function(df,mod,title,make.pdf=FALSE,path,type=c('static','rw','hmm'),p
         for(n in 1:length(by_q)){
           pred_df[,1+n]=exp(median(log_a[,match(by_q[n],df$by)])-median(b$b)*x_new)*x_new
         }
-        alpha_df=data.frame(by=df$by,med=apply(log_a,2,median),l90=apply(log_a,2,quantile,0.1),u90=apply(log_a,2,quantile,0.9))
+        alpha_df=data.frame(by=seq(min(df$by),max(df$by)),med=apply(log_a,2,median),l90=apply(log_a,2,quantile,0.1),u90=apply(log_a,2,quantile,0.9))
         plot2=ggplot2::ggplot(alpha_df, aes(by,med)) +
           geom_line(aes(x=by,y=med),linewidth=1.3)+
           geom_point(aes(colour = by),size=4) +
