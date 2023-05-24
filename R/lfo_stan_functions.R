@@ -68,14 +68,14 @@ stan_lfo_cv=function(mod,type=c('static','tv','regime'),df,L=10,K=NULL){
   #L = starting point for LFO-CV (default 10)
   # K = number of regimes
   
-  loglik_exact <- matrix(nrow = 3000, ncol = nrow(df)) #loglik for static model
-  loglik_exact_1b <- matrix(nrow = 3000, ncol = nrow(df)) #loglik for 1-year back estimates of productivity/capacity
-  loglik_exact_3b <- matrix(nrow = 3000, ncol = nrow(df)) #loglik for average of last 3-years of productivity/capacity
-  loglik_exact_5b <- matrix(nrow = 3000, ncol = nrow(df)) #loglik for average of last 5-years of productivity/capacity
+  loglik_exact <- matrix(nrow = 3000, ncol = length(df$by)) #loglik for static model
+  loglik_exact_1b <- matrix(nrow = 3000, ncol = length(df$by)) #loglik for 1-year back estimates of productivity/capacity
+  loglik_exact_3b <- matrix(nrow = 3000, ncol = length(df$by)) #loglik for average of last 3-years of productivity/capacity
+  loglik_exact_5b <- matrix(nrow = 3000, ncol = length(df$by)) #loglik for average of last 5-years of productivity/capacity
   if(type=='regime'){
-    loglik_exact_1bw <- matrix(nrow = 3000, ncol = nrow(df)) #loglik for 1-year back estimates of productivity/capacity
-    loglik_exact_3bw <- matrix(nrow = 3000, ncol = nrow(df)) #loglik for average of last 3-years of productivity/capacity
-    loglik_exact_5bw <- matrix(nrow = 3000, ncol = nrow(df)) #loglik for average of last 5-years of productivity/capacity
+    loglik_exact_1bw <- matrix(nrow = 3000, ncol = length(df$by)) #loglik for 1-year back estimates of productivity/capacity
+    loglik_exact_3bw <- matrix(nrow = 3000, ncol = length(df$by)) #loglik for average of last 3-years of productivity/capacity
+    loglik_exact_5bw <- matrix(nrow = 3000, ncol = length(df$by)) #loglik for average of last 5-years of productivity/capacity
   }
   for (i in L:(nrow(df) - 1)){
     past <- 1:i
