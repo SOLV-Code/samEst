@@ -55,7 +55,8 @@ tmb_mod_lfo_cv=function(data, model=c('static','staticAC','rw_a','rw_b','rw_both
       fit_past_tmb <-tryCatch({ricker_TMB(data=df_past,silent = TRUE)},
                                   error=function(cond){
                                     message(cond)
-                                    return(list(fail_conv=1))}
+                                    return(list(fail_conv=1,
+                                      conv_problem=1))}
                                   )
       conv_problem[i-(L-1)] <- fit_past_tmb$conv_problem
       fail_conv[i-(L-1)] <- ifelse(is.null(fit_past_tmb$fail_conv),0,fit_past_tmb$fail_conv)
@@ -84,7 +85,8 @@ tmb_mod_lfo_cv=function(data, model=c('static','staticAC','rw_a','rw_b','rw_both
       fit_past_tmb <- tryCatch({ricker_TMB(data=df_past, AC=TRUE,silent = TRUE)},
                                   error=function(cond){
                                     message(cond)
-                                    return(list(fail_conv=1))}
+                                    return(list(fail_conv=1,
+                                      conv_problem=1))}
                                   )
 
       conv_problem[i-(L-1)] <- fit_past_tmb$conv_problem
@@ -115,7 +117,8 @@ tmb_mod_lfo_cv=function(data, model=c('static','staticAC','rw_a','rw_b','rw_both
       fit_past_tv_a_tmb <- tryCatch({ricker_rw_TMB(data=df_past,tv.par='a',silent = TRUE)},
                                   error=function(cond){
                                     message(cond)
-                                    return(list(fail_conv=1))}
+                                    return(list(fail_conv=1,
+                                      conv_problem=1))}
                                   )
       conv_problem[i-(L-1)] <- fit_past_tv_a_tmb$conv_problem
       fail_conv[i-(L-1)] <- ifelse(is.null(fit_past_tv_a_tmb$fail_conv),0,fit_past_tv_a_tmb$fail_conv)
@@ -167,7 +170,8 @@ tmb_mod_lfo_cv=function(data, model=c('static','staticAC','rw_a','rw_b','rw_both
       fit_past_tv_b_tmb <- tryCatch({ricker_rw_TMB(data=df_past,tv.par='b',silent = TRUE)},
                                   error=function(cond){
                                     message(cond)
-                                    return(list(fail_conv=1))}
+                                    return(list(fail_conv=1,
+                                      conv_problem=1))}
                                   )
       conv_problem[i-(L-1)] <- fit_past_tv_b_tmb$conv_problem
       fail_conv[i-(L-1)] <- ifelse(is.null(fit_past_tv_b_tmb$fail_conv),0,fit_past_tv_b_tmb$fail_conv)
@@ -222,7 +226,8 @@ tmb_mod_lfo_cv=function(data, model=c('static','staticAC','rw_a','rw_b','rw_both
       fit_past_tv_ab_tmb <- tryCatch({ricker_rw_TMB(data=df_past,tv.par='both',silent = TRUE)},
                                   error=function(cond){
                                     message(cond)
-                                    return(list(fail_conv=1))}
+                                    return(list(fail_conv=1,
+                                      conv_problem=1))}
                                   )
       conv_problem[i-(L-1)] <- fit_past_tv_ab_tmb$conv_problem
       fail_conv[i-(L-1)] <- ifelse(is.null(fit_past_tv_ab_tmb$fail_conv),0,fit_past_tv_ab_tmb$fail_conv)
@@ -267,7 +272,8 @@ tmb_mod_lfo_cv=function(data, model=c('static','staticAC','rw_a','rw_b','rw_both
                                           dirichlet_prior=dirichlet_prior)},
                                   error=function(cond){
                                     message(cond)
-                                    return(list(fail_conv=1))}
+                                    return(list(fail_conv=1,
+                                      conv_problem=1))}
                                   )
       conv_problem[i-(L-1)] <- fit_past_hmm_tmb$conv_problem
       fail_conv[i-(L-1)] <- ifelse(is.null(fit_past_hmm_tmb$fail_conv),0,fit_past_hmm_tmb$fail_conv)
@@ -317,7 +323,8 @@ tmb_mod_lfo_cv=function(data, model=c('static','staticAC','rw_a','rw_b','rw_both
                                             dirichlet_prior=dirichlet_prior)},
                                   error=function(cond){
                                     message(cond)
-                                    return(list(fail_conv=1))}
+                                    return(list(fail_conv=1,
+                                      conv_problem=1))}
                                   )
       conv_problem[i-(L-1)] <- fit_past_hmm_tmb$conv_problem
       fail_conv[i-(L-1)] <- ifelse(is.null(fit_past_hmm_tmb$fail_conv),0,fit_past_hmm_tmb$fail_conv)
@@ -367,7 +374,8 @@ tmb_mod_lfo_cv=function(data, model=c('static','staticAC','rw_a','rw_b','rw_both
                                         dirichlet_prior=dirichlet_prior)},
                                   error=function(cond){
                                     message(cond)
-                                    return(list(fail_conv=1))}
+                                    return(list(fail_conv=1,
+                                      conv_problem=1))}
                                   )
 
       conv_problem[i-(L-1)] <- fit_past_hmm_tmb$conv_problem
