@@ -37,7 +37,7 @@ sr_mod<- function(type=c('static','rw','hmm'),ac=FALSE,par=c('n','a','b','both')
     }
     model{
       //priors
-      log_a ~ gamma(3,1.5); //intrinsic productivity - wide prior
+     log_a ~ normal(1.5,2.5); //intrinsic productivity - wide prior
       log_b ~ normal(-12,3); //per capita capacity parameter - wide prior
       
       //variance terms
@@ -81,7 +81,7 @@ sr_mod<- function(type=c('static','rw','hmm'),ac=FALSE,par=c('n','a','b','both')
     	b = exp(log_b); //prevents b (density dependence) from being negative (ie. positive)
     }
     model{
-      log_a ~ gamma(3,1.5); //intrinsic productivity - wide prior
+      log_a ~ normal(1.5,2.5); //intrinsic productivity - wide prior
       log_b ~ normal(-12,3); //per capita capacity parameter - wide prior
       
       //variance terms
@@ -133,7 +133,7 @@ sigma_AR = sigma*sqrt(1-rho^2);
 }
 model{
   //priors
-  log_a ~ gamma(3,1.5); //intrinsic productivity - wide prior
+ log_a ~ normal(1.5,2.5); //intrinsic productivity - wide prior
   log_b ~ normal(-12,3); //per capita capacity parameter - wide prior
       
   //variance terms
@@ -200,7 +200,7 @@ sigma_AR = sigma*sqrt(1-rho^2);
 }
 model{
   //priors
-  log_a ~ gamma(3,1.5); //intrinsic productivity - wide prior
+ log_a ~ normal(1.5,2.5); //intrinsic productivity - wide prior
   log_b ~ normal(-12,3); //per capita capacity parameter - wide prior
       
   //variance terms
@@ -379,7 +379,7 @@ transformed parameters{
 
 model{
   //priors
-  log_a ~ gamma(3,1.5); //productivity
+ log_a ~ normal(1.5,2.5); //productivity
   b0 ~ normal(-12,3); //capacity
   
   //variance terms
@@ -440,7 +440,7 @@ transformed parameters{
 
 model{
   //priors
-  log_a ~ gamma(3,1.5); //productivity
+ log_a ~ normal(1.5,2.5); //productivity
   b0 ~ normal(-12,3); //initial capacity
   
   //variance terms
@@ -1270,7 +1270,7 @@ if(type=='hmm'&par=='both'){
     }
     model{
      
-      log_a ~ gamma(3,1.5);
+     log_a ~ normal(1.5,2.5);
       log_b ~ normal(-12,3);
        target += normal_lpdf(sigma | 0, 1) - normal_lcdf(0 | 0, 1); //remove density below zero   
       
@@ -1585,7 +1585,7 @@ sr_mod2<- function(type=c('static','rw','hmm'),ac=FALSE,par=c('n','a','b','both'
     }
     model{
       //priors
-      log_a ~ gamma(3,1.5); //intrinsic productivity - wide prior
+     log_a ~ normal(1.5,2.5); //intrinsic productivity - wide prior
       log_b ~ normal(-12,3); //per capita capacity parameter - wide prior
       
       //variance terms
@@ -1625,7 +1625,7 @@ sr_mod2<- function(type=c('static','rw','hmm'),ac=FALSE,par=c('n','a','b','both'
     	b = exp(log_b); //prevents b (density dependence) from being negative (ie. positive)
     }
     model{
-      log_a ~ gamma(3,1.5); //intrinsic productivity - wide prior
+     log_a ~ normal(1.5,2.5); //intrinsic productivity - wide prior
       log_b ~ normal(-12,3); //per capita capacity parameter - wide prior
       
       //variance terms
@@ -1677,7 +1677,7 @@ sigma_AR = sigma*sqrt(1-rho^2);
 }
 model{
   //priors
-  log_a ~ gamma(3,1.5); //intrinsic productivity - wide prior
+ log_a ~ normal(1.5,2.5); //intrinsic productivity - wide prior
   log_b ~ normal(-12,3); //per capita capacity parameter - wide prior
       
   //variance terms
@@ -1740,7 +1740,7 @@ sigma_AR = sigma*sqrt(1-rho^2);
 }
 model{
   //priors
-  log_a ~ gamma(3,1.5); //intrinsic productivity - wide prior
+ log_a ~ normal(1.5,2.5); //intrinsic productivity - wide prior
   log_b ~ normal(-12,3); //per capita capacity parameter - wide prior
       
   //variance terms
@@ -1916,7 +1916,7 @@ transformed parameters{
 
 model{
   //priors
-  log_a ~ gamma(3,1.5); //productivity
+ log_a ~ normal(1.5,2.5); //productivity
   b0 ~ normal(-12,3); //capacity
   
   //variance terms
@@ -1972,7 +1972,7 @@ transformed parameters{
 
 model{
   //priors
-  log_a ~ gamma(3,1.5); //productivity
+ log_a ~ normal(1.5,2.5); //productivity
   b0 ~ normal(-12,3); //initial capacity
   
   //variance terms
@@ -2786,7 +2786,7 @@ if(type=='hmm'&par=='both'){
     }
     model{
      
-      log_a ~ gamma(3,1.5);
+     log_a ~ normal(1.5,2.5);
       log_b ~ normal(-12,3);
        target += normal_lpdf(sigma | 0, 1) - normal_lcdf(0 | 0, 1); //remove density below zero   
       
@@ -3219,7 +3219,7 @@ transformed parameters{
 
 model{
   //priors
-  log_a ~ gamma(3,1.5); //productivity
+ log_a ~ normal(1.5,2.5); //productivity
   b0 ~ normal(-12,3); //capacity
   
   //variance terms
@@ -3280,7 +3280,7 @@ transformed parameters{
 
 model{
   //priors
-  log_a ~ gamma(3,1.5); //productivity
+ log_a ~ normal(1.5,2.5); //productivity
   b0 ~ normal(-12,3); //initial capacity
   
   //variance terms
