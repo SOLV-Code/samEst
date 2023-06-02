@@ -289,7 +289,7 @@ ricker_hmm_stan <- function(data, par=c('a','b','both'), k_regime=2,
                                     R_S =data$logRS,
                                     S=data$S,
                                     K=k_regime,
-                                    alpha_dirichlet=rep(1,k_regime)
+                                    alpha_dirichlet=c(4,1)
                                     ),
                         control = control, warmup = warmup, chains = chains, iter = iter,verbose=FALSE)
   
