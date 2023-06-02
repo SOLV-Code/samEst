@@ -13,6 +13,7 @@ sr_plot(
   type = c("static", "rw", "hmm"),
   par = c("a", "b", "both"),
   form = c("stan", "tmb"),
+  ac = FALSE,
   sr_only = FALSE
 )
 }

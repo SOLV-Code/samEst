@@ -399,6 +399,7 @@ ricker_rw_TMB <- function(data, tv.par=c('a','b','both'), silent = FALSE,
 #' @param k_regime Number of regimes to be considered
 #' @param alpha_limits vector containing two values: upper and lower limit for alpha parameters. default is c(0,20)
 #' @param beta_limits vector containing two values: upper and lower limit for alpha parameters. default is c(1e-10,.1)
+#' @param initDist Initial probability of being in each state, default is equal probabilities assigned to all regimes.
 #' @param silent Logical Silent or optimization details? default is FALSE
 #' @param control output from TMBcontrol() function, to be passed to nlminb()
 #' @param ini_param Optional. A list with initial parameter guesses. The list should contain: lalpha (vector of length k_regime),
@@ -456,7 +457,8 @@ ricker_hmm_TMB <- function(data,
                            tv.par = c('a','b','both'), 
                            k_regime = 2, 
                            alpha_limits = c(0.01,20), 
-                           beta_limits=c(1e-10,.1),  
+                           beta_limits=c(1e-10,.1), 
+                           initDist=NULL, 
                            silent = FALSE, 
                            control = TMBcontrol(), 
                            ini_param = NULL, 
@@ -475,6 +477,14 @@ ricker_hmm_TMB <- function(data,
   }else if(nrow(dirichlet_prior)!=k_regime |ncol(dirichlet_prior)!=k_regime){
     stop("dirichlet_prior should be a k_regime x k_regime matrix")
   }
+  
+  if(is.null(initDist)){
+    initDist=as.double(rep(1/k_regime,k_regime))
+  }else{
+    #ensure that initdist sum to 1
+    initDist=initDist/sum(initDist)
+  }
+
 
   
   tmb_data<-list(yt=data$logRS,
@@ -483,6 +493,7 @@ ricker_hmm_TMB <- function(data,
     alpha_l=alpha_limits[1],
     beta_u=beta_limits[2],
     beta_l=beta_limits[1],
+    initDist=initDist,
     alpha_dirichlet=dirichlet_prior,
     priors_flag=priors_flag,
     stan_flag=stan_flag,
@@ -504,7 +515,6 @@ ricker_hmm_TMB <- function(data,
                    k_regime),
           lbeta = find_linit(beta_limits[2],beta_limits[1],-bguess),
           logsigma = log(.6),
-          pi1_tran = rep(0.5,k_regime-1),
           qij_tran = matrix(0.1,nrow=k_regime,ncol=k_regime-1)          
       )  
    
@@ -525,7 +535,6 @@ ricker_hmm_TMB <- function(data,
           lalpha = find_linit(alpha_limits[2],alpha_limits[1],max(initlm$coefficients[[1]],.5)),
           lbeta = rep(find_linit(beta_limits[2],beta_limits[1],-bguess),k_regime),
           logsigma = log(.6),
-          pi1_tran = rep(0.5,k_regime-1),
           qij_tran = matrix(0.5,nrow=k_regime,ncol=k_regime-1)          
       )      
     }else{
@@ -545,7 +554,6 @@ ricker_hmm_TMB <- function(data,
           k_regime),
         lbeta = rep(find_linit(beta_limits[2],beta_limits[1],-bguess),k_regime),
         logsigma = log(.6),
-        pi1_tran = rep(0.5,k_regime-1),
         qij_tran = matrix(0.1,nrow=k_regime,ncol=k_regime-1)          
       )
 
@@ -579,7 +587,6 @@ ricker_hmm_TMB <- function(data,
     alpha    = tmb_obj$report()$alpha,
     beta     = tmb_obj$report()$beta,
     sigma      = tmb_obj$report()$sigma,
-    pi1      = tmb_obj$report()$pi1,
     qij      = tmb_obj$report()$qij,
     Smsy      = tmb_obj$report()$Smsy,
     Smax      = tmb_obj$report()$Smax,

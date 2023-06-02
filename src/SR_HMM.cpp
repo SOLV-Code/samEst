@@ -78,7 +78,7 @@ vector<Type> segment_1(vector<Type> yt, vector<Type> st, matrix<Type> qij,vector
   
   int k_regime = beta.size();
   Type small = pow(10,-300);
-  vector<Type> sr = log(pi1 + small);
+  vector<Type> sr = log(pi1);
   
   for(int j = 0;j < k_regime;++j){
     Type f_now = alpha(j) - beta(j)*st(0);
@@ -155,6 +155,8 @@ Type objective_function<Type>::operator() ()
   DATA_SCALAR(beta_l);  //upper bound for b
   //DATA_SCALAR(sigma_u); //lower bound for sigma
   
+  DATA_VECTOR(initDist);  //specify initial probability
+
   DATA_MATRIX(alpha_dirichlet); //prior inputs for dirichlet 
   
   
@@ -165,7 +167,7 @@ Type objective_function<Type>::operator() ()
   PARAMETER_VECTOR(lalpha);
   PARAMETER_VECTOR(lbeta);
   PARAMETER(logsigma);
-  PARAMETER_VECTOR(pi1_tran); // initial state probabilities
+  
   PARAMETER_MATRIX(qij_tran); // transition probabilities
 
   int k_regime = lbeta.size();
@@ -186,11 +188,10 @@ Type objective_function<Type>::operator() ()
   Type sigma = exp(logsigma);
   vector<Type> pi1(k_regime); 
  
-  for(int i = 0;i < k_regime-1;++i){
-    pi1(i) = exp(pi1_tran(i));    
+  for(int i = 0;i < k_regime;++i){
+    pi1(i) = initDist(i);    
   }
-  pi1(k_regime-1) = 1;
-  pi1 = pi1/(pi1.sum());
+  
   
   Type small = pow(10,-300);
   matrix<Type> qij(k_regime,k_regime);
@@ -265,7 +266,7 @@ Type objective_function<Type>::operator() ()
 
       pnll -= ddirichlet(qijtmp,alpha_dirichlettmp,true);   
     }
-    pnll -= ddirichlet(pi1,pi_prior,true);
+    
   }
 
 
@@ -275,7 +276,6 @@ Type objective_function<Type>::operator() ()
 REPORT(beta);
 REPORT(alpha);
 REPORT(sigma);
-REPORT(pi1);
 REPORT(qij);
 REPORT(umsy);
 REPORT(Smsy);
@@ -292,7 +292,6 @@ ADREPORT(alpha);
 ADREPORT(beta);
 ADREPORT(sigma);
 ADREPORT(Smax);
-ADREPORT(pi1);
 ADREPORT(qij);
 ADREPORT(umsy);
 ADREPORT(Smsy);

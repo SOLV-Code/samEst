@@ -11,7 +11,7 @@ devtools::document()
 devtools::load_all()
 
 
-remotes::install_git('https://github.com/Pacific-salmon-assess/samEst', force=TRUE)
+#remotes::install_git('https://github.com/Pacific-salmon-assess/samEst', force=TRUE)
 
 
 #read in data 
@@ -33,7 +33,7 @@ remotes::install_git('https://github.com/Pacific-salmon-assess/samEst', force=TR
 
 #setwd("C:\\Users\\worc\\Documents\\timevarproject\\samEst\\data")
 #usethis::use_data(harck)
-
+#library(samEst)
 data(harck)
 plot(harck$S,harck$R)
 
