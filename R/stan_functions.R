@@ -654,7 +654,7 @@ transformed parameters {
   vector[K] logalpha[N];
   real b; //
 
-  for(i in 1:K){pi1[i]=1/K};
+  pi1=rep_vector(1.0/K,K);
 
   b=exp(log_b);
 
@@ -962,7 +962,7 @@ simplex[K] pi1; // initial state probabilities
 vector[K] logalpha[N];
 ordered[K] b;
 
-for(i in 1:K){pi1[i]=1/K};
+  pi1=rep_vector(1.0/K,K);
 
 b=exp(log_b);
 
@@ -1271,7 +1271,7 @@ if(type=='hmm'&par=='both'){
       vector[K] logalpha[N];
       vector[K] b; //
         
-		for(i in 1:K){pi1[i]=1/K};
+	  pi1=rep_vector(1.0/K,K);
 
         b=exp(log_b);
         
@@ -1427,7 +1427,7 @@ simplex[K] pi1; // initial state probabilities
 
 b=exp(log_b);
 
-for(i in 1:K){pi1[i]=1/K};
+pi1=rep_vector(1.0/K,K);
 
  
 { // Forward algorithm log p(z_t = j | y_{1:t})
