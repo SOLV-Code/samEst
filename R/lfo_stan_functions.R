@@ -29,7 +29,7 @@ stan_refit<- function(mod,newdata,oos,K=2){
     S=newdata$S,
     y_oos=oosdata$logRS,
     x_oos=oosdata$S,
-    K=K,
+    K=2,
     alpha_dirichlet=c(1,1)
   )
   

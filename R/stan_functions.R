@@ -18,45 +18,46 @@ sr_mod<- function(type=c('static','rw','hmm'),ac=FALSE,par=c('n','a','b','both')
   if(type=='static'&ac==F){
     if(lfo==FALSE){
       m="data{
-      int<lower=1> N;//number of annual samples (time-series length)
-      vector[N] R_S; //log(recruits per spawner)
-      vector[N] S; //spawners in time T
-     }
-    parameters {
-      real<lower = 0> log_a;// initial productivity (on log scale)
-      real<upper = 0> log_b; // rate capacity - fixed in this
+  int<lower=1> N;//number of annual samples (time-series length)
+  vector[N] R_S; //log(recruits per spawner)
+  vector[N] S; //spawners in time T
+}
+parameters {
+  real log_a;// initial productivity (on log scale)
+  real<upper = 0> log_b; // rate capacity - fixed in this
     
-     //variance components  
-      real<lower = 0> sigma;
+//variance components  
+  real<lower = 0> sigma;
     
-    }
-    transformed parameters{
-    	real b;
-    	
-    	b = exp(log_b); //prevents b (density dependence) from being negative (ie. positive)
-    }
-    model{
-      //priors
-     log_a ~ normal(1.5,2.5); //intrinsic productivity - wide prior
-      log_b ~ normal(-12,3); //per capita capacity parameter - wide prior
-      
-      //variance terms
-     target += normal_lpdf(sigma | 0, 1) - normal_lcdf(0 | 0, 1); //remove density below zero
-      
-      R_S ~ normal(log_a - S*b, sigma);
-    }
-    generated quantities{
-     vector[N] log_lik;
-     real S_max;
-     real U_msy;
-     real S_msy;
-     
-     for(n in 1:N) log_lik[n] = normal_lpdf(R_S[n]|log_a - S[n]*b, sigma);
-     
-    S_max = 1/b;
-    U_msy = 1-lambert_w0(exp(1-log_a));
-    S_msy = (1-lambert_w0(exp(1-log_a)))/b;
-    }
+}
+transformed parameters{
+  real b;
+    
+  b = exp(log_b); //prevents b (density dependence) from being negative (ie. positive)
+}
+model{
+  //priors
+  log_a ~ normal(1.5,2.5); //intrinsic productivity - wide prior
+  log_b ~ normal(-12,3); //per capita capacity parameter - wide prior
+  
+  //variance terms
+  //target += normal_lpdf(sigma | 0, 1) - normal_lcdf(0 | 0, 1); //remove density below zero
+  sigma ~ normal(0,1); //half normal on variance (lower limit of zero)
+
+   R_S ~ normal(log_a - S*b, sigma);
+}
+generated quantities{
+ vector[N] log_lik;
+ real S_max;
+ real U_msy;
+ real S_msy;
+ 
+ for(n in 1:N) log_lik[n] = normal_lpdf(R_S[n]|log_a - S[n]*b, sigma);
+ 
+S_max = 1/b;
+U_msy = 1-lambert_w0(exp(1-log_a));
+S_msy = (1-lambert_w0(exp(1-log_a)))/b;
+}
     "
     }
     if(lfo==TRUE){
@@ -68,7 +69,7 @@ sr_mod<- function(type=c('static','rw','hmm'),ac=FALSE,par=c('n','a','b','both')
       real x_oos; //spawners in time T
      }
     parameters {
-      real<lower = 0> log_a;// initial productivity (on log scale)
+      real log_a;// initial productivity (on log scale)
       real<upper = 0> log_b; // rate capacity - fixed in this
     
      //variance components  
@@ -85,7 +86,8 @@ sr_mod<- function(type=c('static','rw','hmm'),ac=FALSE,par=c('n','a','b','both')
       log_b ~ normal(-12,3); //per capita capacity parameter - wide prior
       
       //variance terms
-       target += normal_lpdf(sigma | 0, 1) - normal_lcdf(0 | 0, 1); //remove density below zero   
+      
+       sigma ~ normal(0,1); //half normal on variance (lower limit of zero)  
       
       R_S ~ normal(log_a - S*b, sigma);
     }
@@ -105,61 +107,63 @@ sr_mod<- function(type=c('static','rw','hmm'),ac=FALSE,par=c('n','a','b','both')
   int ii[N];//index of years with data
   vector[N] R_S; //log(recruits per spawner)
   vector[N] S; //spawners in time T
- }
+}
 parameters{
   real log_a;// initial productivity (on log scale)
   real log_b; // rate capacity - fixed in this
 
- //variance components  
+  //variance components  
   real<lower = 0> sigma;
   real<lower = -1, upper = 1> rho;
 
 }
 transformed parameters{
-real b;
-vector[N] mu;
-vector[N] epsilon; //residuals
-real sigma_AR;
+  real b;
+  vector[N] mu;
+  vector[N] epsilon; //residuals
+  real sigma_AR;
+  
+  b = exp(log_b);
+  mu = log_a-b*S;
 
-b = exp(log_b);
-mu = log_a-b*S;
-
-epsilon[1] = R_S[1] - mu[1];
+  epsilon[1] = R_S[1] - mu[1];
   for(t in 2:N){
     epsilon[t] =(R_S[t] - mu[t]);
     mu[t] = mu[t] + (rho^(ii[t]-ii[t-1])*epsilon[t-1]); //rho raised the power of the number of time-steps between successive productivity estimates
   }
-sigma_AR = sigma*sqrt(1-rho^2);
+  sigma_AR = sigma*sqrt(1-rho^2);
 }
 model{
   //priors
- log_a ~ normal(1.5,2.5); //intrinsic productivity - wide prior
+  log_a ~ normal(1.5,2.5); //intrinsic productivity - wide prior
   log_b ~ normal(-12,3); //per capita capacity parameter - wide prior
       
   //variance terms
-     target += normal_lpdf(sigma | 0, 1) - normal_lcdf(0 | 0, 1); //remove density below zero
+  sigma ~ normal(0,1); //half normal on variance (lower limit of zero)
+   
   
   //autocorrelation term
   rho ~ uniform(-1,1);
   
-R_S[1] ~ normal(mu[1], sigma);
-for(t in 2:N) R_S[t] ~ normal(mu[t], sigma_AR);
+  R_S[1] ~ normal(mu[1], sigma);
+  for(t in 2:N) R_S[t] ~ normal(mu[t], sigma_AR);
   
 }
- generated quantities{
-     vector[N] log_lik;
-     real S_max;
-     real U_msy;
-     real S_msy;
+generated quantities{
+  vector[N] log_lik;
+  real S_max;
+  real U_msy;
+  real S_msy;
+  
+  log_lik[1] = normal_lpdf(R_S[1]|mu[1], sigma);
+  for(n in 1:N) log_lik[n] = normal_lpdf(R_S[n]|mu[n], sigma_AR);
+   
+  S_max = 1/b;
+  U_msy = 1-lambert_w0(exp(1-log_a));
+  S_msy = (1-lambert_w0(exp(1-log_a)))/b;
+}
     
-    log_lik[1] = normal_lpdf(R_S[1]|mu[1], sigma);
-    for(n in 1:N) log_lik[n] = normal_lpdf(R_S[n]|mu[n], sigma_AR);
-     
-    S_max = 1/b;
-    U_msy = 1-lambert_w0(exp(1-log_a));
-    S_msy = (1-lambert_w0(exp(1-log_a)))/b;
-    }
-    "
+"
     }
 if(lfo==TRUE){
   m ="data{
@@ -174,7 +178,7 @@ if(lfo==TRUE){
  }
 parameters{
   real log_a;// initial productivity (on log scale)
-  real log_b; // rate capacity - fixed in this
+  real<upper=0> log_b; // rate capacity - fixed in this
 
  //variance components  
   real<lower = 0> sigma;
@@ -200,11 +204,12 @@ sigma_AR = sigma*sqrt(1-rho^2);
 }
 model{
   //priors
- log_a ~ normal(1.5,2.5); //intrinsic productivity - wide prior
+  log_a ~ normal(1.5,2.5); //intrinsic productivity - wide prior
   log_b ~ normal(-12,3); //per capita capacity parameter - wide prior
       
   //variance terms
-   target += normal_lpdf(sigma | 0, 1) - normal_lcdf(0 | 0, 1); //remove density below zero   
+  sigma ~ normal(0,1); //half normal on variance (lower limit of zero)
+  
   
   //autocorrelation term
   rho ~ uniform(-1,1);
@@ -229,9 +234,9 @@ if(type=='rw'&par=='a'){
   int ii[N];//index of years with data
   vector[N] R_S; //log(recruits per spawner)
   vector[N] S; //spawners in time T
-  }
+}
 parameters{
-  real<lower = 0> log_a0;// initial productivity (on log scale)
+  real log_a0;// initial productivity (on log scale)
   real<upper = 0> log_b; // rate capacity - fixed in this
 
  //variance components  
@@ -256,13 +261,13 @@ transformed parameters{
 }  
 model{
   //priors
-  log_a0 ~ gamma(3,1.5); //initial productivity - wide prior
+  log_a0 ~ normal(1.5,2.5); //initial productivity - wide prior
   log_b ~ normal(-12,3); //per capita capacity parameter - wide prior
   a_dev ~ std_normal(); //standardized (z-scales) deviances
   
   //variance terms
-   target += normal_lpdf(sigma | 0, 1) - normal_lcdf(0 | 0, 1); //remove density below zero   
-  target += normal_lpdf(sigma_a| 0, 1) - normal_lcdf(0 | 0, 1); //remove density below zero  
+  sigma ~ normal(0,1); //half normal on variance (lower limit of zero)
+  sigma_a ~ normal(0,1); //half normal on variance (lower limit of zero)
    
  
   for(n in 1:N) R_S[n] ~ normal(log_a[ii[n]] - S[n]*b, sigma); 
@@ -280,6 +285,7 @@ model{
     U_msy = 1-lambert_w0(exp(1-log_a));
     S_msy = (1-lambert_w0(exp(1-log_a)))/b;
     }
+
 "
   }
 if(lfo==TRUE){
@@ -293,7 +299,7 @@ if(lfo==TRUE){
   real x_oos; //spawners in time T
  }
 parameters{
-  real<lower = 0> log_a0;// initial productivity (on log scale)
+  real log_a0;// initial productivity (on log scale)
   real<upper = 0> log_b; // rate capacity - fixed in this
 
  //variance components  
@@ -317,13 +323,13 @@ transformed parameters{
 }  
 model{
   //priors
-  log_a0 ~ gamma(3,1.5); //initial productivity - wide prior
+  log_a0 ~ normal(1.5,2.5); //initial productivity - wide prior
   log_b ~ normal(-12,3); //per capita capacity parameter - wide prior
   a_dev ~ std_normal(); //standardized (z-scales) deviances
   
   //variance terms
-   target += normal_lpdf(sigma | 0, 1) - normal_lcdf(0 | 0, 1); //remove density below zero   
-  target += normal_lpdf(sigma_a| 0, 1) - normal_lcdf(0 | 0, 1); //remove density below zero  
+  sigma ~ normal(0,1); //half normal on variance (lower limit of zero)
+  sigma_a ~ normal(0,1); //half normal on variance (lower limit of zero)
    
   for(n in 1:N) R_S[n] ~ normal(log_a[ii[n]] - S[n]*b, sigma);
 }
@@ -340,7 +346,8 @@ model{
   log_lik_oos_1b = normal_lpdf(y_oos|log_a[ii[N]] - x_oos*b, sigma);
   log_lik_oos_3b = normal_lpdf(y_oos|log_a_3b - x_oos*b, sigma);
   log_lik_oos_5b = normal_lpdf(y_oos|log_a_5b - x_oos*b, sigma);
- }
+  }
+ 
     "}
 }  
 #M4: TV Cap S-R####
@@ -352,9 +359,9 @@ if(type=='rw'&par=='b'){
   int ii[N];//index of years with data
   vector[N] R_S; //log(recruits per spawner)
   vector[N] S; //spawners in time T
- }
+}
 parameters {
-  real<lower = 0> log_a;// initial productivity (on log scale) - fixed in this
+  real log_a;// initial productivity (on log scale) - fixed in this
   real<upper = 0> b0; // rate capacity - fixed in this
 
  //variance components  
@@ -379,17 +386,18 @@ transformed parameters{
 
 model{
   //priors
- log_a ~ normal(1.5,2.5); //productivity
+  log_a ~ normal(1.5,2.5); //productivity
   b0 ~ normal(-12,3); //capacity
   
   //variance terms
-   target += normal_lpdf(sigma | 0, 1) - normal_lcdf(0 | 0, 1); //remove density below zero   
-   target += normal_lpdf(sigma_b| 0, 1) - normal_lcdf(0 | 0, 1); //remove density below zero  
+  sigma ~ normal(0,1); //half normal on variance (lower limit of zero)
+  sigma_b ~ normal(0,1); //half normal on variance (lower limit of zero)
+  
    
   b_dev ~ std_normal();
  for(n in 1:N) R_S[n] ~ normal(log_a-b[ii[n]]*S[n], sigma);
 }
- generated quantities{
+generated quantities{
      vector[N] log_lik;
      vector[L] S_max;
      real U_msy;
@@ -401,8 +409,9 @@ model{
                    S_msy[l] = (1-lambert_w0(exp(1-log_a)))/b[l];
     }
     U_msy = 1-lambert_w0(exp(1-log_a));
-    }
- "
+}
+ 
+"
   }
 if(lfo==TRUE){
   m="data{
@@ -415,7 +424,7 @@ if(lfo==TRUE){
   real x_oos; //spawners in time T
  }
 parameters {
-  real<lower = 0> log_a;// initial productivity (on log scale) - fixed in this
+  real log_a;// initial productivity (on log scale) - fixed in this
   real<upper = 0> b0; // rate capacity - fixed in this
 
  //variance components  
@@ -440,13 +449,13 @@ transformed parameters{
 
 model{
   //priors
- log_a ~ normal(1.5,2.5); //productivity
+  log_a ~ normal(1.5,2.5); //productivity
   b0 ~ normal(-12,3); //initial capacity
   
   //variance terms
-   target += normal_lpdf(sigma | 0, 1) - normal_lcdf(0 | 0, 1); //remove density below zero   
-  target += normal_lpdf(sigma_b| 0, 1) - normal_lcdf(0 | 0, 1); //remove density below zero  
-   
+  sigma ~ normal(0,1); //half normal on variance (lower limit of zero)
+  sigma_b ~ normal(0,1); //half normal on variance (lower limit of zero)
+  
   b_dev ~ std_normal();
   
   for(n in 1:N) R_S[n] ~ normal(log_a-S[n]*b[ii[n]], sigma);
@@ -464,7 +473,8 @@ generated quantities{
   log_lik_oos_1b = normal_lpdf(y_oos|log_a - x_oos*b[ii[N]], sigma);
   log_lik_oos_3b = normal_lpdf(y_oos|log_a - x_oos*b_3b, sigma);
   log_lik_oos_5b = normal_lpdf(y_oos|log_a - x_oos*b_5b, sigma);
- }
+}
+ 
  "}
 }
 #M5: TV ProdCap S-R####
@@ -477,8 +487,8 @@ if(type=='rw'&par=='both'){
   vector[N] R_S; //log(recruits per spawner)
   vector[N] S; //spawners in time T
  }
-parameters {
-  real<lower=0> log_a0;// initial productivity (on log scale) - fixed in this
+parameters{
+  real log_a0;// initial productivity (on log scale) - fixed in this
   real<upper=0> log_b0; // rate capacity - fixed in this
 
  //variance components  
@@ -507,13 +517,14 @@ transformed parameters{
 
 model{
   //priors
-  log_a0 ~ gamma(3,1.5); //initial productivity
+  log_a0 ~ normal(1.5,2.5); //initial productivity
   log_b0 ~ normal(-12,3); //initial capacity
   
   //variance terms
-   target += normal_lpdf(sigma | 0, 1) - normal_lcdf(0 | 0, 1); //remove density below zero   
-  target += normal_lpdf(sigma_a| 0, 1) - normal_lcdf(0 | 0, 1); //remove density below zero  
-  target += normal_lpdf(sigma_b| 0, 1) - normal_lcdf(0 | 0, 1); //remove density below zero  
+  sigma ~ normal(0,1); //half normal on variance (lower limit of zero)
+  sigma_a ~ normal(0,1); //half normal on variance (lower limit of zero)
+  sigma_b ~ normal(0,1); //half normal on variance (lower limit of zero)
+  
   
   a_dev ~ std_normal();
   b_dev ~ std_normal();
@@ -532,7 +543,8 @@ model{
     U_msy[l] = 1-lambert_w0(exp(1-log_a[l]));
     S_msy[l] = (1-lambert_w0(exp(1-log_a[l])))/b[l];
    }
-    }
+}
+
 "
   }
 if(lfo==TRUE){
@@ -546,7 +558,7 @@ if(lfo==TRUE){
   real x_oos; //spawners in time T
  }
 parameters {
-  real<lower=0> log_a0;// initial productivity (on log scale) - fixed in this
+  real log_a0;// initial productivity (on log scale) - fixed in this
   real<upper=0> log_b0; // rate capacity - fixed in this
 
  //variance components  
@@ -560,7 +572,7 @@ parameters {
 }
 
 transformed parameters{
-  vector<lower = 0>[L] log_a; //a in each year (log scale)
+  vector[L] log_a; //a in each year (log scale)
   vector<upper = 0>[L] log_b; //b in each year (log scale)
   vector[L] b; //b in each year
   
@@ -575,14 +587,15 @@ transformed parameters{
 
 model{
   //priors
-  log_a0 ~ gamma(3,1.5); //initial productivity
-log_b0 ~ normal(-12,3); //initial capacity
+  log_a0 ~ normal(1.5,2.5); //initial productivity
+  log_b0 ~ normal(-12,3); //initial capacity
   
   //variance terms
-   target += normal_lpdf(sigma | 0, 1) - normal_lcdf(0 | 0, 1); //remove density below zero   
-  target += normal_lpdf(sigma_a| 0, 1) - normal_lcdf(0 | 0, 1); //remove density below zero  
-  target += normal_lpdf(sigma_b| 0, 1) - normal_lcdf(0 | 0, 1); //remove density below zero  
-  
+  sigma ~ normal(0,1); //half normal on variance (lower limit of zero)
+  sigma_a ~ normal(0,1); //half normal on variance (lower limit of zero)
+  sigma_b ~ normal(0,1); //half normal on variance (lower limit of zero)
+
+   
   a_dev ~ std_normal();
   b_dev ~ std_normal();
   
@@ -606,149 +619,150 @@ generated quantities{
   log_lik_oos_1b = normal_lpdf(y_oos|log_a[ii[N]] - x_oos*b[ii[N]], sigma);
   log_lik_oos_3b = normal_lpdf(y_oos|log_a_3b - x_oos*b_3b, sigma);
   log_lik_oos_5b = normal_lpdf(y_oos|log_a_5b - x_oos*b_5b, sigma);
- }
+}
+ 
  "}
 }
 #M6: Regime Prod S-R####
 if(type=='hmm'&par=='a'){
   if(lfo==FALSE){
     m="functions {
-vector normalize(vector x) {
-return x / sum(x);
+  vector normalize(vector x) {
+  return x / sum(x);
 }
 }
 data {
- int<lower=1> N;//number of annual samples (time-series length)
+  int<lower=1> N;//number of annual samples (time-series length)
   vector[N] R_S; //log(recruits per spawner)
   vector[N] S; //spawners in time T
   int<lower=1> K; //number of hidden regime states
   vector[K] alpha_dirichlet; //prior inputs for dirichlet 
  }
 parameters {
-// Discrete state model
-simplex[K] pi1; // initial state probabilities
-simplex[K] A[K]; // transition probabilities
+  // Discrete state model
+  simplex[K] A[K]; // transition probabilities
 
-// A[i][j] = p(z_t = j | z_{t-1} = i)
-// Continuous observation model
-ordered[K] log_a; // max. productivity
-real log_b; // rate capacity - fixed in this
-real<lower=0> sigma; // observation standard deviations
+  // A[i][j] = p(z_t = j | z_{t-1} = i)
+  // Continuous observation model
+  ordered[K] log_a; // max. productivity
+  real log_b; // rate capacity - fixed in this
+  real<lower=0> sigma; // observation standard deviations
 }
 
 transformed parameters {
-vector[K] logalpha[N];
-real b; //
+  simplex[K] pi1; // initial state probabilities
+  vector[K] logalpha[N];
+  real b; //
 
-b=exp(log_b);
+  for(i in 1:K){pi1[i]=1/K};
+
+  b=exp(log_b);
 
 { // Forward algorithm log p(z_t = j | y_{1:t})
-real accumulator1[K];
+  real accumulator1[K];
 
-logalpha[1] = log(pi1) + normal_lpdf(R_S[1] |log_a - b*S[1], sigma);
+  logalpha[1] = log(pi1) + normal_lpdf(R_S[1] |log_a - b*S[1], sigma);
 
-for (t in 2:N) {
-for (j in 1:K) { // j = current (t)
-for (i in 1:K) { // i = previous (t-1)
-// Murphy (2012) p. 609 eq. 17.48
-// belief state + transition prob + local evidence at t
-accumulator1[i] = logalpha[t-1, i] + log(A[i, j]) + normal_lpdf(R_S[t] |log_a[j] - b*S[t], sigma);
-}
-logalpha[t, j] = log_sum_exp(accumulator1);
-}
-}
-} // Forward
+  for (t in 2:N) {
+  for (j in 1:K) { // j = current (t)
+  for (i in 1:K) { // i = previous (t-1)
+  // Murphy (2012) p. 609 eq. 17.48
+  // belief state + transition prob + local evidence at t
+  accumulator1[i] = logalpha[t-1, i] + log(A[i, j]) + normal_lpdf(R_S[t] |log_a[j] - b*S[t], sigma);
+  }
+  logalpha[t, j] = log_sum_exp(accumulator1);
+  }
+  }
+  } // Forward
 }
 model{
 
-log_a ~ gamma(3,1.5);
-log_b ~ normal(-12,3);
-
-target += normal_lpdf(sigma | 0, 1) - normal_lcdf(0 | 0, 1); //remove density below zero   
-
-pi1 ~ dirichlet(rep_vector(1, K));
-
-for(k in 1:K){
-A[k,] ~ dirichlet(alpha_dirichlet);
-}
-
-target += log_sum_exp(logalpha[N]);
+  log_a ~ normal(1.5,2.5);
+  log_b ~ normal(-12,3);
+  
+  sigma ~ normal(0,1); //half normal on variance (lower limit of zero)
+    
+  for(k in 1:K){
+  A[k,] ~ dirichlet(alpha_dirichlet);
+  }
+  
+  target += log_sum_exp(logalpha[N]);
 }
 generated quantities {
-vector[N] log_lik;
-int<lower=1, upper=K> zstar[N];
-real logp_zstar;
-vector[K] alpha[N];
-vector[K] logbeta[N];
-vector[K] loggamma[N];
-vector[K] beta[N];
-vector[K] gamma[N];
+  vector[N] log_lik;
+  int<lower=1, upper=K> zstar[N];
+  real logp_zstar;
+  vector[K] alpha[N];
+  vector[K] logbeta[N];
+  vector[K] loggamma[N];
+  vector[K] beta[N];
+  vector[K] gamma[N];
+  
+  real S_max;
+  vector[K] U_msy;
+  vector[K] S_msy;
+  
+  
+  { // Forward algortihm
+  for (t in 1:N)
+  alpha[t] = softmax(logalpha[t]);
+  } // Forward
+  
+  { // Backward algorithm log p(y_{t+1:T} | z_t = j)
+  real accumulator2[K];
+  for (j in 1:K)
+  logbeta[N, j] = 1;
+  for (tforward in 0:(N-2)) {
+  int t;
+  t = N - tforward;
+  for (j in 1:K) { // j = previous (t-1)
+  for (i in 1:K) { // i = next (t)
+  // Murphy (2012) Eq. 17.58
+  // backwards t + transition prob + local evidence at t
+  accumulator2[i] = logbeta[t, i] + log(A[j, i]) + normal_lpdf(R_S[t] | log_a[i] - b*S[t], sigma);
+  }
+  logbeta[t-1, j] = log_sum_exp(accumulator2);
+  }
+  }
+  for (t in 1:N)
+  beta[t] = softmax(logbeta[t]);
+  } // Backward
 
-real S_max;
-vector[K] U_msy;
-vector[K] S_msy;
-
-
-{ // Forward algortihm
-for (t in 1:N)
-alpha[t] = softmax(logalpha[t]);
-} // Forward
-
-{ // Backward algorithm log p(y_{t+1:T} | z_t = j)
-real accumulator2[K];
-for (j in 1:K)
-logbeta[N, j] = 1;
-for (tforward in 0:(N-2)) {
-int t;
-t = N - tforward;
-for (j in 1:K) { // j = previous (t-1)
-for (i in 1:K) { // i = next (t)
-// Murphy (2012) Eq. 17.58
-// backwards t + transition prob + local evidence at t
-accumulator2[i] = logbeta[t, i] + log(A[j, i]) + normal_lpdf(R_S[t] | log_a[i] - b*S[t], sigma);
-}
-logbeta[t-1, j] = log_sum_exp(accumulator2);
-}
-}
-for (t in 1:N)
-beta[t] = softmax(logbeta[t]);
-} // Backward
-
-{ // Forward-backward algorithm log p(z_t = j | y_{1:N})
-for(t in 1:N) {
-loggamma[t] = alpha[t] .* beta[t];
-}
-for(t in 1:N)
-gamma[t] = normalize(loggamma[t]);
-} // Forward-backward
-
-{ // Viterbi algorithm
-int bpointer[N, K]; // backpointer to the most likely previous state on the most probable path
-real delta[N, K]; // max prob for the sequence up to t
-// that ends with an emission from state k
-for (j in 1:K)
-delta[1, K] = normal_lpdf(R_S[1] | log_a[j] - b*S[1], sigma);
-for (t in 2:N) {
-for (j in 1:K) { // j = current (t)
-delta[t, j] = negative_infinity();
-for (i in 1:K) { // i = previous (t-1)
-real logp;
-logp = delta[t-1, i] + log(A[i, j]) + normal_lpdf(R_S[t] | log_a[j] - b*S[t], sigma);
-if (logp > delta[t, j]) {
-bpointer[t, j] = i;
-delta[t, j] = logp;
-}
-}
-}
-}
-logp_zstar = max(delta[N]);
-for (j in 1:K)
-if (delta[N, j] == logp_zstar)
-zstar[N] = j;
-for (t in 1:(N - 1)) {
-zstar[N - t] = bpointer[N - t + 1, zstar[N - t + 1]];
-}
-}
+  { // Forward-backward algorithm log p(z_t = j | y_{1:N})
+  for(t in 1:N) {
+  loggamma[t] = alpha[t] .* beta[t];
+  }
+  for(t in 1:N)
+  gamma[t] = normalize(loggamma[t]);
+  } // Forward-backward
+  
+  { // Viterbi algorithm
+  int bpointer[N, K]; // backpointer to the most likely previous state on the most probable path
+  real delta[N, K]; // max prob for the sequence up to t
+  // that ends with an emission from state k
+  for (j in 1:K)
+  delta[1, K] = normal_lpdf(R_S[1] | log_a[j] - b*S[1], sigma);
+  for (t in 2:N) {
+    for (j in 1:K) { // j = current (t)
+      delta[t, j] = negative_infinity();
+      for (i in 1:K) { // i = previous (t-1)
+        real logp;
+        logp = delta[t-1, i] + log(A[i, j]) + normal_lpdf(R_S[t] | log_a[j] - b*S[t], sigma);
+        if (logp > delta[t, j]) {
+          bpointer[t, j] = i;
+          delta[t, j] = logp;
+        }
+      }
+    }
+  }
+  logp_zstar = max(delta[N]);
+  for (j in 1:K)
+    if (delta[N, j] == logp_zstar)
+      zstar[N] = j;
+  for (t in 1:(N - 1)) {
+    zstar[N - t] = bpointer[N - t + 1, zstar[N - t + 1]];
+  }
+  }
 
 
 for(n in 1:N)log_lik[n] = normal_lpdf(R_S[n]|log_a[zstar[n]] - S[n]*b, sigma);
@@ -760,6 +774,7 @@ S_msy[k] = (1-lambert_w0(exp(1-log_a[k])))/b;
 }
 
 }
+
 "
   }
 if(lfo==TRUE){
@@ -780,7 +795,6 @@ data {
  }
 parameters {
 // Discrete state model
-simplex[K] pi1; // initial state probabilities
 simplex[K] A[K]; // transition probabilities
 
 // A[i][j] = p(z_t = j | z_{t-1} = i)
@@ -791,8 +805,11 @@ real<lower=0> sigma; // observation standard deviations
 }
 
 transformed parameters {
+simplex[K] pi1; // initial state probabilities
 vector[K] logalpha[N];
 real b; //
+
+for(i in 1:K){pi1[i]=1/K};
 
 b=exp(log_b);
  
@@ -813,11 +830,9 @@ logalpha[t, j] = log_sum_exp(accumulator1);
 } // Forward
 }
 model{
-log_a ~ gamma(3,1.5);
+log_a ~ normal(1.5,2.5);
 log_b ~ normal(-12,3);
- target += normal_lpdf(sigma | 0, 1) - normal_lcdf(0 | 0, 1); //remove density below zero   
-
-pi1 ~ dirichlet(rep_vector(1, K));
+sigma ~ normal(0,1); //half normal on variance (lower limit of zero)
 
 for(k in 1:K){
 A[k,] ~ dirichlet(alpha_dirichlet);
@@ -912,6 +927,7 @@ log_lik_oos_1b = normal_lpdf(y_oos|log_a_1b - x_oos*b, sigma);
 log_lik_oos_3b = normal_lpdf(y_oos|log_a_3b - x_oos*b, sigma);
 log_lik_oos_5b = normal_lpdf(y_oos|log_a_5b - x_oos*b, sigma);
 }
+
  "}
 }
 #M7: Regime Cap S-R####
@@ -931,7 +947,6 @@ data {
  }
 parameters {
 // Discrete state model
-simplex[K] pi1; // initial state probabilities
 simplex[K] A[K]; // transition probabilities
 
 // A[i][j] = p(z_t = j | z_{t-1} = i)
@@ -942,8 +957,12 @@ real<lower=0> sigma; // observation standard deviations
 }
 
 transformed parameters {
+simplex[K] pi1; // initial state probabilities
+
 vector[K] logalpha[N];
 ordered[K] b;
+
+for(i in 1:K){pi1[i]=1/K};
 
 b=exp(log_b);
 
@@ -964,12 +983,11 @@ logalpha[t, j] = log_sum_exp(accumulator);
 } // Forward
 }
 model{
-log_a ~ gamma(3,1.5);
+log_a ~ normal(1.5,2.5);
 log_b ~ normal(-12,3);
- target += normal_lpdf(sigma | 0, 1) - normal_lcdf(0 | 0, 1); //remove density below zero   
 
-pi1 ~ dirichlet(rep_vector(1, K));
-
+sigma ~ normal(0,1); //half normal on variance (lower limit of zero)
+  
 for(k in 1:K){
 A[k,] ~ dirichlet(alpha_dirichlet);
 }
@@ -1081,7 +1099,6 @@ data {
  }
 parameters {
 // Discrete state model
-simplex[K] pi1; // initial state probabilities
 simplex[K] A[K]; // transition probabilities
 
 // A[i][j] = p(z_t = j | z_{t-1} = i)
@@ -1092,8 +1109,11 @@ real<lower=0> sigma; // observation standard deviations
 }
 
 transformed parameters {
+simplex[K] pi1; // initial state probabilities
 vector[K] logalpha[N];
 vector[K] b;
+
+for(i in 1:K){pi1[i]=1/K};
 
 b=exp(log_b);
  
@@ -1115,11 +1135,10 @@ logalpha[t, j] = log_sum_exp(accumulator);
 }
 model{
 
-log_a ~ gamma(3,1.5);
+log_a ~ normal(1.5,2.5);
 log_b ~ normal(-12,3);
- target += normal_lpdf(sigma | 0, 1) - normal_lcdf(0 | 0, 1); //remove density below zero   
 
-pi1 ~ dirichlet(rep_vector(1, K));
+sigma ~ normal(0,1); //half normal on variance (lower limit of zero)
 
 for(k in 1:K){
 A[k,] ~ dirichlet(alpha_dirichlet);
@@ -1216,7 +1235,9 @@ b_5b = exp((log_b[zstar[N]]+log_b[zstar[N-1]]+log_b[zstar[N-2]]+log_b[zstar[N-3]
 log_lik_oos_1b = normal_lpdf(y_oos|log_a - x_oos*b_1b, sigma);
 log_lik_oos_3b = normal_lpdf(y_oos|log_a - x_oos*b_3b, sigma);
 log_lik_oos_5b = normal_lpdf(y_oos|log_a - x_oos*b_5b, sigma);
-}"}
+}
+
+"}
 }
 
 #M8: Regime ProdCap S-R####
@@ -1236,7 +1257,6 @@ if(type=='hmm'&par=='both'){
     }
     parameters {
       // Discrete state model
-      simplex[K] pi1; // initial state probabilities
       simplex[K] A[K]; // transition probabilities
       
       // A[i][j] = p(z_t = j | z_{t-1} = i)
@@ -1247,9 +1267,12 @@ if(type=='hmm'&par=='both'){
     }
     
     transformed parameters {
+	 simplex[K] pi1; // initial state probabilities
       vector[K] logalpha[N];
       vector[K] b; //
         
+		for(i in 1:K){pi1[i]=1/K};
+
         b=exp(log_b);
         
         { // Forward algorithm log p(z_t = j | y_{1:t})
@@ -1270,11 +1293,10 @@ if(type=='hmm'&par=='both'){
     }
     model{
      
-     log_a ~ normal(1.5,2.5);
+      log_a ~ normal(1.5,2.5);
       log_b ~ normal(-12,3);
-       target += normal_lpdf(sigma | 0, 1) - normal_lcdf(0 | 0, 1); //remove density below zero   
-      
-      pi1 ~ dirichlet(rep_vector(1, K));
+
+      sigma ~ normal(0,1); //half normal on variance (lower limit of zero)
       
       for(k in 1:K){
         A[k,] ~ dirichlet(alpha_dirichlet);
@@ -1389,7 +1411,6 @@ data {
  }
 parameters {
 // Discrete state model
-simplex[K] pi1; // initial state probabilities
 simplex[K] A[K]; // transition probabilities
 
 // A[i][j] = p(z_t = j | z_{t-1} = i)
@@ -1402,8 +1423,12 @@ real<lower=0> sigma; // observation standard deviations
 transformed parameters {
 vector[K] logalpha[N];
 vector[K] b; //
+simplex[K] pi1; // initial state probabilities
 
 b=exp(log_b);
+
+for(i in 1:K){pi1[i]=1/K};
+
  
 { // Forward algorithm log p(z_t = j | y_{1:t})
 real accumulator[K];
@@ -1423,11 +1448,9 @@ logalpha[t, j] = log_sum_exp(accumulator);
 }
 model{
 
-log_a ~ gamma(3,1.5);
+log_a ~ normal(1.5,2.5);
 log_b ~ normal(-12,3);
- target += normal_lpdf(sigma | 0, 1) - normal_lcdf(0 | 0, 1); //remove density below zero   
-
-pi1 ~ dirichlet(rep_vector(1, K));
+sigma ~ normal(0,1); //half normal on variance (lower limit of zero)
 
 for(k in 1:K){
 A[k,] ~ dirichlet(alpha_dirichlet);
