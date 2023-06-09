@@ -7,12 +7,12 @@
 #' @param regime TRUE or FALSE statement - is this a regime shift model or not
 #' @param K Number of potential regime shifts - default 2
 #' @param dirichlet_prior k_regime x k_regime matrix. Prior for transition probability matrix, 
-#' if NULL prior is set to matrix(1,nrow=k_regime,ncol=k_regime)
+#' if NULL (default), prior is set to matrix(1,nrow=k_regime,ncol=k_regime)
 #' @return returns the model fit
 #' @export
 #' @examples
 #' r=stan_refit(sm=mod3,newdata=df,oos=12)
-stan_refit<- function(mod,newdata,oos,K=2,dirichlet_prior){
+stan_refit<- function(mod,newdata,oos,K=2,dirichlet_prior=NULL){
   #mod = model file name - eg. 'ricker_linear_oos.stan'
   #newdata = data to train model
   #oosdata = data to predict onto
