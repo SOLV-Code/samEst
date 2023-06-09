@@ -20,9 +20,9 @@ stan_refit<- function(mod,newdata,oos,K=2,dirichlet_prior=NULL){
   #K = number of potential regimes (2 or 3)
   
   if(is.null(dirichlet_prior)){
-    dirichlet_prior<-matrix(1,nrow=k_regime,ncol=k_regime)
-  }else if(nrow(dirichlet_prior)!=k_regime |ncol(dirichlet_prior)!=k_regime){
-    stop("dirichlet_prior should be a k_regime x k_regime matrix")
+    dirichlet_prior<-matrix(1,nrow=K,ncol=K)
+  }else if(nrow(dirichlet_prior)!=K |ncol(dirichlet_prior)!=K){
+    stop("dirichlet_prior should be a K x K matrix")
   }
 
   oosdata=newdata[oos,]
