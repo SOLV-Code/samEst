@@ -71,7 +71,7 @@ stan_refit<- function(mod,newdata,oos,K=2,dirichlet_prior){
 #' @export
 #' @examples
 #' r=stan_refit(sm=mod3,newdata=df,oos=12)
-stan_lfo_cv=function(mod,type=c('static','tv','regime'),df,L=10,K=2,dirichlet_prior){
+stan_lfo_cv=function(mod,type=c('static','tv','regime'),df,L=10,K=2,dirichlet_prior=NULL){
   #mod = model to fit (model name for cmdstanr)
   #tv = 0 for static model; 1 for time-varying (for calculating elpds)
   #df = full data frame

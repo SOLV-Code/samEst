@@ -10,7 +10,7 @@ stan_lfo_cv(
   df,
   L = 10,
   K = 2,
-  dirichlet_prior
+  dirichlet_prior = NULL
 )
 }
 \arguments{
