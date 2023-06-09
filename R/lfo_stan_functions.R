@@ -5,18 +5,26 @@
 #' @param newdata new data to feed to refit models.
 #' @param oos What row of the new data should be treated as the out-of-sample test
 #' @param regime TRUE or FALSE statement - is this a regime shift model or not
-#' @param K Number of potential regime shifts - default NULL
+#' @param K Number of potential regime shifts - default 2
+#' @param dirichlet_prior k_regime x k_regime matrix. Prior for transition probability matrix, 
+#' if NULL prior is set to matrix(1,nrow=k_regime,ncol=k_regime)
 #' @return returns the model fit
 #' @export
 #' @examples
 #' r=stan_refit(sm=mod3,newdata=df,oos=12)
-stan_refit<- function(mod,newdata,oos,K=2){
+stan_refit<- function(mod,newdata,oos,K=2,dirichlet_prior){
   #mod = model file name - eg. 'ricker_linear_oos.stan'
   #newdata = data to train model
   #oosdata = data to predict onto
   #regime = TRUE or FALSE for regime shift models (have different data inputs)
   #K = number of potential regimes (2 or 3)
-    
+  
+  if(is.null(dirichlet_prior)){
+    dirichlet_prior<-matrix(1,nrow=k_regime,ncol=k_regime)
+  }else if(nrow(dirichlet_prior)!=k_regime |ncol(dirichlet_prior)!=k_regime){
+    stop("dirichlet_prior should be a k_regime x k_regime matrix")
+  }
+
   oosdata=newdata[oos,]
   newdata=newdata[-oos,]
   
@@ -30,7 +38,7 @@ stan_refit<- function(mod,newdata,oos,K=2){
     y_oos=oosdata$logRS,
     x_oos=oosdata$S,
     K=2,
-    alpha_dirichlet=c(1,1)
+    alpha_dirichlet= dirichlet_prior
   )
   
   r = mod$sample(data=df,
@@ -54,14 +62,16 @@ stan_refit<- function(mod,newdata,oos,K=2){
 #' 'tv' for time-varying models (including autocorrelated residual model), or 'regime' for regime shift models
 #' @param df Dataframe to use
 #' @param L Minimum dataset to retain, default is to 10 years of data
-#' @param K Number of potential regime shifts - default NULL
+#' @param K Number of potential regime shifts - default 2
+#' @param dirichlet_prior k_regime x k_regime matrix. Prior for transition probability matrix, 
+#' if NULL prior is set to matrix(1,nrow=k_regime,ncol=k_regime)
 #' @return returns the pointwise out-of-sample log likelihoods. For 'tv' or 'regime' models returns a vector that uses either 1. the last year's time-varying parameters, 
 #' 2. an average of the last 3 years of the time-varying parameters, or 5. an average of the last 5 years of the time-varying parameters. For 'regime' models also includes
 #' these estimates that are also probability-weighted (ie. prob regime x regime parameter) in addition to the parameters for the most likely state 1, 3 or 5 years back.
 #' @export
 #' @examples
 #' r=stan_refit(sm=mod3,newdata=df,oos=12)
-stan_lfo_cv=function(mod,type=c('static','tv','regime'),df,L=10,K=NULL){
+stan_lfo_cv=function(mod,type=c('static','tv','regime'),df,L=10,K=2,dirichlet_prior){
   #mod = model to fit (model name for cmdstanr)
   #tv = 0 for static model; 1 for time-varying (for calculating elpds)
   #df = full data frame
@@ -83,7 +93,7 @@ stan_lfo_cv=function(mod,type=c('static','tv','regime'),df,L=10,K=NULL){
     df_past <- df[past, , drop = FALSE]
     df_oos <- df[c(past, oos), , drop = FALSE]
     if(type=='static'){
-      fit_past<- stan_refit(mod=mod,newdata=df_oos,oos=i+1)
+      fit_past<- stan_refit(mod=mod, newdata=df_oos, oos=i+1)
       ll=as.data.frame(fit_past$draws(variables=c('log_lik_oos'),format='draws_matrix'))
       loglik_exact[,i+1]<- ll$log_lik_oos
     }
@@ -96,7 +106,7 @@ stan_lfo_cv=function(mod,type=c('static','tv','regime'),df,L=10,K=NULL){
       loglik_exact_5b[, i + 1] <-ll$log_lik_oos_5b
     }
     if(type=='regime'){
-      fit_past<- stan_refit(mod=mod,newdata=df_oos,oos=i+1)
+      fit_past<- stan_refit(mod=mod,newdata=df_oos,oos=i+1, K=K, dirichlet_prior=dirichlet_prior)
       ll=as.data.frame(fit_past$draws(variables=c('log_lik_oos_1b','log_lik_oos_3b','log_lik_oos_5b'),format='draws_matrix'))
       loglik_exact_1b[, i + 1] <- ll$log_lik_oos_1b
       loglik_exact_3b[, i + 1] <- ll$log_lik_oos_3b

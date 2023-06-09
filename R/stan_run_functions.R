@@ -237,15 +237,18 @@ ricker_rw_stan <- function(data, par=c('a','b','both'),  control = stancontrol()
 #'
 #' @param data A list or data frame containing Spawners (S) and log(Recruits/Spawners) (logRS) time series. 
 #' @param par Which parameter should vary? Either productivity (intercept, a), capacity (slope, b) or both parameters
+#' @param k_regime number of regimes in the model, default is 2
 #' @param control output of stancontrol
 #' @param warmup To be passed to rstan::sampling. A positive integer specifying the number of warmup (aka burnin) iterations per
 #'  chain. The default is 200.
 #' @param chains To be passed to rstan::sampling. A positive integer specifying the number of Markov chains. The default is 6.
 #' @param iter To be passed to rstan::sampling. A positive integer specifying the number of iterations for each chain 
 #' (including warmup). The default is 1000.
-#' @param ... Anything else that would be passed to rstan::sampling
 #' @param sm_ext Default is null, external stan hmm model. Implemented to speed up simulation evaluation, use with caution.
 #' @param lambertW Logical, indicating if lambertW functions should be used in stan code, requires git installation from stan
+#' @param dirichlet_prior k_regime x k_regime matrix. Prior for transition probability matrix, 
+#' if NULL prior is set to matrix(1,nrow=k_regime,ncol=k_regime)
+#' @param ... Anything else that would be passed to rstan::sampling
 #'  
 #'
 #' @returns a list containing the 
@@ -267,7 +270,7 @@ ricker_rw_stan <- function(data, par=c('a','b','both'),  control = stancontrol()
 #' data(harck)
 #' ricker_hmm_stan(data=harck)
 #' 
-ricker_hmm_stan <- function(data, par=c('a','b','both'), k_regime=2, 
+ricker_hmm_stan <- function(data, par=c('a','b','both'), k_regime=2, dirichlet_prior=NULL,
   control = stancontrol(), warmup=300,  chains = 6, iter = 1000, mod=NULL,
   lambertW=FALSE,...) {
   #par='both'
@@ -282,6 +285,11 @@ ricker_hmm_stan <- function(data, par=c('a','b','both'), k_regime=2,
   #}else{
   #  sm <- sm_ext
   #}
+  if(is.null(dirichlet_prior)){
+    dirichlet_prior<-matrix(1,nrow=k_regime,ncol=k_regime)
+  }else if(nrow(dirichlet_prior)!=k_regime |ncol(dirichlet_prior)!=k_regime){
+    stop("dirichlet_prior should be a k_regime x k_regime matrix")
+  }
 
   
   fit <- rstan::sampling(sm, 
@@ -289,7 +297,7 @@ ricker_hmm_stan <- function(data, par=c('a','b','both'), k_regime=2,
                                     R_S =data$logRS,
                                     S=data$S,
                                     K=k_regime,
-                                    alpha_dirichlet=c(4,1)
+                                    alpha_dirichlet=dirichlet_prior
                                     ),
                         control = control, warmup = warmup, chains = chains, iter = iter,verbose=FALSE)
   

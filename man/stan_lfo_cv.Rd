@@ -4,7 +4,14 @@
 \alias{stan_lfo_cv}
 \title{stan_lfo_cv function}
 \usage{
-stan_lfo_cv(mod, type = c("static", "tv", "regime"), df, L = 10, K = NULL)
+stan_lfo_cv(
+  mod,
+  type = c("static", "tv", "regime"),
+  df,
+  L = 10,
+  K = 2,
+  dirichlet_prior
+)
 }
 \arguments{
 \item{mod}{Compiled stan model, which can be generated with sr_mod function.}
@@ -16,7 +23,10 @@ stan_lfo_cv(mod, type = c("static", "tv", "regime"), df, L = 10, K = NULL)
 
 \item{L}{Minimum dataset to retain, default is to 10 years of data}
 
-\item{K}{Number of potential regime shifts - default NULL}
+\item{K}{Number of potential regime shifts - default 2}
+
+\item{dirichlet_prior}{k_regime x k_regime matrix. Prior for transition probability matrix,
+if NULL prior is set to matrix(1,nrow=k_regime,ncol=k_regime)}
 }
 \value{
 returns the pointwise out-of-sample log likelihoods. For 'tv' or 'regime' models returns a vector that uses either 1. the last year's time-varying parameters,
