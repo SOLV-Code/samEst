@@ -48,9 +48,15 @@ Type objective_function<Type>::operator() ()
   DATA_VECTOR(obs_logRS);   // observed log recruitment
   DATA_INTEGER(priors_flag); //flag indicating wether or not priors should be used
   DATA_INTEGER(stan_flag); //flag indicating wether or not tmbstan is used 
-
+  
   //DATA_SCALAR(sig_p_mean);
   DATA_SCALAR(sig_p_sd); //sd for sigma prior
+  
+  //lfo quantities
+  DATA_SCALAR(y_oos); //log(recruits per spawner) next year
+  DATA_SCALAR(x_oos); //spawners in next year
+
+  
   
   PARAMETER(alpha);
   PARAMETER(logbeta);
@@ -85,14 +91,15 @@ Type objective_function<Type>::operator() ()
   //ans -= dt(sigobs,Type(3.0),true);
   
   
-  vector<Type> pred_logRS(timeSteps), pred_logR(timeSteps), residuals(timeSteps); 
+  vector<Type> pred_logRS(timeSteps), pred_logR(timeSteps), residuals(timeSteps), ll(timeSteps) ; 
    
   for(int i=0;i<timeSteps;i++){
     if(!isNA(obs_logRS(i))){
       pred_logRS(i) = alpha - beta * obs_S(i) ; 
       pred_logR(i) = pred_logRS(i) + log(obs_S(i));
       residuals(i) = obs_logRS(i) - pred_logRS(i);
-      nll+=-dnorm(obs_logRS(i),pred_logRS(i),sigobs,true);
+      ll(i) = dnorm(obs_logRS(i),pred_logRS(i),sigobs,true);
+      nll+=-ll(i);
       
     }
   
@@ -101,6 +108,9 @@ Type objective_function<Type>::operator() ()
   Type umsy = (Type(1) - LambertW(exp(1-alpha)));
   Type Smsy = (Type(1) - LambertW(exp(1-alpha))) / beta;
   Type ans= nll + pnll;
+
+  Type pred_oos = alpha - beta * x_oos;
+  Type log_lik_oos = dnorm(y_oos,pred_oos,sigobs,true);
 
 
   SIMULATE {
@@ -121,7 +131,9 @@ Type objective_function<Type>::operator() ()
   REPORT(umsy)
   REPORT(Smsy)
   REPORT(nll);
-  REPORT(pnll);  
+  REPORT(ll);
+  REPORT(pnll); 
+  REPORT(log_lik_oos); 
 
   ADREPORT(alpha);
   ADREPORT(beta);

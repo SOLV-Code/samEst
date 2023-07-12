@@ -96,7 +96,7 @@ Type objective_function<Type>::operator() ()
 
 
   vector<Type> pred_logR(timeSteps), pred_logRS(timeSteps),umsy(timeSteps), Smsy(timeSteps), residuals(timeSteps);
-  vector<Type> Srep(timeSteps); //, alpha(timeSteps)
+  vector<Type> Srep(timeSteps), ll(timeSteps); //, alpha(timeSteps)
 
  
   //priors on parameters
@@ -146,7 +146,8 @@ Type objective_function<Type>::operator() ()
       umsy(i) = (Type(1) - LambertW(exp(1-alpha(i))) ); 
 
       residuals(i) = obs_logRS(i) - pred_logRS(i);
-      nll+=-dnorm(obs_logRS(i),pred_logRS(i),sigobs,true);
+      ll(i) = dnorm(obs_logRS(i),pred_logRS(i),sigobs,true);
+      nll+=-ll(i);
     }
   }
 
@@ -157,6 +158,7 @@ Type objective_function<Type>::operator() ()
   REPORT(sigobs)
   REPORT(siga)
   REPORT(pred_logRS)
+  REPORT(pred_logR)
   REPORT(residuals)
   REPORT(alphao)
   REPORT(Smax)
@@ -164,6 +166,7 @@ Type objective_function<Type>::operator() ()
   REPORT(Smsy)
   REPORT(Srep)
   REPORT(nll);
+  REPORT(ll);
   REPORT(renll);
   REPORT(pnll);  
    

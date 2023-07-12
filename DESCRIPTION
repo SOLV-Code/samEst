@@ -24,6 +24,7 @@ Depends:
     R (>= 4.0.5)
 Imports:
     TMB (>= 1.8.0),
+    tmbstan,
     rstan (>= 2.21.0),
     ggplot2,
     cowplot,

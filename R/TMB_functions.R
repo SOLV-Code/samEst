@@ -61,7 +61,9 @@ ricker_TMB <- function(data,  silent = FALSE, control = TMBcontrol(),
     obs_logRS = data$logRS,
     priors_flag=priors_flag,
     stan_flag=stan_flag,
-    sig_p_sd=sig_p_sd
+    sig_p_sd=sig_p_sd,
+    y_oos=mean(data$logRS),
+    x_oos=mean(data$S)
   )
   
   magS <- log10_ceiling(max(data$S))

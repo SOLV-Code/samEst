@@ -116,7 +116,7 @@ Type objective_function<Type>::operator() ()
 
 
   vector<Type> pred_logR(timeSteps), pred_logRS(timeSteps), Smsy(timeSteps), residuals(timeSteps);
-  vector<Type> Srep(timeSteps), beta(timeSteps), Smax(timeSteps), umsy(timeSteps);
+  vector<Type> Srep(timeSteps), beta(timeSteps), Smax(timeSteps), umsy(timeSteps), ll(timeSteps);
 
   
   //Type ans= Type(0); 
@@ -185,7 +185,8 @@ Type objective_function<Type>::operator() ()
       Smax(i) = Type(1.0)/ beta(i);
      
       residuals(i) = obs_logRS(i) - pred_logRS(i);
-      nll+=-dnorm(obs_logRS(i),pred_logRS(i),sigobs,true);
+      ll(i)= dnorm(obs_logRS(i),pred_logRS(i),sigobs,true);
+      nll+=-ll(i);
     }
   }
   Type ans = nll + renll + pnll;
@@ -205,6 +206,7 @@ Type objective_function<Type>::operator() ()
   REPORT(Smsy)
   REPORT(Srep)
   REPORT(nll);
+  REPORT(ll);
   REPORT(pnll);  
   REPORT(renll);
 

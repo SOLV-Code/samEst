@@ -118,7 +118,7 @@ Type objective_function<Type>::operator() ()
   
 
   vector<Type> pred_logR(timeSteps), pred_logRS(timeSteps), Smsy(timeSteps), residuals(timeSteps);
-  vector<Type> Srep(timeSteps), beta(timeSteps), Smax(timeSteps);
+  vector<Type> Srep(timeSteps), beta(timeSteps), Smax(timeSteps), ll(timeSteps);
 
   
 
@@ -173,7 +173,8 @@ Type objective_function<Type>::operator() ()
       Smsy(i) = (1 - LambertW(exp(Type(1)-alpha)) ) / beta(i);
 
       residuals(i) = obs_logRS(i) - pred_logRS(i);
-      nll+=-dnorm(obs_logRS(i),pred_logRS(i),sigobs,true);
+      ll(i)= dnorm(obs_logRS(i),pred_logRS(i),sigobs,true);
+      nll+=-ll(i);
     }
   }
    // Use the Hilborn approximations for Smsy and umsy
@@ -193,6 +194,7 @@ Type objective_function<Type>::operator() ()
   REPORT(Smsy)
   REPORT(Srep)
   REPORT(nll);
+  REPORT(ll);
   REPORT(pnll); 
   REPORT(renll); 
 
