@@ -78,6 +78,8 @@ Type objective_function<Type>::operator() ()
   DATA_SCALAR(sig_p_sd); //sd for sigma prior
   DATA_SCALAR(siga_p_sd); //sd for siga prior
   DATA_SCALAR(sigb_p_sd); //sd for sigb prior
+  DATA_SCALAR(logb_p_mean); //mean for logb prior
+  DATA_SCALAR(logb_p_sd); //sd for logb prior
    
   PARAMETER(logbetao);
   PARAMETER(alphao);
@@ -85,6 +87,7 @@ Type objective_function<Type>::operator() ()
   PARAMETER(logsigobs);
   PARAMETER(logsiga);
   PARAMETER(logsigb);
+
 
   //PARAMETER(rho);
   //PARAMETER(logvarphi);
@@ -130,7 +133,7 @@ Type objective_function<Type>::operator() ()
     pnll -=dnorm(alphao,Type(1.5),Type(2.5),true);
     //pnll -=dgamma(alphao,Type(3.0),Type(1.5),true);
     //pnll -=dnorm(alphao,Type(2.5),Type(3.0),true)- log(pnorm(Type(-2.0), Type(2.5),Type(3.0)));
-    pnll -=dnorm(logbetao,Type(-12.0),Type(3.0),true);
+    pnll -= dnorm(logbetao,logb_p_mean,logb_p_sd,true);
     //prior on observation and process variance ratio
     //Type ans= -dbeta(rho,prbeta1,prbeta2,true); 
     //ans= -dbeta(kappa,prbeta3,prbeta4,true);  

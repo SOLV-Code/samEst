@@ -42,6 +42,16 @@ plot(harck$S,harck$R)
 ##testing functions
 
 p <- ricker_TMB(data=harck)
+p$Smax
+p$alpha
+
+
+ip_logb_mean<-log(1/(max(harck$S)*.5))
+ip_logb_sd<-sqrt(log(1+1))
+
+p_ip <- ricker_TMB(data=harck,logb_p_mean=ip_logb_mean,logb_p_sd=ip_logb_sd)
+p_ip$Smax
+p_ip$alpha
 
 simple_mod <- samEst::compile_code(type='static', ac=FALSE, par='n',lambertW = FALSE)
 b <- ricker_stan(data=harck,iter = 800, mod=simple_mod)
@@ -74,9 +84,10 @@ names(p)
 
 
 ptva<- ricker_rw_TMB(data=harck,tv.par="a",sig_p_sd=1)
-
+ptva_ip<- ricker_rw_TMB(data=harck,tv.par="a",sig_p_sd=1,logb_p_mean=ip_logb_mean,logb_p_sd=ip_logb_sd)
 
 ptva[1:6]
+ptva_ip[1:6]
 pac$tmb_obj$report()$nll
 
 pkfa<- ricker_kf_TMB(data=harck)

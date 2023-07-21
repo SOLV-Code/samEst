@@ -164,6 +164,9 @@ Type objective_function<Type>::operator() ()
   DATA_INTEGER(stan_flag); //flag indicating wether or not tmbstan is used 
   DATA_SCALAR(sig_p_sd); //sd for sigma prior
 
+  DATA_SCALAR(logb_p_mean); //mean for logb prior
+  DATA_SCALAR(logb_p_sd); //sd for logb prior
+
   PARAMETER_VECTOR(lalpha);
   PARAMETER_VECTOR(lbeta);
   PARAMETER(logsigma);
@@ -258,8 +261,11 @@ Type objective_function<Type>::operator() ()
       pnll -=dnorm(alpha(j),Type(1.5),Type(2.5),true);
       //pnll -= dgamma(alpha(j),Type(3.0),Type(1.5),true);
       //pnll -=dnorm(alpha(j),Type(2.5),Type(3.0),true)- log(pnorm(Type(-2.0), Type(2.5),Type(3.0)));
-      pnll -= dnorm(logbeta,Type(-12.0),Type(3.0),true);
+      
+      pnll -= dnorm(logbeta,logb_p_mean,logb_p_sd,true);
     
+
+
       vector<Type> qijtmp = qij.row(j);
       vector<Type> alpha_dirichlettmp = alpha_dirichlet.row(j);
       

@@ -145,6 +145,9 @@ Type objective_function<Type>::operator() ()
   DATA_INTEGER(priors_flag);
   DATA_INTEGER(stan_flag);
 
+  DATA_SCALAR(logb_p_mean); //mean for logb prior
+  DATA_SCALAR(logb_p_sd); //sd for logb prior
+
   PARAMETER(lalpha);
   PARAMETER_VECTOR(lbeta);
   PARAMETER(logsigma);
@@ -241,7 +244,9 @@ Type objective_function<Type>::operator() ()
     for(int j = 0;j < k_regime;++j){
       pi_prior(j) = Type(1.0);
       Type logbeta = log(beta(j));    
-      pnll -= dnorm(logbeta,Type(-12.0),Type(3.0),true);
+      
+      pnll -= dnorm(logbeta,logb_p_mean,logb_p_sd,true);
+    
     
       vector<Type> qijtmp = qij.row(j);
       vector<Type> alpha_dirichlettmp = alpha_dirichlet.row(j);

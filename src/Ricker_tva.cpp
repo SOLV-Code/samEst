@@ -78,6 +78,8 @@ Type objective_function<Type>::operator() ()
   DATA_INTEGER(stan_flag); //flag indicating wether or not tmbstan is used 
   DATA_SCALAR(sig_p_sd); //sd for sigma prior
   DATA_SCALAR(siga_p_sd); //sd for siga prior
+  DATA_SCALAR(logb_p_mean); //mean for logb prior
+  DATA_SCALAR(logb_p_sd); //sd for logb prior
 
   PARAMETER(alphao); //initial alpha value
   PARAMETER(logbeta); //log of beta from ricker curve
@@ -111,7 +113,7 @@ Type objective_function<Type>::operator() ()
     //pnll -=dgamma(alphao,Type(3.0),Type(1.5),true);
     pnll -=dnorm(alphao,Type(1.5),Type(2.5),true);
     //pnll -=dnorm(alphao,Type(2.5),Type(3.0),true)- log(pnorm(Type(-2.0), Type(2.5),Type(3.0)));
-    pnll -=dnorm(logbeta,Type(-12.0),Type(3.0),true); 
+    pnll -= dnorm(logbeta,logb_p_mean,logb_p_sd,true);
     //ans -= dnorm(logsigobs,Type(0.0),Type(2.0),true);
     //ans -= dnorm(logsiga,Type(0.0),Type(2.0),true);
     //pnll  -= dgamma(sigobs,Type(2.0),Type(1.0)/Type(3.0),true);  

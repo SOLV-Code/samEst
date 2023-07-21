@@ -15,7 +15,9 @@ ricker_rw_TMB(
   stan_flag = 0,
   sig_p_sd = 1,
   siga_p_sd = 1,
-  sigb_p_sd = 1
+  sigb_p_sd = 1,
+  logb_p_mean = -12,
+  logb_p_sd = 3
 )
 }
 \arguments{
@@ -44,6 +46,10 @@ adjustment implemented. Default is 0, jacobian adjustment not included.}
 \item{siga_p_sd}{sd for half normal prior on sigma for alpha random walk parameter. default is 1.}
 
 \item{sigb_p_sd}{sd for half normal prior on sigma for beta random walk parameter. default is 1.}
+
+\item{logb_p_mean}{mean for prior on log b, default is -12.}
+
+\item{logb_p_sd}{sd for prior on log b, default is 3.}
 }
 \value{
 a list containing several model outputs:

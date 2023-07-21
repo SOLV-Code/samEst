@@ -12,7 +12,9 @@ ricker_TMB(
   AC = FALSE,
   priors_flag = 1,
   stan_flag = 0,
-  sig_p_sd = 1
+  sig_p_sd = 1,
+  logb_p_mean = -12,
+  logb_p_sd = 3
 )
 }
 \arguments{
@@ -34,6 +36,10 @@ See details for priors documentation. See details for priors documentation.}
 adjustment implemented. Default is 0, jacobian adjustment not included.}
 
 \item{sig_p_sd}{sd for half normal prior on sigma parameter. default is 1.}
+
+\item{logb_p_mean}{mean for prior on log b, default is -12.}
+
+\item{logb_p_sd}{sd for prior on log b, default is 3.}
 }
 \value{
 a list containing several model outputs:

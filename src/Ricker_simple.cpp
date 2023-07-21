@@ -48,7 +48,9 @@ Type objective_function<Type>::operator() ()
   DATA_VECTOR(obs_logRS);   // observed log recruitment
   DATA_INTEGER(priors_flag); //flag indicating wether or not priors should be used
   DATA_INTEGER(stan_flag); //flag indicating wether or not tmbstan is used 
-  
+  DATA_SCALAR(logb_p_mean); //mean for logb prior
+  DATA_SCALAR(logb_p_sd); //sd for logb prior
+
   //DATA_SCALAR(sig_p_mean);
   DATA_SCALAR(sig_p_sd); //sd for sigma prior
   
@@ -79,7 +81,7 @@ Type objective_function<Type>::operator() ()
     //pnll -=dnorm(alpha,Type(2.5),Type(3.0),true)- log(pnorm(Type(-2.0), Type(2.5),Type(3.0)));
     pnll -=dnorm(alpha,Type(1.5),Type(2.5),true);
     //pnll -=dgamma(alpha,Type(3.0),Type(1.5),true);
-    pnll -=dnorm(logbeta,Type(-12.0),Type(3.0),true); 
+    pnll -= dnorm(logbeta,logb_p_mean,logb_p_sd,true);
     //pnll -= dgamma(sigobs,Type(2.0),Type(1.0)/Type(3.0),true);
     
     pnll -= dnorm(sigobs,Type(0.0),sig_p_sd,true) - log(pnorm(Type(0.0), Type(0.0),sig_p_sd));

@@ -18,6 +18,8 @@
 #' @param stan_flag Integer, flag indicating wether or not TMB code will be used with TMBstan - Jacobian
 #' adjustment implemented. Default is 0, jacobian adjustment not included.
 #' @param sig_p_sd sd for half normal prior on sigma parameter. default is 1.
+#' @param logb_p_mean mean for prior on log b, default is -12.
+#' @param logb_p_sd sd for prior on log b, default is 3.
 #' 
 #'
 #'
@@ -53,7 +55,8 @@
 #' rickerTMB(data=harck)
 #' 
 ricker_TMB <- function(data,  silent = FALSE, control = TMBcontrol(), 
-  tmb_map = list(), AC=FALSE, priors_flag=1, stan_flag=0,sig_p_sd=1) {
+  tmb_map = list(), AC=FALSE, priors_flag=1, stan_flag=0,sig_p_sd=1,
+  logb_p_mean=-12,logb_p_sd=3) {
 
   
   tmb_data <- list(
@@ -63,7 +66,9 @@ ricker_TMB <- function(data,  silent = FALSE, control = TMBcontrol(),
     stan_flag=stan_flag,
     sig_p_sd=sig_p_sd,
     y_oos=mean(data$logRS),
-    x_oos=mean(data$S)
+    x_oos=mean(data$S),
+    logb_p_mean=logb_p_mean,
+    logb_p_sd=logb_p_sd
   )
   
   magS <- log10_ceiling(max(data$S))
@@ -163,6 +168,10 @@ ricker_TMB <- function(data,  silent = FALSE, control = TMBcontrol(),
 #' @param sig_p_sd sd for half normal prior on sigma parameter. default is 1.
 #' @param siga_p_sd sd for half normal prior on sigma for alpha random walk parameter. default is 1.
 #' @param sigb_p_sd sd for half normal prior on sigma for beta random walk parameter. default is 1.
+#' @param logb_p_mean mean for prior on log b, default is -12.
+#' @param logb_p_sd sd for prior on log b, default is 3.
+#' @param logb_p_mean mean for prior on log b, default is -12.
+#' @param logb_p_sd sd for prior on log b, default is 3.
 #' 
 #' @details Priors: Weakly informative priors are included for the main parameterst of the model:
 #' alpha ~ gamma(3,1)
@@ -200,7 +209,7 @@ ricker_TMB <- function(data,  silent = FALSE, control = TMBcontrol(),
 #' 
 ricker_rw_TMB <- function(data, tv.par=c('a','b','both'), silent = FALSE, 
   control = TMBcontrol(), ini_param=NULL, tmb_map = list(), priors_flag=1, stan_flag=0,
-  sig_p_sd=1, siga_p_sd=1, sigb_p_sd=1 ) {
+  sig_p_sd=1, siga_p_sd=1, sigb_p_sd=1, logb_p_mean=-12,logb_p_sd=3) {
 
   #===================================
   #prepare TMB input and options
@@ -210,7 +219,9 @@ ricker_rw_TMB <- function(data, tv.par=c('a','b','both'), silent = FALSE,
     obs_logRS = data$logRS,
     priors_flag=priors_flag,
     stan_flag=stan_flag,
-    sig_p_sd=sig_p_sd
+    sig_p_sd=sig_p_sd,
+    logb_p_mean=logb_p_mean,
+    logb_p_sd=logb_p_sd
   )
 
   if(is.null(ini_param)){
@@ -499,7 +510,9 @@ ricker_hmm_TMB <- function(data,
     alpha_dirichlet=dirichlet_prior,
     priors_flag=priors_flag,
     stan_flag=stan_flag,
-    sig_p_sd=sig_p_sd  
+    sig_p_sd=sig_p_sd,
+    logb_p_mean=logb_p_mean,
+    logb_p_sd=logb_p_sd  
   )
 
   if(is.null(ini_param)){
