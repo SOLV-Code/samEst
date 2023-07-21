@@ -1093,7 +1093,7 @@ sr_plot2=function(df,mod,title,make.pdf=FALSE,path,type=c('static','rw','hmm'),p
     if(type=='rw'&par!='both'){ pdf(here(path,paste(paste(title,type,par,form,sep='_'),'.pdf',sep='')),width=14,height=6)}
     if(type=='hmm'&par=='both'){ pdf(here(path,paste(paste(title,type,par,form,sep='_'),'.pdf',sep='')),width=8,height=6)}
     if(type=='hmm'&par!='both'){ pdf(here(path,paste(paste(title,type,par,form,sep='_'),'.pdf',sep='')),width=14,height=6)}
-    return(plot)
+    print(plot)
     dev.off()
   }
   if(make.pdf==FALSE){
