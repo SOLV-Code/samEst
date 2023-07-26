@@ -180,7 +180,7 @@ ricker_TMBstan <- function(data,  silent = FALSE, control = TMBcontrol(),
 #' @param data A list or data frame containing Spawners (S) and log(Recruits/Spawners) (logRS) time series. 
 #' @param tv.par Which parameters should vary? Either productivity (intercept, a), capacity (slope, b) or both parameters
 #' @param silent Logical Silent or optimization details? default is FALSE
-#' @param control output from TMBcontrol() function, to be passed to nlminb()
+#' @param control list of controls, as it would be passed to stan()
 #' @param ini_param Optional. A list with initial parameter guesses. The list should contain: alphao (a number),
 #' logbeta (a number), logsigobs (a number), logsiga (a number), and alpha ( a vector with the same length as the data). 
 #' @param tmb_map optional, mapping list indicating if parameters should be estimated of fixed. 
@@ -231,7 +231,7 @@ ricker_TMBstan <- function(data,  silent = FALSE, control = TMBcontrol(),
 #' 
 #' 
 ricker_rw_TMBstan <- function(data, tv.par=c('a','b','both'), silent = FALSE, 
-  control = TMBcontrol(), ini_param=NULL, tmb_map = list(), priors_flag=1, stan_flag=1,
+  control = list(adapt_delta = 0.98), ini_param=NULL, tmb_map = list(), priors_flag=1, stan_flag=1,
   sig_p_sd=1, siga_p_sd=1, sigb_p_sd=1, chains=6,iter=10000 ,laplace=FALSE, warmup = floor(iter/2),...) {
 
   #===================================
