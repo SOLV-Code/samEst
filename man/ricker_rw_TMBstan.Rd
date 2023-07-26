@@ -16,6 +16,8 @@ ricker_rw_TMBstan(
   sig_p_sd = 1,
   siga_p_sd = 1,
   sigb_p_sd = 1,
+  logb_p_mean = -12,
+  logb_p_sd = 3,
   chains = 6,
   iter = 10000,
   laplace = FALSE,
@@ -30,7 +32,7 @@ ricker_rw_TMBstan(
 
 \item{silent}{Logical Silent or optimization details? default is FALSE}
 
-\item{control}{output from TMBcontrol() function, to be passed to nlminb()}
+\item{control}{list of controls, as it would be passed to stan()}
 
 \item{ini_param}{Optional. A list with initial parameter guesses. The list should contain: alphao (a number),
 logbeta (a number), logsigobs (a number), logsiga (a number), and alpha ( a vector with the same length as the data).}

@@ -232,7 +232,8 @@ ricker_TMBstan <- function(data,  silent = FALSE, control = TMBcontrol(),
 #' 
 ricker_rw_TMBstan <- function(data, tv.par=c('a','b','both'), silent = FALSE, 
   control = list(adapt_delta = 0.98), ini_param=NULL, tmb_map = list(), priors_flag=1, stan_flag=1,
-  sig_p_sd=1, siga_p_sd=1, sigb_p_sd=1, chains=6,iter=10000 ,laplace=FALSE, warmup = floor(iter/2),...) {
+  sig_p_sd=1, siga_p_sd=1, sigb_p_sd=1, logb_p_mean=-12,logb_p_sd=3,
+   chains=6,iter=10000 ,laplace=FALSE, warmup = floor(iter/2),...) {
 
   #===================================
   #prepare TMB input and options
@@ -242,7 +243,9 @@ ricker_rw_TMBstan <- function(data, tv.par=c('a','b','both'), silent = FALSE,
     obs_logRS = data$logRS,
     priors_flag=priors_flag,
     stan_flag=stan_flag,
-    sig_p_sd=sig_p_sd
+    sig_p_sd=sig_p_sd, 
+    logb_p_mean=logb_p_mean,
+    logb_p_sd=logb_p_sd
   )
 
   if(is.null(ini_param)){
@@ -368,7 +371,7 @@ ricker_rw_TMBstan <- function(data, tv.par=c('a','b','both'), silent = FALSE,
   tmb_mcmc <- tmbstan::tmbstan(tmb_obj, chains=chains,
               iter=iter, init="random",
               lower=lowlimit , upper=hightlimit,
-               control = list(adapt_delta = 0.98),
+               control = control,
                laplace=laplace,
                 warmup = warmup )
 
