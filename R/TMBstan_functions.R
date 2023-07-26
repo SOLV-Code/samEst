@@ -231,7 +231,7 @@ ricker_TMBstan <- function(data,  silent = FALSE, control = TMBcontrol(),
 #' 
 #' 
 ricker_rw_TMBstan <- function(data, tv.par=c('a','b','both'), silent = FALSE, 
-  control = TMBcontrol(), ini_param=NULL, tmb_map = list(), priors_flag=1, stan_flag=0,
+  control = TMBcontrol(), ini_param=NULL, tmb_map = list(), priors_flag=1, stan_flag=1,
   sig_p_sd=1, siga_p_sd=1, sigb_p_sd=1, chains=6,iter=10000 ,laplace=FALSE, warmup = floor(iter/2),...) {
 
   #===================================
