@@ -65,17 +65,20 @@ Type objective_function<Type>::operator() ()
   DATA_INTEGER(priors_flag); //flag indicating wether or not priors should be used
   DATA_INTEGER(stan_flag); //flag indicating wether or not 
 
-
-  //DATA_SCALAR(sig_p_mean);
   DATA_SCALAR(sig_p_sd); //sd for sigma prior
-  DATA_SCALAR(logb_p_mean); //mean for logb prior
   DATA_SCALAR(logb_p_sd); //sd for logb prior
+  DATA_SCALAR(logb_p_mean); //mean for logb prior
+
+  //lfo quantities
+  DATA_SCALAR(y_oos); //log(recruits per spawner) next year
+  DATA_SCALAR(x_oos); //spawners in next year
+
 
   PARAMETER(alpha);
   PARAMETER(logbeta);
   PARAMETER(logsigobs);
   PARAMETER(rho);
-  //PARAMETER_VECTOR(delta);
+  
   
   int timeSteps=obs_logRS.size();
 
@@ -131,6 +134,9 @@ Type objective_function<Type>::operator() ()
   
   Type ans = nll + pnll;
 
+  Type pred_oos = alpha - beta * x_oos+ residuals(timeSteps-1) * rhoo;
+  Type log_lik_oos = dnorm(y_oos,pred_oos,sigAR,true);
+
   REPORT(alpha)
   REPORT(beta)
   REPORT(rhoo)
@@ -143,6 +149,7 @@ Type objective_function<Type>::operator() ()
   REPORT(Smsy)
   REPORT(nll);
   REPORT(pnll);  
+  REPORT(log_lik_oos);
  
   ADREPORT(alpha);
   ADREPORT(beta);

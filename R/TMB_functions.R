@@ -65,10 +65,10 @@ ricker_TMB <- function(data,  silent = FALSE, control = TMBcontrol(),
     priors_flag=priors_flag,
     stan_flag=stan_flag,
     sig_p_sd=sig_p_sd,
-    y_oos=mean(data$logRS),
-    x_oos=mean(data$S),
     logb_p_mean=logb_p_mean,
-    logb_p_sd=logb_p_sd
+    logb_p_sd=logb_p_sd,
+     y_oos=mean(data$logRS),
+    x_oos=mean(data$S)
   )
   
   magS <- log10_ceiling(max(data$S))
@@ -209,7 +209,7 @@ ricker_TMB <- function(data,  silent = FALSE, control = TMBcontrol(),
 #' 
 ricker_rw_TMB <- function(data, tv.par=c('a','b','both'), silent = FALSE, 
   control = TMBcontrol(), ini_param=NULL, tmb_map = list(), priors_flag=1, stan_flag=0,
-  sig_p_sd=1, siga_p_sd=1, sigb_p_sd=1, logb_p_mean=-12,logb_p_sd=3) {
+  sig_p_sd=1, siga_p_sd=1, sigb_p_sd=.3, logb_p_mean=-12,logb_p_sd=3) {
 
   #===================================
   #prepare TMB input and options

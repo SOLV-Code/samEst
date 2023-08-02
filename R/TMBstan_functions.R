@@ -384,7 +384,7 @@ ricker_rw_TMBstan <- function(data, tv.par=c('a','b','both'), silent = FALSE,
   postlist<-as.list(as.data.frame(t(posterior[,-ncol(posterior)])))
    
 
-  r<-lapply(postlist,tmb_obj$report)
+  r <- lapply(postlist,tmb_obj$report)
      
       
   beta <-sapply(r,"[[","beta")
