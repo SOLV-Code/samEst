@@ -15,7 +15,7 @@ ricker_rw_TMB(
   stan_flag = 0,
   sig_p_sd = 1,
   siga_p_sd = 1,
-  sigb_p_sd = 1,
+  sigb_p_sd = 0.3,
   logb_p_mean = -12,
   logb_p_sd = 3
 )
