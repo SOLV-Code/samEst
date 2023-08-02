@@ -479,7 +479,9 @@ ricker_hmm_TMB <- function(data,
                            priors_flag = 1,
                            stan_flag = 0,
                            sig_p_sd=1,
-                           dirichlet_prior=NULL) {
+                           dirichlet_prior=NULL,
+                           logb_p_mean=-12,
+                           logb_p_sd=3) {
 
   #===================================
   #prepare TMB input and options
