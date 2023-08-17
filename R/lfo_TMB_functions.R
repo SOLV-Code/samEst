@@ -15,6 +15,10 @@
 #' process and observation variances are used. Option valud only for 'alpha' tv par. 
 #'@param dirichlet_prior Prior for transition probability matrix in HMM models
 #' k_regime x k_regime matrix. If NULL prior is set to matrix(1,nrow=k_regime,ncol=k_regime). 
+#' @param priors_flag Integer, 1 priors are included in estimation model, 0 priors are not included.
+#' @param sig_p_sd sd for half normal prior on sigma parameter. default is 1.
+#' @param priorlogb Options are : "default" or "maxobsS", default will rely on fixed values provided by the user, 
+#' "maxobsS" will be calculated based on the observed data. 
 #' 
 #' @returns vector of lfo by year
 #' 
@@ -27,7 +31,8 @@
 #' tmb_mod_lfo_cv(data=harck, model=c('static'))
 #' 
 tmb_mod_lfo_cv=function(data, model=c('static','staticAC','rw_a','rw_b','rw_both', 'HMM', 'HMM_a','HMM_b'), 
-                        L=10, siglfo=c("obs","total"),dirichlet_prior=NULL){
+                        L=10, siglfo=c("obs","total"),dirichlet_prior=NULL,  priors_flag=1, sig_p_sd=1, 
+                        priorlogb=c("default","maxobsS"),logb_p_mean=-12,logb_p_sd=3 ){
   #df = full data frame
   #ac = autocorrelation, if ac=T then implement AR-1
   #L = starting point for LFO-CV (min. 10)
@@ -50,9 +55,20 @@ tmb_mod_lfo_cv=function(data, model=c('static','staticAC','rw_a','rw_b','rw_both
       oos <- i + 1
       df_past <- data[past, , drop = FALSE]
       df_oos <- data[c(past, oos), , drop = FALSE]
+
+      if(priorlogb=="maxobsS"){
+        Smax_mean<-(max(df_past$S)*.5)
+        Smax_sd<-Smax_mean
+ 
+        logb_p_sd=sqrt(log(1+((1/ Smax_sd)*(1/ Smax_sd))/((1/Smax_mean)*(1/Smax_mean))))
+        logb_p_mean=log(1/(Smax_mean))-0.5*logbeta_pr_sig^2
+ 
+      }
       
       
-      fit_past_tmb <-tryCatch({ricker_TMB(data=df_past,silent = TRUE)},
+      fit_past_tmb <-tryCatch({ricker_TMB(data=df_past,silent = TRUE,
+                                priors_flag=priors_flag,sig_p_sd=sig_p_sd,
+                                logb_p_mean=logb_p_mean,logb_p_sd=logb_p_sd)},
                                   error=function(cond){
                                     message(cond)
                                     return(list(fail_conv=1,
@@ -80,9 +96,21 @@ tmb_mod_lfo_cv=function(data, model=c('static','staticAC','rw_a','rw_b','rw_both
       oos <- i + 1
       df_past <- data[past, , drop = FALSE]
       df_oos <- data[c(past, oos), , drop = FALSE]
+
+       if(priorlogb=="maxobsS"){
+        Smax_mean<-(max(df_past$S)*.5)
+        Smax_sd<-Smax_mean
+ 
+        logb_p_sd=sqrt(log(1+((1/ Smax_sd)*(1/ Smax_sd))/((1/Smax_mean)*(1/Smax_mean))))
+        logb_p_mean=log(1/(Smax_mean))-0.5*logbeta_pr_sig^2
+ 
+      }
+      
       
       #fit_past_tmb<- ricker_TMB(data=df_past,AC=TRUE)
-      fit_past_tmb <- tryCatch({ricker_TMB(data=df_past, AC=TRUE,silent = TRUE)},
+      fit_past_tmb <- tryCatch({ricker_TMB(data=df_past, AC=TRUE,silent = TRUE,
+                                priors_flag=priors_flag,sig_p_sd=sig_p_sd,
+                                logb_p_mean=logb_p_mean,logb_p_sd=logb_p_sd)},
                                   error=function(cond){
                                     message(cond)
                                     return(list(fail_conv=1,
@@ -113,8 +141,20 @@ tmb_mod_lfo_cv=function(data, model=c('static','staticAC','rw_a','rw_b','rw_both
       oos <- i + 1
       df_past <- data[past, , drop = FALSE]
       df_oos <- data[c(past, oos), , drop = FALSE]
+
+      if(priorlogb=="maxobsS"){
+        Smax_mean<-(max(df_past$S)*.5)
+        Smax_sd<-Smax_mean
+ 
+        logb_p_sd=sqrt(log(1+((1/ Smax_sd)*(1/ Smax_sd))/((1/Smax_mean)*(1/Smax_mean))))
+        logb_p_mean=log(1/(Smax_mean))-0.5*logbeta_pr_sig^2
+ 
+      }
       
-      fit_past_tv_a_tmb <- tryCatch({ricker_rw_TMB(data=df_past,tv.par='a',silent = TRUE)},
+      
+      fit_past_tv_a_tmb <- tryCatch({ricker_rw_TMB(data=df_past,tv.par='a',silent = TRUE,
+                                priors_flag=priors_flag,sig_p_sd=sig_p_sd,
+                                logb_p_mean=logb_p_mean,logb_p_sd=logb_p_sd)},
                                   error=function(cond){
                                     message(cond)
                                     return(list(fail_conv=1,
@@ -167,7 +207,18 @@ tmb_mod_lfo_cv=function(data, model=c('static','staticAC','rw_a','rw_b','rw_both
       df_past <- data[past, , drop = FALSE]
       df_oos <- data[c(past, oos), , drop = FALSE]
       
-      fit_past_tv_b_tmb <- tryCatch({ricker_rw_TMB(data=df_past,tv.par='b',silent = TRUE)},
+      if(priorlogb=="maxobsS"){
+        Smax_mean<-(max(df_past$S)*.5)
+        Smax_sd<-Smax_mean
+ 
+        logb_p_sd=sqrt(log(1+((1/ Smax_sd)*(1/ Smax_sd))/((1/Smax_mean)*(1/Smax_mean))))
+        logb_p_mean=log(1/(Smax_mean))-0.5*logbeta_pr_sig^2
+ 
+      }
+      
+      fit_past_tv_b_tmb <- tryCatch({ricker_rw_TMB(data=df_past,tv.par='b',silent = TRUE,
+                                priors_flag=priors_flag,sig_p_sd=sig_p_sd,
+                                logb_p_mean=logb_p_mean,logb_p_sd=logb_p_sd)},
                                   error=function(cond){
                                     message(cond)
                                     return(list(fail_conv=1,
@@ -221,9 +272,20 @@ tmb_mod_lfo_cv=function(data, model=c('static','staticAC','rw_a','rw_b','rw_both
       oos <- i + 1
       df_past <- data[past, , drop = FALSE]
       df_oos <- data[c(past, oos), , drop = FALSE]
-      
      
-      fit_past_tv_ab_tmb <- tryCatch({ricker_rw_TMB(data=df_past,tv.par='both',silent = TRUE)},
+      if(priorlogb=="maxobsS"){
+        Smax_mean<-(max(df_past$S)*.5)
+        Smax_sd<-Smax_mean
+ 
+        logb_p_sd=sqrt(log(1+((1/ Smax_sd)*(1/ Smax_sd))/((1/Smax_mean)*(1/Smax_mean))))
+        logb_p_mean=log(1/(Smax_mean))-0.5*logbeta_pr_sig^2
+ 
+      }
+       
+     
+      fit_past_tv_ab_tmb <- tryCatch({ricker_rw_TMB(data=df_past,tv.par='both',silent = TRUE,
+                                priors_flag=priors_flag,sig_p_sd=sig_p_sd,
+                                logb_p_mean=logb_p_mean,logb_p_sd=logb_p_sd)},
                                   error=function(cond){
                                     message(cond)
                                     return(list(fail_conv=1,
@@ -267,9 +329,20 @@ tmb_mod_lfo_cv=function(data, model=c('static','staticAC','rw_a','rw_b','rw_both
       df_past <- data[past, , drop = FALSE]
       df_oos <- data[c(past, oos), , drop = FALSE]
       
+      if(priorlogb=="maxobsS"){
+        Smax_mean<-(max(df_past$S)*.5)
+        Smax_sd<-Smax_mean
+ 
+        logb_p_sd=sqrt(log(1+((1/ Smax_sd)*(1/ Smax_sd))/((1/Smax_mean)*(1/Smax_mean))))
+        logb_p_mean=log(1/(Smax_mean))-0.5*logbeta_pr_sig^2
+ 
+      }
+      
       
       fit_past_hmm_tmb <- tryCatch({ricker_hmm_TMB(data=df_past,tv.par='both',silent = TRUE,
-                                          dirichlet_prior=dirichlet_prior)},
+                                          dirichlet_prior=dirichlet_prior,
+                                priors_flag=priors_flag,sig_p_sd=sig_p_sd,
+                                logb_p_mean=logb_p_mean,logb_p_sd=logb_p_sd)},
                                   error=function(cond){
                                     message(cond)
                                     return(list(fail_conv=1,
@@ -319,8 +392,20 @@ tmb_mod_lfo_cv=function(data, model=c('static','staticAC','rw_a','rw_b','rw_both
       df_past <- data[past, , drop = FALSE]
       df_oos <- data[c(past, oos), , drop = FALSE]
       
+      if(priorlogb=="maxobsS"){
+        Smax_mean<-(max(df_past$S)*.5)
+        Smax_sd<-Smax_mean
+ 
+        logb_p_sd=sqrt(log(1+((1/ Smax_sd)*(1/ Smax_sd))/((1/Smax_mean)*(1/Smax_mean))))
+        logb_p_mean=log(1/(Smax_mean))-0.5*logbeta_pr_sig^2
+ 
+      }
+      
+
       fit_past_hmm_tmb<- tryCatch({ricker_hmm_TMB(data=df_past,tv.par='a',silent = TRUE,
-                                            dirichlet_prior=dirichlet_prior)},
+                                            dirichlet_prior=dirichlet_prior,
+                                priors_flag=priors_flag,sig_p_sd=sig_p_sd,
+                                logb_p_mean=logb_p_mean,logb_p_sd=logb_p_sd)},
                                   error=function(cond){
                                     message(cond)
                                     return(list(fail_conv=1,
@@ -370,8 +455,20 @@ tmb_mod_lfo_cv=function(data, model=c('static','staticAC','rw_a','rw_b','rw_both
       df_past <- data[past, , drop = FALSE]
       df_oos <- data[c(past, oos), , drop = FALSE]
       
+      if(priorlogb=="maxobsS"){
+        Smax_mean<-(max(df_past$S)*.5)
+        Smax_sd<-Smax_mean
+ 
+        logb_p_sd=sqrt(log(1+((1/ Smax_sd)*(1/ Smax_sd))/((1/Smax_mean)*(1/Smax_mean))))
+        logb_p_mean=log(1/(Smax_mean))-0.5*logbeta_pr_sig^2
+ 
+      }
+      
+
       fit_past_hmm_tmb <- tryCatch({ricker_hmm_TMB(data=df_past,tv.par='b',silent = TRUE,
-                                        dirichlet_prior=dirichlet_prior)},
+                                        dirichlet_prior=dirichlet_prior,
+                                priors_flag=priors_flag,sig_p_sd=sig_p_sd,
+                                logb_p_mean=logb_p_mean,logb_p_sd=logb_p_sd)},
                                   error=function(cond){
                                     message(cond)
                                     return(list(fail_conv=1,

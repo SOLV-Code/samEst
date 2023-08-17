@@ -9,7 +9,12 @@ tmb_mod_lfo_cv(
   model = c("static", "staticAC", "rw_a", "rw_b", "rw_both", "HMM", "HMM_a", "HMM_b"),
   L = 10,
   siglfo = c("obs", "total"),
-  dirichlet_prior = NULL
+  dirichlet_prior = NULL,
+  priors_flag = 1,
+  sig_p_sd = 1,
+  priorlogb = c("default", "maxobsS"),
+  logb_p_mean = -12,
+  logb_p_sd = 3
 )
 }
 \arguments{
@@ -26,6 +31,13 @@ process and observation variances are used. Option valud only for 'alpha' tv par
 
 \item{dirichlet_prior}{Prior for transition probability matrix in HMM models
 k_regime x k_regime matrix. If NULL prior is set to matrix(1,nrow=k_regime,ncol=k_regime).}
+
+\item{priors_flag}{Integer, 1 priors are included in estimation model, 0 priors are not included.}
+
+\item{sig_p_sd}{sd for half normal prior on sigma parameter. default is 1.}
+
+\item{priorlogb}{Options are : "default" or "maxobsS", default will rely on fixed values provided by the user,
+"maxobsS" will be calculated based on the observed data.}
 }
 \value{
 vector of lfo by year
