@@ -74,7 +74,7 @@ tmb_mod_lfo_cv=function(data, model=c('static','staticAC','rw_a','rw_b','rw_both
                                     return(list(fail_conv=1,
                                       conv_problem=1))}
                                   )
-      conv_problem[i-(L-1)] <- fit_past_tmb$conv_problem
+      conv_problem[i-(L-1)] <- ifelse(is.null(fit_past_tmb$model$convergence),1,fit_past_tmb$model$convergence)
       fail_conv[i-(L-1)] <- ifelse(is.null(fit_past_tmb$fail_conv),0,fit_past_tmb$fail_conv)
 
       if(fail_conv[i-(L-1)]==0){
@@ -117,7 +117,7 @@ tmb_mod_lfo_cv=function(data, model=c('static','staticAC','rw_a','rw_b','rw_both
                                       conv_problem=1))}
                                   )
 
-      conv_problem[i-(L-1)] <- fit_past_tmb$conv_problem
+      conv_problem[i-(L-1)] <- ifelse(is.null(fit_past_tmb$model$convergence),1,fit_past_tmb$model$convergence)
       fail_conv[i-(L-1)] <- ifelse(is.null(fit_past_tmb$fail_conv),0,fit_past_tmb$fail_conv)
 
       if(fail_conv[i-(L-1)]==0){
@@ -160,7 +160,7 @@ tmb_mod_lfo_cv=function(data, model=c('static','staticAC','rw_a','rw_b','rw_both
                                     return(list(fail_conv=1,
                                       conv_problem=1))}
                                   )
-      conv_problem[i-(L-1)] <- fit_past_tv_a_tmb$conv_problem
+      conv_problem[i-(L-1)] <- ifelse(is.null(fit_past_tv_a_tmb$model$convergence),1,fit_past_tv_a_tmb$model$convergence)
       fail_conv[i-(L-1)] <- ifelse(is.null(fit_past_tv_a_tmb$fail_conv),0,fit_past_tv_a_tmb$fail_conv)
       
 
@@ -224,7 +224,8 @@ tmb_mod_lfo_cv=function(data, model=c('static','staticAC','rw_a','rw_b','rw_both
                                     return(list(fail_conv=1,
                                       conv_problem=1))}
                                   )
-      conv_problem[i-(L-1)] <- fit_past_tv_b_tmb$conv_problem
+    
+      conv_problem[i-(L-1)] <- ifelse(is.null(fit_past_tv_b_tmb$model$convergence),1,fit_past_tv_b_tmb$model$convergence)
       fail_conv[i-(L-1)] <- ifelse(is.null(fit_past_tv_b_tmb$fail_conv),0,fit_past_tv_b_tmb$fail_conv)
       
       
@@ -244,7 +245,7 @@ tmb_mod_lfo_cv=function(data, model=c('static','staticAC','rw_a','rw_b','rw_both
           exact_elpds_3b[i+1] <- log(dnorm(df_oos$logRS[i+1],mean=rs_pred_3b,sd=sigtot))
           exact_elpds_5b[i+1] <- log(dnorm(df_oos$logRS[i+1],mean=rs_pred_5b,sd=sigtot))
         }else{
-          stop("siglfo incorrectly defined options are `total` or `obs`")
+          stop("siglfo incorrectly defined, options are `total` or `obs`")
         }
       }else{
         exact_elpds_1b[i+1] <- NA
@@ -291,7 +292,8 @@ tmb_mod_lfo_cv=function(data, model=c('static','staticAC','rw_a','rw_b','rw_both
                                     return(list(fail_conv=1,
                                       conv_problem=1))}
                                   )
-      conv_problem[i-(L-1)] <- fit_past_tv_ab_tmb$conv_problem
+
+      conv_problem[i-(L-1)] <- ifelse(is.null(fit_past_tv_ab_tmb$model$convergence),1,fit_past_tv_ab_tmb$model$convergence)
       fail_conv[i-(L-1)] <- ifelse(is.null(fit_past_tv_ab_tmb$fail_conv),0,fit_past_tv_ab_tmb$fail_conv)
     
       if(fail_conv[i-(L-1)]==0){ 
@@ -348,7 +350,8 @@ tmb_mod_lfo_cv=function(data, model=c('static','staticAC','rw_a','rw_b','rw_both
                                     return(list(fail_conv=1,
                                       conv_problem=1))}
                                   )
-      conv_problem[i-(L-1)] <- fit_past_hmm_tmb$conv_problem
+
+      conv_problem[i-(L-1)] <- ifelse(is.null(fit_past_hmm_tmb$model$convergence),1,fit_past_hmm_tmb$model$convergence)
       fail_conv[i-(L-1)] <- ifelse(is.null(fit_past_hmm_tmb$fail_conv),0,fit_past_hmm_tmb$fail_conv)
       
       if(fail_conv[i-(L-1)]==0){
@@ -411,7 +414,8 @@ tmb_mod_lfo_cv=function(data, model=c('static','staticAC','rw_a','rw_b','rw_both
                                     return(list(fail_conv=1,
                                       conv_problem=1))}
                                   )
-      conv_problem[i-(L-1)] <- fit_past_hmm_tmb$conv_problem
+
+      conv_problem[i-(L-1)] <- ifelse(is.null(fit_past_hmm_tmb$model$convergence),1,fit_past_hmm_tmb$model$convergence)
       fail_conv[i-(L-1)] <- ifelse(is.null(fit_past_hmm_tmb$fail_conv),0,fit_past_hmm_tmb$fail_conv)
       
       if(fail_conv[i-(L-1)]==0){
@@ -474,8 +478,8 @@ tmb_mod_lfo_cv=function(data, model=c('static','staticAC','rw_a','rw_b','rw_both
                                     return(list(fail_conv=1,
                                       conv_problem=1))}
                                   )
-
-      conv_problem[i-(L-1)] <- fit_past_hmm_tmb$conv_problem
+      
+      conv_problem[i-(L-1)] <- ifelse(is.null(fit_past_hmm_tmb$model$convergence),1,fit_past_hmm_tmb$model$convergence)
       fail_conv[i-(L-1)] <- ifelse(is.null(fit_past_hmm_tmb$fail_conv),0,fit_past_hmm_tmb$fail_conv)
       
       if(fail_conv[i-(L-1)]==0){
