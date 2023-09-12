@@ -28,7 +28,7 @@ stan_refit<- function(mod,newdata,oos,K=2,dirichlet_prior=NULL){
   oosdata=newdata[oos,]
   newdata=newdata[-oos,]
   
-  df=list(
+  dl=list(
     by=newdata$by,
     N=nrow(newdata),
     L=max(newdata$by)-min(newdata$by)+1,
@@ -41,7 +41,7 @@ stan_refit<- function(mod,newdata,oos,K=2,dirichlet_prior=NULL){
     alpha_dirichlet= dirichlet_prior
   )
   
-  r = mod$sample(data=df,
+  r = mod$sample(data=dl,
                             seed=123,
                             chains=6,
                             iter_warmup=200,
@@ -87,7 +87,7 @@ stan_lfo_cv=function(mod,type=c('static','tv','regime'),df,L=10,K=2,dirichlet_pr
     loglik_exact_3bw <- matrix(nrow = 3000, ncol = length(df$by)) #loglik for average of last 3-years of productivity/capacity
     loglik_exact_5bw <- matrix(nrow = 3000, ncol = length(df$by)) #loglik for average of last 5-years of productivity/capacity
   }
-  for (i in L:(df$L)){
+  for (i in L:(nrow(df) - 1)){
     past <- 1:i
     oos <- i + 1
     df_past <- df[past, , drop = FALSE]
