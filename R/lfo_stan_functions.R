@@ -87,7 +87,7 @@ stan_lfo_cv=function(mod,type=c('static','tv','regime'),df,L=10,K=2,dirichlet_pr
     loglik_exact_3bw <- matrix(nrow = 3000, ncol = length(df$by)) #loglik for average of last 3-years of productivity/capacity
     loglik_exact_5bw <- matrix(nrow = 3000, ncol = length(df$by)) #loglik for average of last 5-years of productivity/capacity
   }
-  for (i in L:(nrow(df) - 1)){
+  for (i in L:(df$L)){
     past <- 1:i
     oos <- i + 1
     df_past <- df[past, , drop = FALSE]
