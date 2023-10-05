@@ -28,7 +28,7 @@ stan_refit<- function(mod,newdata,oos,K=2,dirichlet_prior=NULL){
   oosdata=newdata[oos,]
   newdata=newdata[-oos,]
   
-  df=list(
+  dl=list(
     by=newdata$by,
     N=nrow(newdata),
     L=max(newdata$by)-min(newdata$by)+1,
@@ -41,7 +41,7 @@ stan_refit<- function(mod,newdata,oos,K=2,dirichlet_prior=NULL){
     alpha_dirichlet= dirichlet_prior
   )
   
-  r = mod$sample(data=df,
+  r = mod$sample(data=dl,
                             seed=123,
                             chains=6,
                             iter_warmup=200,
@@ -262,4 +262,109 @@ stan_aic<- function(x,form=c('aic','bic'),type=c('full','d90','d80'),k){
   }
 }
 
+
+#For rstan:::
+stan_refit2<- function(mod,newdata,oos,K=2,dirichlet_prior=NULL){
+  #mod = model file name - eg. 'ricker_linear_oos.stan'
+  #newdata = data to train model
+  #oosdata = data to predict onto
+  #regime = TRUE or FALSE for regime shift models (have different data inputs)
+  #K = number of potential regimes (2 or 3)
+  
+  if(is.null(dirichlet_prior)){
+    dirichlet_prior<-matrix(1,nrow=K,ncol=K)
+  }else if(nrow(dirichlet_prior)!=K |ncol(dirichlet_prior)!=K){
+    stop("dirichlet_prior should be a K x K matrix")
+  }
+  
+  oosdata=newdata[oos,]
+  newdata=newdata[-oos,]
+  
+  dl=list(
+    by=newdata$by,
+    N=nrow(newdata),
+    L=max(newdata$by)-min(newdata$by)+1,
+    ii=newdata$by-min(newdata$by)+1,
+    R_S =newdata$logRS,
+    S=newdata$S,
+    y_oos=oosdata$logRS,
+    x_oos=oosdata$S,
+    K=2,
+    alpha_dirichlet= dirichlet_prior
+  )
+  
+  r = rstan::sampling(mod,
+                      data=dl,
+                      chains=1,
+                      warmup=200,
+                      iter=700)
+  return(r)
+}
+
+
+#' stan_lfo_cv function
+
+stan_lfo_cv2=function(mod,type=c('static','tv','regime'),df,L=10,K=2,dirichlet_prior=NULL){
+  #mod = model to fit (model name for cmdstanr)
+  #tv = 0 for static model; 1 for time-varying (for calculating elpds)
+  #df = full data frame
+  #L = starting point for LFO-CV (default 10)
+  # K = number of regimes
+  
+  loglik_exact <- matrix(nrow = 3000, ncol = length(df$by)) #loglik for static model
+  loglik_exact_1b <- matrix(nrow = 3000, ncol = length(df$by)) #loglik for 1-year back estimates of productivity/capacity
+  loglik_exact_3b <- matrix(nrow = 3000, ncol = length(df$by)) #loglik for average of last 3-years of productivity/capacity
+  loglik_exact_5b <- matrix(nrow = 3000, ncol = length(df$by)) #loglik for average of last 5-years of productivity/capacity
+  if(type=='regime'){
+    loglik_exact_1bw <- matrix(nrow = 3000, ncol = length(df$by)) #loglik for 1-year back estimates of productivity/capacity
+    loglik_exact_3bw <- matrix(nrow = 3000, ncol = length(df$by)) #loglik for average of last 3-years of productivity/capacity
+    loglik_exact_5bw <- matrix(nrow = 3000, ncol = length(df$by)) #loglik for average of last 5-years of productivity/capacity
+  }
+  for (i in L:(nrow(df) - 1)){
+    past <- 1:i
+    oos <- i + 1
+    df_past <- df[past, , drop = FALSE]
+    df_oos <- df[c(past, oos), , drop = FALSE]
+    if(type=='static'){
+      fit_past<- stan_refit2(mod=mod, newdata=df_oos, oos=i+1)
+      ll=as.data.frame(rstan::extract(fit_past,pars=c('log_lik_oos')))
+      loglik_exact[,i+1]<- ll$log_lik_oos
+    }
+    if(type=='tv'){
+      fit_past<- stan_refit2(mod=mod,newdata=df_oos,oos=i+1)
+      ll=as.data.frame(rstan::extract(fit_past,pars=c('log_lik_oos_1b','log_lik_oos_3b','log_lik_oos_5b')))
+      
+      loglik_exact_1b[, i + 1] <-ll$log_lik_oos_1b
+      loglik_exact_3b[, i + 1] <-ll$log_lik_oos_3b
+      loglik_exact_5b[, i + 1] <-ll$log_lik_oos_5b
+    }
+    if(type=='regime'){
+      fit_past<- stan_refit2(mod=mod,newdata=df_oos,oos=i+1, K=K, dirichlet_prior=dirichlet_prior)
+      ll=as.data.frame(rstan::extract(fit_past,pars=c('log_lik_oos_1b','log_lik_oos_3b','log_lik_oos_5b')))
+      loglik_exact_1b[, i + 1] <- ll$log_lik_oos_1b
+      loglik_exact_3b[, i + 1] <- ll$log_lik_oos_3b
+      loglik_exact_5b[, i + 1] <- ll$log_lik_oos_5b
+    }
+  }
+  
+  if(type=='static'){
+    exact_elpds<- apply(loglik_exact, 2, log_mean_exp); exact_elpds=exact_elpds[-(1:L)]
+    r=exact_elpds
+  }
+  if(type=='tv'){
+    exact_elpds_1b <- apply(loglik_exact_1b, 2, log_mean_exp); exact_elpds_1b=exact_elpds_1b[-(1:L)]
+    exact_elpds_3b <- apply(loglik_exact_3b, 2, log_mean_exp); exact_elpds_3b=exact_elpds_3b[-(1:L)]
+    exact_elpds_5b <- apply(loglik_exact_5b, 2, log_mean_exp); exact_elpds_5b=exact_elpds_5b[-(1:L)]
+    
+    r=rbind(exact_elpds_1b,exact_elpds_3b,exact_elpds_5b)
+  }
+  if(type=='regime'){
+    exact_elpds_1b <- apply(loglik_exact_1b, 2, log_mean_exp); exact_elpds_1b=exact_elpds_1b[-(1:L)]
+    exact_elpds_3b <- apply(loglik_exact_3b, 2, log_mean_exp); exact_elpds_3b=exact_elpds_3b[-(1:L)]
+    exact_elpds_5b <- apply(loglik_exact_5b, 2, log_mean_exp); exact_elpds_5b=exact_elpds_5b[-(1:L)]
+    
+    r=rbind(exact_elpds_1b,exact_elpds_3b,exact_elpds_5b)
+  }
+  return(r)
+}
 
