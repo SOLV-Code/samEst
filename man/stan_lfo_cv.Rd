@@ -10,7 +10,10 @@ stan_lfo_cv(
   df,
   L = 10,
   K = 2,
-  dirichlet_prior = NULL
+  dirichlet_prior = NULL,
+  pSmax_mean = NULL,
+  pSmax_sig = NULL,
+  psig_b = NULL
 )
 }
 \arguments{
@@ -27,6 +30,12 @@ stan_lfo_cv(
 
 \item{dirichlet_prior}{k_regime x k_regime matrix. Prior for transition probability matrix,
 if NULL prior is set to matrix(1,nrow=k_regime,ncol=k_regime)}
+
+\item{pSmax_mean}{mean for Smax prior}
+
+\item{pSmax_sig}{sd for Smax prior}
+
+\item{psig_b}{sd for sigma_b prior}
 }
 \value{
 returns the pointwise out-of-sample log likelihoods. For 'tv' or 'regime' models returns a vector that uses either 1. the last year's time-varying parameters,

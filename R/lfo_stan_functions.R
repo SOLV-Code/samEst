@@ -8,11 +8,14 @@
 #' @param K Number of potential regime shifts - default 2
 #' @param dirichlet_prior k_regime x k_regime matrix. Prior for transition probability matrix, 
 #' if NULL (default), prior is set to matrix(1,nrow=k_regime,ncol=k_regime)
+#' @param pSmax_mean mean for Smax prior
+#' @param pSmax_sig sd for Smax prior
+#' @param psig_b sd for sigma_b prior
 #' @return returns the model fit
 #' @export
 #' @examples
 #' r=stan_refit(sm=mod3,newdata=df,oos=12)
-stan_refit<- function(mod,newdata,oos,K=2,dirichlet_prior=NULL){
+stan_refit<- function(mod,newdata,oos,K=2,dirichlet_prior=NULL,pSmax_mean  =NULL,pSmax_sig=NULL,psig_b=NULL){
   #mod = model file name - eg. 'ricker_linear_oos.stan'
   #newdata = data to train model
   #oosdata = data to predict onto
@@ -27,6 +30,9 @@ stan_refit<- function(mod,newdata,oos,K=2,dirichlet_prior=NULL){
 
   oosdata=newdata[oos,]
   newdata=newdata[-oos,]
+  if(is.null(pSmax_mean)){pSmax_mean <- max(newdata$S)/2} 
+  if(is.null(pSmax_sig)){pSmax_sig <- max(newdata$S)/2} 
+  if(is.null(psig_b)){psig_b <- max(newdata$S)/2} 
   
   dl=list(
     by=newdata$by,
@@ -38,17 +44,21 @@ stan_refit<- function(mod,newdata,oos,K=2,dirichlet_prior=NULL){
     y_oos=oosdata$logRS,
     x_oos=oosdata$S,
     K=2,
-    alpha_dirichlet= dirichlet_prior
+    alpha_dirichlet= dirichlet_prior,
+    pSmax_mean=pSmax_mean,
+    pSmax_sig=pSmax_sig,
+    psig_b=psig_b
+    
   )
   
   r = mod$sample(data=dl,
-                            seed=123,
-                            chains=6,
-                            iter_warmup=200,
-                            iter_sampling=500,
-                            refresh=0,
-                            adapt_delta=0.95,
-                            max_treedepth=15)
+                  seed=123,
+                  chains=6,
+                  iter_warmup=200,
+                  iter_sampling=500,
+                  refresh=0,
+                  adapt_delta=0.95,
+                  max_treedepth=15)
   return(r)
 }
 
@@ -65,18 +75,25 @@ stan_refit<- function(mod,newdata,oos,K=2,dirichlet_prior=NULL){
 #' @param K Number of potential regime shifts - default 2
 #' @param dirichlet_prior k_regime x k_regime matrix. Prior for transition probability matrix, 
 #' if NULL prior is set to matrix(1,nrow=k_regime,ncol=k_regime)
+#' @param pSmax_mean mean for Smax prior
+#' @param pSmax_sig sd for Smax prior
+#' @param psig_b sd for sigma_b prior
 #' @return returns the pointwise out-of-sample log likelihoods. For 'tv' or 'regime' models returns a vector that uses either 1. the last year's time-varying parameters, 
 #' 2. an average of the last 3 years of the time-varying parameters, or 5. an average of the last 5 years of the time-varying parameters. For 'regime' models also includes
 #' these estimates that are also probability-weighted (ie. prob regime x regime parameter) in addition to the parameters for the most likely state 1, 3 or 5 years back.
 #' @export
 #' @examples
 #' r=stan_refit(sm=mod3,newdata=df,oos=12)
-stan_lfo_cv=function(mod,type=c('static','tv','regime'),df,L=10,K=2,dirichlet_prior=NULL){
+stan_lfo_cv=function(mod,type=c('static','tv','regime'),df,L=10,K=2,dirichlet_prior=NULL,
+  pSmax_mean  =NULL,pSmax_sig=NULL,psig_b=NULL){
   #mod = model to fit (model name for cmdstanr)
   #tv = 0 for static model; 1 for time-varying (for calculating elpds)
   #df = full data frame
   #L = starting point for LFO-CV (default 10)
   # K = number of regimes
+  if(is.null(pSmax_mean)){pSmax_mean <- max(df$S)/2} 
+  if(is.null(pSmax_sig)){pSmax_sig <- max(df$S)/2} 
+  if(is.null(psig_b)){psig_b <- max(df$S)/2} 
   
   loglik_exact <- matrix(nrow = 3000, ncol = length(df$by)) #loglik for static model
   loglik_exact_1b <- matrix(nrow = 3000, ncol = length(df$by)) #loglik for 1-year back estimates of productivity/capacity
@@ -93,12 +110,14 @@ stan_lfo_cv=function(mod,type=c('static','tv','regime'),df,L=10,K=2,dirichlet_pr
     df_past <- df[past, , drop = FALSE]
     df_oos <- df[c(past, oos), , drop = FALSE]
     if(type=='static'){
-      fit_past<- stan_refit(mod=mod, newdata=df_oos, oos=i+1)
+      fit_past<- stan_refit(mod=mod, newdata=df_oos, oos=i+1,pSmax_mean = pSmax_mean, 
+                            pSmax_sig = pSmax_sig,psig_b = psig_b)
       ll=as.data.frame(fit_past$draws(variables=c('log_lik_oos'),format='draws_matrix'))
       loglik_exact[,i+1]<- ll$log_lik_oos
     }
     if(type=='tv'){
-      fit_past<- stan_refit(mod=mod,newdata=df_oos,oos=i+1)
+      fit_past<- stan_refit(mod=mod,newdata=df_oos,oos=i+1,pSmax_mean = pSmax_mean, 
+                            pSmax_sig = pSmax_sig,psig_b = psig_b)
       ll=as.data.frame(fit_past$draws(variables=c('log_lik_oos_1b','log_lik_oos_3b','log_lik_oos_5b'),format='draws_matrix'))
       
       loglik_exact_1b[, i + 1] <-ll$log_lik_oos_1b
@@ -106,7 +125,8 @@ stan_lfo_cv=function(mod,type=c('static','tv','regime'),df,L=10,K=2,dirichlet_pr
       loglik_exact_5b[, i + 1] <-ll$log_lik_oos_5b
     }
     if(type=='regime'){
-      fit_past<- stan_refit(mod=mod,newdata=df_oos,oos=i+1, K=K, dirichlet_prior=dirichlet_prior)
+      fit_past<- stan_refit(mod=mod,newdata=df_oos,oos=i+1, K=K, dirichlet_prior=dirichlet_prior,pSmax_mean = pSmax_mean, 
+                            pSmax_sig = pSmax_sig,psig_b = psig_b)
       ll=as.data.frame(fit_past$draws(variables=c('log_lik_oos_1b','log_lik_oos_3b','log_lik_oos_5b'),format='draws_matrix'))
       loglik_exact_1b[, i + 1] <- ll$log_lik_oos_1b
       loglik_exact_3b[, i + 1] <- ll$log_lik_oos_3b

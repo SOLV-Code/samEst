@@ -4,7 +4,16 @@
 \alias{stan_refit}
 \title{stan_refit function}
 \usage{
-stan_refit(mod, newdata, oos, K = 2, dirichlet_prior = NULL)
+stan_refit(
+  mod,
+  newdata,
+  oos,
+  K = 2,
+  dirichlet_prior = NULL,
+  pSmax_mean = NULL,
+  pSmax_sig = NULL,
+  psig_b = NULL
+)
 }
 \arguments{
 \item{newdata}{new data to feed to refit models.}
@@ -15,6 +24,12 @@ stan_refit(mod, newdata, oos, K = 2, dirichlet_prior = NULL)
 
 \item{dirichlet_prior}{k_regime x k_regime matrix. Prior for transition probability matrix,
 if NULL (default), prior is set to matrix(1,nrow=k_regime,ncol=k_regime)}
+
+\item{pSmax_mean}{mean for Smax prior}
+
+\item{pSmax_sig}{sd for Smax prior}
+
+\item{psig_b}{sd for sigma_b prior}
 
 \item{sm}{Compiled stan model, which can be generated with sr_mod function.}
 
