@@ -15,7 +15,7 @@
 #' @export
 #' @examples
 #' r=stan_refit(sm=mod3,newdata=df,oos=12)
-stan_refit<- function(mod,newdata,oos,K=2,dirichlet_prior=NULL,pSmax_mean  =NULL,pSmax_sig=NULL,psig_b=NULL){
+stan_refit2<- function(mod,newdata,oos,K=2,dirichlet_prior=NULL,pSmax_mean  =NULL,pSmax_sig=NULL,psig_b=NULL){
   #mod = model file name - eg. 'ricker_linear_oos.stan'
   #newdata = data to train model
   #oosdata = data to predict onto
@@ -284,7 +284,7 @@ stan_aic<- function(x,form=c('aic','bic'),type=c('full','d90','d80'),k){
 
 
 #For rstan:::
-stan_refit2<- function(mod,newdata,oos,K=2,dirichlet_prior=NULL){
+stan_refit<- function(mod,newdata,oos,K=2,dirichlet_prior=NULL){
   #mod = model file name - eg. 'ricker_linear_oos.stan'
   #newdata = data to train model
   #oosdata = data to predict onto
