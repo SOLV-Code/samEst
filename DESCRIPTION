@@ -13,7 +13,11 @@ Authors@R:
     person(given ="Sean", 
             family = "Anderson",
             email = "Sean.Anderson@dfo-mpo.gc.ca",
-            role = c("aut")))
+            role = c("aut")),
+    person(given ="Gottfried", 
+            family = "pestal",
+            email = "gottfried.pestal@solv.ca",
+            role = c("aut")) )
 Description: Collection of salmon spawner recruit estimation models including models with time-varying parameters and regime shifts. Models are written primarily with TMB and stan functions.
 License: AGPL-3 | file LICENSE 
 URL: https://github.com/Pacific-salmon-assess/samEst
