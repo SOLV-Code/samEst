@@ -110,13 +110,13 @@ stan_lfo_cv=function(mod,type=c('static','tv','regime'),df,L=10,K=2,dirichlet_pr
     df_past <- df[past, , drop = FALSE]
     df_oos <- df[c(past, oos), , drop = FALSE]
     if(type=='static'){
-      fit_past<- stan_refit(mod=mod, newdata=df_oos, oos=i+1,pSmax_mean = pSmax_mean, 
+      fit_past<- stan_refit2(mod=mod, newdata=df_oos, oos=i+1,pSmax_mean = pSmax_mean, 
                             pSmax_sig = pSmax_sig,psig_b = psig_b)
       ll=as.data.frame(fit_past$draws(variables=c('log_lik_oos'),format='draws_matrix'))
       loglik_exact[,i+1]<- ll$log_lik_oos
     }
     if(type=='tv'){
-      fit_past<- stan_refit(mod=mod,newdata=df_oos,oos=i+1,pSmax_mean = pSmax_mean, 
+      fit_past<- stan_refit2(mod=mod,newdata=df_oos,oos=i+1,pSmax_mean = pSmax_mean, 
                             pSmax_sig = pSmax_sig,psig_b = psig_b)
       ll=as.data.frame(fit_past$draws(variables=c('log_lik_oos_1b','log_lik_oos_3b','log_lik_oos_5b'),format='draws_matrix'))
       
@@ -125,7 +125,7 @@ stan_lfo_cv=function(mod,type=c('static','tv','regime'),df,L=10,K=2,dirichlet_pr
       loglik_exact_5b[, i + 1] <-ll$log_lik_oos_5b
     }
     if(type=='regime'){
-      fit_past<- stan_refit(mod=mod,newdata=df_oos,oos=i+1, K=K, dirichlet_prior=dirichlet_prior,pSmax_mean = pSmax_mean, 
+      fit_past<- stan_refit2(mod=mod,newdata=df_oos,oos=i+1, K=K, dirichlet_prior=dirichlet_prior,pSmax_mean = pSmax_mean, 
                             pSmax_sig = pSmax_sig,psig_b = psig_b)
       ll=as.data.frame(fit_past$draws(variables=c('log_lik_oos_1b','log_lik_oos_3b','log_lik_oos_5b'),format='draws_matrix'))
       loglik_exact_1b[, i + 1] <- ll$log_lik_oos_1b
