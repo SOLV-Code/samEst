@@ -114,7 +114,7 @@ ricker_TMB <- function(data,  silent = FALSE, control = TMBcontrol(),
   sd_report <- TMB::sdreport(tmb_obj)
   conv <- get_convergence_diagnostics(sd_report)
 
-  nll <- tmb_obj$report()$nll
+  nll <- tmb_obj$fn()[1]
   npar <- length(tmb_params)
  
   AICc  <- 2*nll + 2*npar +(2*npar*(npar+1)/(nrow(data)-npar-1))
@@ -354,7 +354,7 @@ ricker_rw_TMB <- function(data, tv.par=c('a','b','both'), silent = FALSE,
   sd_report <- TMB::sdreport(tmb_obj)
   conv <- get_convergence_diagnostics(sd_report)
 
-  nll <- tmb_obj$report()$nll
+  nll <- tmb_obj$fn()[1]
   renll <- tmb_obj$report()$renll
   allnll<- nll + renll
   
@@ -594,7 +594,7 @@ ricker_hmm_TMB <- function(data,
   conv <- get_convergence_diagnostics(sd_report)
   
   npar <- length(unlist(tmb_params))
-  nll <- tmb_obj$report()$nll
+  nll <- tmb_obj$fn()[1]
   
  
   AICc  <- 2*nll + 2*npar +(2*npar*(npar+1)/(nrow(data)-npar-1))
