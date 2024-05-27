@@ -17,6 +17,10 @@ Authors@R:
     person(given ="Gottfried", 
             family = "pestal",
             email = "gottfried.pestal@solv.ca",
+            role = c("aut")),
+    person(given ="van Dam-Bates", 
+            family = "pestal",
+            email = "paul.vandam-bates@dfo-mpo.gc.ca",
             role = c("aut")) )
 Description: Collection of salmon spawner recruit estimation models including models with time-varying parameters and regime shifts. Models are written primarily with TMB and stan functions.
 License: AGPL-3 | file LICENSE 
