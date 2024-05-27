@@ -77,6 +77,21 @@ sr_format<- function(S,R,by){
 
 
 
+#' function to trasnform parameter between minus one an one
+#' @param x a value 
+#'
+#' @export
+#' 
+#' @returns inverse logit transformed variable 
+#' 
+#' 
+minus_one_to_one <- function(x) {
+  return(2 * boot::inv.logit(x) - 1)
+
+}
+
+
+
 
 # END
 #***********************************************************************************

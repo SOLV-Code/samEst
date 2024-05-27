@@ -6,12 +6,13 @@
 
 
 
+
 devtools::document()
 devtools::load_all()
 
 
 #remotes::install_git('https://github.com/Pacific-salmon-assess/samEst', force=TRUE)
-
+#library(samEst)
 
 #read in data 
 #use Harrison as an example
@@ -42,6 +43,18 @@ plot(harck$S,harck$R)
 p <- ricker_TMB(data=harck)
 p$Smax
 p$alpha
+
+fullLL<-ricker_kf_TMB(data=harck,fullLL=TRUE)
+reLL<-ricker_kf_TMB(data=harck)
+
+fullLL$tmb_obj$fn()
+reLL$tmb_obj$fn()
+
+2*fullLL$tmb_obj$fn()+2*3
+
+2*reLL$tmb_obj$fn()+2*3
+
+pkf<-ricker_TMB(data=harck, AC=TRUE)
 
 
 ip_logb_mean<-log(1/(max(harck$S)*.5))
@@ -196,3 +209,104 @@ ptvab$BIC,
 phmma$BIC,
 phmmb$BIC,
 phmm$BIC)
+
+
+
+
+#=====================================================
+#RTMB
+
+
+devtools::document()
+devtools::load_all()
+library(RTMB)
+
+
+p <- ricker_TMB(data=harck)
+
+p2 <- ricker_RTMB(data=harck)
+
+names(p2)
+p2$logalpha
+p2$Sgen
+p2$Smsy
+p2$umsy
+
+
+
+(1 - LambertW0(exp(1 - p2$logalpha))) /p2$beta
+
+p2$Smsy
+p$Smsy
+
+
+names(p2)
+data=harck
+dat<- list(
+    obs_S = data$S,
+    obs_logRS = data$logRS,
+    priors_flag=1,
+    stan_flag=0,
+    sig_p_sd=1,
+    logb_p_mean=-12,
+    logb_p_sd=3
+  )
+  
+  magS <- log10_ceiling(max(data$S))
+  initlm <- lm(obs_logRS~obs_S, data=dat)
+  
+
+ 
+par <- list(
+    logalpha   = initlm$coefficients[[1]],
+    logbeta = ifelse(initlm$coefficients[[2]]>0,log(magS),log(-initlm$coefficients[[2]])),
+    logsigobs = log(1))
+
+
+obj <- MakeADFun(ricker_RTMB, par, silent=TRUE)
+opt <- nlminb(obj$par, obj$fn, obj$gr)
+
+sdr <- sdreport(obj)
+
+
+p$alpha
+obj$report()$logalpha
+
+p$Smax
+obj$report()$Smax
+
+
+
+ final_grads <- sdr$gradient.fixed
+  bad_eig <- FALSE
+  conv_problem<-FALSE
+  if (!is.null(sdr$pdHess)) {
+    if (!sdr$pdHess) {
+      warning("The model may not have converged: ",
+        "non-positive-definite Hessian matrix.", call. = FALSE)
+      conv_problem<-TRUE
+    } else {
+      eigval <- try(1 / eigen(sdr$cov.fixed)$values, silent = TRUE)
+      if (is(eigval, "try-error") || (min(eigval) < .Machine$double.eps * 10)) {
+        warning("The model may not have converged: ",
+          "extreme or very small eigen values detected.", call. = FALSE)
+        bad_eig <- TRUE
+        conv_problem<-TRUE
+      }
+      if (any(final_grads > 0.01)){
+        warning("The model may not have converged. ",
+          "Maximum final gradient: ", max(final_grads), ".", call. = FALSE)
+        conv_problem<-TRUE
+
+
+
+(Smsy <- (1 - gsl::lambert_W0(exp(1 - p$alpha))) /p$beta)
+(Smsy2 <- (1 - samest_lambertW(exp(1 - p$alpha))) /p$beta)
+
+
+
+
+pl <- as.list(sdr, "Est")
+plsd <- as.list(sdr, "Std")
+
+
