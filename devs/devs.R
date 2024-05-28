@@ -219,12 +219,18 @@ phmm$BIC)
 
 devtools::document()
 devtools::load_all()
-library(RTMB)
+#library(RTMB)
 
 
 p <- ricker_TMB(data=harck)
 
 p2 <- ricker_RTMB(data=harck)
+
+
+pac <- ricker_TMB(data=harck,AC=TRUE)
+
+pac2 <- ricker_RTMB(data=harck,AC=TRUE)
+
 
 names(p2)
 p2$logalpha
@@ -245,6 +251,7 @@ data=harck
 dat<- list(
     obs_S = data$S,
     obs_logRS = data$logRS,
+    by = data$by,
     priors_flag=1,
     stan_flag=0,
     sig_p_sd=1,
@@ -252,6 +259,7 @@ dat<- list(
     logb_p_sd=3
   )
   
+
   magS <- log10_ceiling(max(data$S))
   initlm <- lm(obs_logRS~obs_S, data=dat)
   
@@ -260,10 +268,13 @@ dat<- list(
 par <- list(
     logalpha   = initlm$coefficients[[1]],
     logbeta = ifelse(initlm$coefficients[[2]]>0,log(magS),log(-initlm$coefficients[[2]])),
-    logsigobs = log(1))
+    logsigobs = log(1),
+    ar1_phi=0)
+
+tmbfn<-function(param){ricker_ac_RTMB_fn(param,dat=dat)}
+obj <- MakeADFun(tmbfn, par, silent=TRUE)
 
 
-obj <- MakeADFun(ricker_RTMB, par, silent=TRUE)
 opt <- nlminb(obj$par, obj$fn, obj$gr)
 
 sdr <- sdreport(obj)

@@ -3,14 +3,63 @@
 ## Paul van Dam-Bates
 ######################
 
+##Copyright (C) 2015, Avraham Adler
+##All rights reserved.
+##
+##SPDX-License-Identifier: BSD-2-Clause
+##
+##Redistribution and use in source and binary forms, with or without
+##modification, are permitted provided that the following conditions are met:
+##* Redistributions of source code must retain the above copyright notice, this
+##list of conditions and the following disclaimer.
+##* Redistributions in binary form must reproduce the above copyright notice,
+##this list of conditions and the following disclaimer in the documentation
+##and/or other materials provided with the distribution.
+##
+##THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+##AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+##IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+##DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+##FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+##DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+##SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+##CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+##OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+##OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+##
+##References:
+##
+##Corless, R. M.; Gonnet, G. H.; Hare, D. E.; Jeffrey, D. J. & Knuth, D. E.
+## "On the Lambert W function", Advances in Computational Mathematics,
+## Springer, 1996, 5, 329-359
+##
+##Fritsch, F. N.; Shafer, R. E. & Crowley, W. P.
+## "Solution of the transcendental equation (we^w = x)",
+## Communications of the ACM, Association for Computing Machinery (ACM),
+## 1973, 16, 123-124
 
 
-
-#' Lambert W defined for the entire W0 interval
+#' Fritsch iteration
 #'
 #' @param x .
 #' @param w .
-#
+#'
+#' @details This function was adapted from those in the [lamW package](https://github.com/cran/lamW/blob/master/src/lambertW.cpp) 
+#'
+#' @references
+#'
+#'
+#'Corless, R. M.; Gonnet, G. H.; Hare, D. E.; Jeffrey, D. J. & Knuth, D. E.
+#' "On the Lambert W function", Advances in Computational Mathematics,
+#' Springer, 1996, 5, 329-359
+#'
+#'Fritsch, F. N.; Shafer, R. E. & Crowley, W. P.
+#' "Solution of the transcendental equation (we^w = x)",
+#' Communications of the ACM, Association for Computing Machinery (ACM),
+#' 1973, 16, 123-124
+#'
+#'
+#'
 #' 
 #' @returns lambertW solution
 #' 
@@ -38,10 +87,11 @@ FritschIter <- function(x, w){
 
 #' Lambert W defined for the entire W0 interval
 #'
-#' @param x  value to apply the lambert W to
+#' @param x a numeric value to apply the lambert W function to.
 #' 
 #'
-#' @details this version is also defined for small negative values
+#' @details this version is also defined for small negative values. Adapted from the 
+#' [lamW package](https://github.com/cran/lamW/blob/master/src/lambertW.cpp). See copyright info in the package 
 #
 #' 
 #' @returns lambertW solution
@@ -110,7 +160,7 @@ LambertW0_internal <- function(x){
 #' @details  This is what you would import. Only defined for a scalar. Need to update code if you want to be able to do more than 1 x at a time.
 #
 #' 
-#' @returns penalized (if priors_flag= TRUE) negative log likelihood
+#' @returns LambertW derivative
 #' 
 dLambertW0_internal <- function(x, y, dy) {
   dy / (exp(y) * (1. + y))
@@ -121,12 +171,12 @@ dLambertW0_internal <- function(x, y, dy) {
 
 
 
-#' Simple Ricker model function to be called with RTMB
+#' LambertW function to be used inside RTMB models
 #'
-#' @param par A list or data frame containing parameter names and initial guesses 
+#'
 #' 
 #'
-#' @details  This is what you would import. Only defined for a scalar. Need to update code if you want to be able to do more than 1 x at a time.
+#' @details code adapted from [adjoint example](https://github.com/kaskr/RTMB/blob/d4f7db7f6c3073d7f85930ed6d6d4dd264b05612/RTMB/R/adjoint.R) 
 #
 #' 
 #' @returns penalized (if priors_flag= TRUE) negative log likelihood

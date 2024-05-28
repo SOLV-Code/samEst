@@ -86,7 +86,7 @@ sr_format<- function(S,R,by){
 #' 
 #' 
 minus_one_to_one <- function(x) {
-  return(2 * boot::inv.logit(x) - 1)
+  return(2 * (exp(x)/(1+exp(x))) - 1)
 
 }
 
