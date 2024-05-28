@@ -5,6 +5,7 @@ functions {
 }
 data {
    int<lower=1> N;//number of annual samples
+  int<lower=1> L;//time-series length
   vector[N] R_S; //log(recruits per spawner)
   vector[N] S; //spawners in time T
   int<lower=1> K; //number of hidden regime states
@@ -27,7 +28,7 @@ parameters {
   // A[i][j] = p(z_t = j | z_{t-1} = i)
   // Continuous observation model
   ordered[K] log_a; // max. productivity
-  real<lower=0> b; // rate capacity - fixed in this
+  vector<lower=0>[K] b; // rate capacity - fixed in this
   real<lower=0> sigma; // observation standard deviations
 }
 
@@ -37,14 +38,14 @@ transformed parameters {
 { // Forward algorithm log p(z_t = j | y_{1:t})
   real accumulator1[K];
 
-  for(k in 1:K) logalpha[1,k] = log(pi1[k]) + normal_lpdf(R_S[1] |log_a[k] - b*S[1], sigma);
+  for(k in 1:K) logalpha[1,k] = log(pi1[k]) + normal_lpdf(R_S[1] |log_a[k] - b[k]*S[1], sigma);
 
   for (t in 2:N) {
   for (j in 1:K) { // j = current (t)
-	for (i in 1:K) { // i = previous (t-1)
-		// Murphy (2012) p. 609 eq. 17.48
-			// belief state + transition prob + local evidence at t
-    accumulator1[i] = logalpha[t-1, i] + log(A[i, j]) + normal_lpdf(R_S[t] |log_a[j] - b*S[t], sigma);
+  for (i in 1:K) { // i = previous (t-1)
+  // Murphy (2012) p. 609 eq. 17.48
+  // belief state + transition prob + local evidence at t
+    accumulator1[i] = logalpha[t-1, i] + log(A[i, j]) + normal_lpdf(R_S[t] |log_a[j] - b[j]*S[t], sigma);
   }
   logalpha[t, j] = log_sum_exp(accumulator1);
   }
@@ -52,11 +53,11 @@ transformed parameters {
   } // Forward
 }
 model{
-  for(k in 1:K) log_a[k] ~ normal(1.5,2.5);
- 
-  b ~ lognormal(logbeta_pr,logbeta_pr_sig); //capacity
-  
-  sigma ~ normal(0.5,1); //half normal on variance (lower limit of zero)
+  for(k in 1:K){
+  log_a[k] ~ normal(1.5,2.5);
+  b[k] ~ lognormal(logbeta_pr,logbeta_pr_sig); //capacity
+}  
+  sigma ~ normal(0,1); //half normal on variance (lower limit of zero)
   pi1~ dirichlet(rep_vector(1,K));
 
   for(k in 1:K){
@@ -75,10 +76,9 @@ generated quantities {
   vector[K] beta[N];
   vector[K] gamma[N];
   
-  real Smax;
+  vector[K] Smax;
   vector[K] Umsy;
   vector[K] Smsy;
-  vector[K] Sgen;
   
   { // Forward algortihm
   for (t in 1:N)
@@ -97,7 +97,7 @@ generated quantities {
   // Murphy (2012) Eq. 17.58
   // backwards t + transition prob + local evidence at t
 
-  accumulator2[i] = logbeta[t, i] + log(A[j, i]) + normal_lpdf(R_S[t] | log_a[i] - b*S[t], sigma);
+  accumulator2[i] = logbeta[t, i] + log(A[j, i]) + normal_lpdf(R_S[t] | log_a[i] - b[i]*S[t], sigma);
   }
   logbeta[t-1, j] = log_sum_exp(accumulator2);
   }
@@ -125,7 +125,7 @@ generated quantities {
       delta[t, j] = negative_infinity();
       for (i in 1:K) { // i = previous (t-1)
         real logp;
-        logp = delta[t-1, i] + log(A[i, j]) + normal_lpdf(R_S[t] | log_a[j] - b*S[t], sigma);
+        logp = delta[t-1, i] + log(A[i, j]) + normal_lpdf(R_S[t] | log_a[j] - b[j]*S[t], sigma);
          
         if (logp > delta[t, j]) {
           bpointer[t, j] = i;
@@ -143,10 +143,14 @@ generated quantities {
   }
   }
 
-Smax = 1/b;
+
+for(n in 1:N)log_lik[n] = normal_lpdf(R_S[n]|log_a[zstar[n]] - S[n]*b[zstar[n]], sigma);
+   
+
 for(k in 1:K){
+Smax[k] = 1/b[k];
 Umsy[k] = 1-lambert_w0(exp(1-log_a[k]));
-Smsy[k] = (1-lambert_w0(exp(1-log_a[k])))/b;
+Smsy[k] = (1-lambert_w0(exp(1-log_a[k])))/b[k];
 }
 
 }
