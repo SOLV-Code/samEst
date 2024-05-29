@@ -232,21 +232,8 @@ pac <- ricker_TMB(data=harck,AC=TRUE)
 pac2 <- ricker_RTMB(data=harck,AC=TRUE)
 
 
-names(p2)
-p2$logalpha
-p2$Sgen
-p2$Smsy
-p2$umsy
 
 
-
-(1 - LambertW0(exp(1 - p2$logalpha))) /p2$beta
-
-p2$Smsy
-p$Smsy
-
-
-names(p2)
 data=harck
 dat<- list(
     obs_S = data$S,
@@ -271,7 +258,7 @@ param <- list(
     ar1_phi=3)
 
 
-
+library(RTMB)
 ricker_ac_RTMB_fn(param,dat)
 
 
