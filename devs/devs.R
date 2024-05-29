@@ -262,17 +262,21 @@ dat<- list(
 
   magS <- log10_ceiling(max(data$S))
   initlm <- lm(obs_logRS~obs_S, data=dat)
-  
 
  
-par <- list(
+param <- list(
     logalpha   = initlm$coefficients[[1]],
     logbeta = ifelse(initlm$coefficients[[2]]>0,log(magS),log(-initlm$coefficients[[2]])),
     logsigobs = log(1),
-    ar1_phi=0)
+    ar1_phi=3)
+
+
+
+ricker_ac_RTMB_fn(param,dat)
+
 
 tmbfn<-function(param){ricker_ac_RTMB_fn(param,dat=dat)}
-obj <- MakeADFun(tmbfn, par, silent=TRUE)
+obj <- MakeADFun(tmbfn, param, silent=TRUE)
 
 
 opt <- nlminb(obj$par, obj$fn, obj$gr)
