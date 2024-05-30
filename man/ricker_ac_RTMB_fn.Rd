@@ -2,7 +2,7 @@
 % Please edit documentation in R/RTMB_nll_functions.R
 \name{ricker_ac_RTMB_fn}
 \alias{ricker_ac_RTMB_fn}
-\title{Simple Ricker model function to be called with RTMB}
+\title{Simple Ricker AR1 model function to be called with RTMB}
 \usage{
 ricker_ac_RTMB_fn(param, dat)
 }
@@ -13,7 +13,7 @@ ricker_ac_RTMB_fn(param, dat)
 penalized (if priors_flag= TRUE) negative log likelihood
 }
 \description{
-Simple Ricker model function to be called with RTMB
+Simple Ricker AR1 model function to be called with RTMB
 }
 \details{
 this function will

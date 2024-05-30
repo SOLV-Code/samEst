@@ -23,7 +23,7 @@
 #' @param priors_flag Integer, 1 priors are included in estimation model, 0 priors are not included.
 #'  See details for priors documentation. 
 #' @param stan_flag Integer, flag indicating wether or not TMB code will be used with TMBstan - Jacobian
-#' adjustment implemented. Default is 0, jacobian adjustment not included.
+#' adjustment implemented. Only works if priors flag is also 1, Default is 0, jacobian adjustment not included. 
 #' @param sig_p_sd sd for half normal prior on sigma parameter. default is 1.
 #' @param logb_p_mean mean for prior on log b, default is -12.
 #' @param logb_p_sd sd for prior on log b, default is 3.#' 
@@ -41,13 +41,13 @@
 #' data(harck)
 #' rickerTMB(data=harck)
 #' 
-ricker_RTMB <- function(data,  silent = FALSE, control = TMBcontrol(), 
-  tmb_map = list(), AC=FALSE, priors_flag=1, stan_flag=0,sig_p_sd=1,
-  logb_p_mean=-12,logb_p_sd=3){
+ricker_RTMB <- function(data, silent = FALSE, control = TMBcontrol(), 
+  tmb_map = list(), AC=FALSE, priors_flag=1, stan_flag=0, sig_p_sd=1.0,
+  logb_p_mean=-12.0, logb_p_sd=3.0){
 
   
   dat<- list(
-    obs_S = data$S,
+    obs_S = as.numeric(data$S),
     obs_logRS = data$logRS,
     by = data$by,
     priors_flag=priors_flag,
@@ -73,10 +73,10 @@ ricker_RTMB <- function(data,  silent = FALSE, control = TMBcontrol(),
   
   }else{
     param <- list(
-      logalpha   = initlm$coefficients[[1]],
+      logalpha  = initlm$coefficients[[1]],
       logbeta = ifelse(initlm$coefficients[[2]]>0,log(magS),log(-initlm$coefficients[[2]])),
-      logsigobs = log(1),
-      ar1_phi=0
+      logsigobs = log(1.0),
+      ar1_phi=0.0
     )
     tmbfn<-function(param){ricker_ac_RTMB_fn(param,dat=dat)}
 
@@ -107,8 +107,8 @@ ricker_RTMB <- function(data,  silent = FALSE, control = TMBcontrol(),
     beta       = obj$report()$beta,
     Smax       = obj$report()$Smax,
     sig        = obj$report()$sigobs,
-    sigar      = ifelse(AC,tmb_obj$report()$sigAR,NA),
-    rho        = ifelse(AC,tmb_obj$report()$rho,NA),
+    sigar      = ifelse(AC,obj$report()$sigAR,NA),
+    rho        = ifelse(AC,obj$report()$rho,NA),
     Smsy        = obj$report()$Smsy,
     umsy        = obj$report()$umsy,
     Sgen        = obj$report()$Sgen,

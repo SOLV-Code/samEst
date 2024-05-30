@@ -33,7 +33,7 @@ Default is all parameters are estimated}
 See details for priors documentation.}
 
 \item{stan_flag}{Integer, flag indicating wether or not TMB code will be used with TMBstan - Jacobian
-adjustment implemented. Default is 0, jacobian adjustment not included.}
+adjustment implemented. Only works if priors flag is also 1, Default is 0, jacobian adjustment not included.}
 
 \item{sig_p_sd}{sd for half normal prior on sigma parameter. default is 1.}
 
