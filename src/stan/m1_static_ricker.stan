@@ -14,21 +14,28 @@ logbeta_pr=log(1/pSmax_mean)-0.5*logbeta_pr_sig*logbeta_pr_sig; //convert smax p
 }
 parameters {
   real log_a;// initial productivity (on log scale)
-  real<lower = 0> b; // rate capacity
+  real log_b; // rate capacity
     
 //variance components  
-  real<lower = 0> sigma;
-    
+  real<lower = 0> sigma; //observation error
+}
+transformed parameters{
+  vector[N] mu; //expectation
+  vector[N] epsilon; //residuals
+  real<lower=0> b=exp(log_b);
+
+  mu=log_a - S*b; //expected logRS
+  epsilon=R_S-mu; //residual productivity
 }
 model{
   //priors
   log_a ~ normal(1.5,2.5); //intrinsic productivity - wide prior
-  b ~ lognormal(logbeta_pr,logbeta_pr_sig); //per capita capacity parameter - wide prior
+  log_b ~ normal(logbeta_pr,logbeta_pr_sig); //per capita capacity parameter - wide prior
    
   //variance terms
   sigma ~ normal(0.5,1); //half-normal prior - expectation around 0.5
 
-   R_S ~ normal(log_a - S*b, sigma);
+   R_S ~ normal(mu, sigma);
 }
 generated quantities{
  real Smax;

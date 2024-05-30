@@ -16,7 +16,7 @@ logbeta_pr=log(1/pSmax_mean)-0.5*logbeta_pr_sig*logbeta_pr_sig; //convert smax p
 }
 parameters{
   real log_a0;// initial productivity (on log scale)
-  real<lower = 0> b; // rate capacity - fixed in this
+  real log_b; // rate capacity (log scale)
 
  //variance components  
   real<lower = 0> sigma;
@@ -27,13 +27,17 @@ parameters{
   
 }
 transformed parameters{
+  vector[N] mu; //expectation
+  vector[N] epsilon; //residuals
+  real<lower=0> b; //rate capacity
   vector[L] log_a; //a in each year (on log scale)
   
   log_a[1] = log_a0; //initial value
   for(t in 2:L){
     log_a[t] = log_a[t-1] + a_dev[t-1]*sigma_a; //random walk of log_a
   }
-  
+  mu=log_a[ii]-b*S;
+  epsilon=R_S-mu;
 }  
 model{
   //priors
@@ -45,8 +49,7 @@ model{
   sigma ~ normal(0.5,1); //half normal on variance (lower limit of zero)
   sigma_a ~ normal(0,1); //half normal on variance (lower limit of zero)
    
- 
-  for(n in 1:N) R_S[n] ~ normal(log_a[ii[n]] - S[n]*b, sigma); 
+  R_S ~ normal(mu, sigma); 
   
 }
  generated quantities{
