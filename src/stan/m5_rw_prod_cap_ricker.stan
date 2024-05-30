@@ -16,7 +16,7 @@ logbeta_pr=log(1/pSmax_mean)-0.5*logbeta_pr_sig*logbeta_pr_sig; //convert smax p
 }
 parameters {
   real log_a0;// initial productivity (on log scale)
-  real<lower = 0> b0; // initial rate capacity
+  real log_b0; // initial rate capacity (log)
 
  //variance components  
   real<lower = 0> sigma;
@@ -25,22 +25,26 @@ parameters {
   
   //time-varying parameters
   vector[L-1] a_dev; //z-score annual deviations in log_a
-  vector[L-1] smax_dev; //z-score annual deviations in Smax
+  vector[L-1] b_dev; //z-score annual deviations in Smax
 
 }
 
 transformed parameters{
+  vector[N] mu; //expectation
+  vector[N] epsilon; //residuals
   vector[L] log_a; //a in each year (log scale)
-  vector[L] Smax; //Smax in each year
+  vector[L] log_b; //log rate capacity in each year
   vector[L] b; //rate capacity in each year
   
   log_a[1] = log_a0;
-  Smax[1] = 1/b0;
+  log_b[1] = 1/log_b0;
   for(t in 2:L){
     log_a[t] = log_a[t-1] + a_dev[t-1]*sigma_a;
-    Smax[t] = Smax[t-1] + smax_dev[t-1]*sigma_b;
+    log_b[t] = log_b[t-1] + b_dev[t-1]*sigma_b;
   }
- b=1/Smax;
+ b=exp(log_b);
+ mu=log_a[ii]-b[ii]*S;
+ epsilon=R_S-mu;
 }  
 
 model{
@@ -54,16 +58,20 @@ model{
   //variance terms
   sigma ~ normal(0.5,1); //half normal on variance
   sigma_a ~ normal(0,1); //half normal on variance 
-  sigma_b ~ normal(0,pSmax_sig); //informative prior for Smax so it knows the parameter scale
+  sigma_b ~ normal(0,1); //informative prior for Smax so it knows the parameter scale
   
- for(n in 1:N) R_S[n] ~ normal(log_a[ii[n]]-b[ii[n]]*S[n], sigma);
+ R_S ~ normal(mu, sigma);
 }
 generated quantities{
-     real Umsy;
+     vector[L] Umsy;
      vector[L] Smsy;
-     
-    for(l in 1:L){ Smsy[l] = (1-lambert_w0(exp(1-log_a[l])))/b[l];
+     vector[L] Smax;
+
+    for(l in 1:L){ 
+Smsy[l] = (1-lambert_w0(exp(1-log_a[l])))/b[l];
+Smax[l] = 1/b[l];
+  Umsy[l] = 1-lambert_w0(exp(1-log_a[l]));
     }
-    Umsy = 1-lambert_w0(exp(1-log_a));
+  
 }
  

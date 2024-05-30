@@ -15,32 +15,32 @@ logbeta_pr=log(1/pSmax_mean)-0.5*logbeta_pr_sig*logbeta_pr_sig; //convert smax p
 }
 parameters{
   real log_a;// initial productivity (on log scale)
-  real<lower=0> b; // rate capacity
+  real log_b; // rate capacity (on log scale)
 
   //variance components  
-  real<lower=0> sigma;
-  real<lower = -1, upper = 1> rho;
+  real<lower=0> sigma; //observation error at t=1
+  real<lower = -1, upper = 1> rho; //autocorrelation parameter
 
 }
 transformed parameters{
-  vector[N] mu;
+  vector[N] mu; //expectation
   vector[N] epsilon; //residuals
-
-  real<lower=0> sigma_AR;
+  real<lower=0> sigma_AR; //observation error - corrected for autocorrelation
+  real<lower=0> b=exp(log_b); //per capita density dependence
   
-  mu = log_a-b*S;
+  mu = log_a-b*S; //inital expectation
 
-  epsilon[1] = R_S[1] - mu[1];
+  epsilon[1] = R_S[1] - mu[1]; //first observation without observed autocorrelation
   for(t in 2:N){
-    epsilon[t] =(R_S[t] - mu[t]);
+    epsilon[t] =(R_S[t] - mu[t]); //residual productivity
     mu[t] = mu[t] + (rho^(ii[t]-ii[t-1])*epsilon[t-1]); //rho raised the power of the number of time-steps between successive productivity estimates
   }
-  sigma_AR = sigma*sqrt(1-rho^2);
+  sigma_AR = sigma*sqrt(1-rho^2); //correct observation error for autocorrelation
 }
 model{
   //priors
   log_a ~ normal(1.5,2.5); //intrinsic productivity - wide prior
-  b ~ lognormal(logbeta_pr,logbeta_pr_sig); //per capita capacity parameter - wide prior
+  log_b ~ normal(logbeta_pr,logbeta_pr_sig); //per capita capacity parameter - wide prior
      
   //variance terms
   sigma ~ normal(0.5,1); //half-normal prior - expectation at 0.5
