@@ -3,7 +3,7 @@ data{
   int<lower=1> L;//number years in the data series(time-series length)
   int ii[N];//index of years with data
   vector[N] R_S; //log(recruits per spawner)
-  vector[N] S; //spawners in time T
+  matrix[1,N] S; //spawners in time T
   real pSmax_mean; //prior mean for Smax
   real pSmax_sig; //prior variance for Smax
 }
@@ -43,17 +43,17 @@ transformed parameters{
     log_b[t] = log_b[t-1] + b_dev[t-1]*sigma_b;
   }
  b=exp(log_b);
- mu=log_a[ii]-b[ii]*S;
+ mu=log_a[ii]-S*b[ii];
  epsilon=R_S-mu;
 }  
 
 model{
   //priors
   log_a0 ~ normal(1.5,5); //productivity
-  b0 ~ lognormal(logbeta_pr,logbeta_pr_sig); //per capita capacity parameter
+  log_b0 ~ normal(logbeta_pr,logbeta_pr_sig); //per capita capacity parameter
   
   a_dev ~ std_normal();
-  smax_dev ~ std_normal();
+  b_dev ~ std_normal();
 
   //variance terms
   sigma ~ normal(0.5,1); //half normal on variance

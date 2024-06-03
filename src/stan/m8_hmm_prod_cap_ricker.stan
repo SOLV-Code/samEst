@@ -34,7 +34,7 @@ parameters {
 
 transformed parameters {
   vector[K] logalpha[N];
-  vector[k] b=exp(log_b);
+  vector[K] b=exp(log_b);
 
 { // Forward algorithm log p(z_t = j | y_{1:t})
   real accumulator1[K];
