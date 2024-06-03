@@ -119,10 +119,11 @@ Type objective_function<Type>::operator() ()
 
   for(int i=1;i<timeSteps;i++){
     if(!isNA(obs_logRS(i))){
-      pred_logRS(i) = alpha - beta * obs_S(i) + residuals(i-1) * rhoo ;
+      //pred_logRS(i) = alpha - beta * obs_S(i) + residuals(i-1) * rhoo ;
+      pred_logRS(i) = alpha - beta * obs_S(i) ;
       pred_logR(i) = pred_logRS(i) + log(obs_S(i));
       residuals(i) = obs_logRS(i) - pred_logRS(i);     
-      nll+=-dnorm(obs_logRS(i),pred_logRS(i),sigAR,true);      
+      nll+=-dnorm(obs_logRS(i),pred_logRS(i) + residuals(i-1) * rhoo ,sigAR,true);      
     } 
   }
   
