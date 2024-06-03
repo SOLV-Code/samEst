@@ -20,6 +20,7 @@
 #' @param sig_p_sd sd for half normal prior on sigma parameter. default is 1.
 #' @param logb_p_mean mean for prior on log b, default is -12.
 #' @param logb_p_sd sd for prior on log b, default is 3.
+#' @param rtmb_v use RTMB version? 
 #' 
 #'
 #'
@@ -56,7 +57,7 @@
 #' 
 ricker_TMB <- function(data,  silent = FALSE, control = TMBcontrol(), 
   tmb_map = list(), AC=FALSE, priors_flag=1, stan_flag=0,sig_p_sd=1,
-  logb_p_mean=-12,logb_p_sd=3) {
+  logb_p_mean=-12,logb_p_sd=3, rtmb_v=0) {
 
   
   tmb_data <- list(
@@ -97,13 +98,22 @@ ricker_TMB <- function(data,  silent = FALSE, control = TMBcontrol(),
       rho=0
     )
 
-
-    tmb_obj <- TMB::MakeADFun(data = tmb_data,
+    if(rtmb_v==0){
+      tmb_obj <- TMB::MakeADFun(data = tmb_data,
                               parameters = tmb_params, 
                               map = tmb_map,
                               random = tmb_random, 
                               DLL = "Ricker_autocorr", 
                               silent = silent)
+    }else{
+      tmb_obj <- TMB::MakeADFun(data = tmb_data,
+                              parameters = tmb_params, 
+                              map = tmb_map,
+                              random = tmb_random, 
+                              DLL = "Ricker_autocorr_residnll", 
+                              silent = silent)
+       }
+   
   }
 
   tmb_opt <- stats::nlminb(start = tmb_obj$par, 
@@ -792,6 +802,7 @@ get_convergence_diagnostics <- function(sd_report) {
 #'
 #' @useDynLib Ricker_simple
 #' @useDynLib Ricker_autocorr
+#' @useDynLib Ricker_autocorr_residnll
 #' @useDynLib Ricker_tva
 #' @useDynLib SR_HMM
 #' @useDynLib Ricker_tvlogb

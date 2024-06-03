@@ -36,16 +36,20 @@ pac2 <- ricker_RTMB(data=harck,AC=TRUE,priors_flag=0)
 #this works but produces different estimates than pac
 pac3 <- ricker_RTMB(data=harck,AC=TRUE,,priors_flag=0,dautoreg=1)
 
+#TMB with RTMB style of residuals in nll
+pac4 <- ricker_TMB(data=harck,AC=TRUE,priors_flag=0,rtmb_v=1)
+
 
 pac$rho
-#pac2$rho
+#these are the same but I cannot tell why the results are so different. 
+pac2$rho
 pac3$rho
 
 pac$alpha
 #pac2$logalpha
 pac3$logalpha
 
-#likelihoods are also quite different
+#likelihoods are similar though
 pac$tmb_obj$fn()
 #pac2$obj$fn()
 pac3$obj$fn()
@@ -148,7 +152,7 @@ param <- list(
 
 
 ricker_ac_RTMB_fn_local(param,dat)
-ar1tmbfn<-function(param){ricker_ac_RTMB_fn_local(param,dat=dat)}
+ar1tmbcpfn<-function(param){ricker_ac_RTMB_fn_local(param,dat=dat)}
 obj <- MakeADFun(ar1tmbfn, param, silent=TRUE)
 opt <- nlminb(obj$par, obj$fn, obj$gr)
 #similar to adautoreg results
@@ -193,15 +197,19 @@ ricker_ac_RTMB_fn_local <- function(param,dat){
     }
   }
   
-  pred_logRS[1] <- logalpha - beta * obs_S[1]
-  residualis[i] <- obs_logRS[1] - pred_logRS[1]
-  nll <- nll - dnorm( obs_logRS[1],pred_logRS[1],sigobs,log=TRUE)
-
+  pred_logRS[1] <- logalpha - beta * as.numeric(obs_S[1])
+  residuals[1] <- obs_logRS[1] - pred_logRS[1]
+  nll <- nll - dnorm(obs_logRS[1], pred_logRS[1], sigobs,log=TRUE)
+  
+  print(class(obs_logRS[1]))
+  print(class(pred_logRS[1]))
+  print(class(sigobs))
+  print(class(nll))
 
  for(i in 2:N){
-    pred_logRS[i] = alpha - beta * obs_S[i] + residuals[i-1] * rho 
-    residualis[i] <- obs_logRS[i] - pred_logRS[i]
-    nll <- nll - dnorm(residuals[i],rho*residuals[i-1],sigAR,log=TRUE)
+    pred_logRS[i] <- logalpha - beta * obs_S[i] + residuals[i-1] * rho 
+    residuals[i] <- obs_logRS[i] - pred_logRS[i]
+    nll <- nll - dnorm(obs_logRS[i],pred_logRS[i],sigAR,log=TRUE)
   }
 
 
@@ -225,4 +233,16 @@ ricker_ac_RTMB_fn_local <- function(param,dat){
    
 
 }
+
+
+
+
+
+ricker_ac_RTMB_fn_local(param,dat)
+ar1tmbcopyfn<-function(param){ricker_ac_RTMB_fn_local(param,dat=dat)}
+obj_tmbcp <- MakeADFun(ar1tmbcopyfn, param, silent=TRUE)
+opt_tmbcp <- nlminb(obj_tmbcp$par, obj_tmbcp$fn, obj_tmbcp$gr)
+#similar to adautoreg results
+obj_tmbcp$report()$rho
+
 
