@@ -3,7 +3,7 @@ data{
   int<lower=1> L;//number years in the data series(time-series length)
   int ii[N];//index of years with data
   vector[N] R_S; //log(recruits per spawner)
-  vector[N] S; //spawners in time T
+  matrix[1,N] S; //spawners in time T
   real pSmax_mean; //prior mean for Smax
   real pSmax_sig; //prior variance for Smax
 }
@@ -30,14 +30,15 @@ parameters {
 transformed parameters{
   vector[N] mu; //expectation
   vector[N] epsilon; //residuals
+  vector[L] log_b; //log rate capacity in each year  
   vector[L] b; //rate capacity in each year
   
   log_b[1] = 1/log_b0;
   for(t in 2:L){
     log_b[t] = log_b[t-1] + b_dev[t-1]*sigma_b;
     }
-b=exp(log_b);
- mu=log_a-b[ii]*S;
+ b=exp(log_b);
+ mu=log_a-S*b[ii];
   epsilon=R_S-mu;
 }  
 
