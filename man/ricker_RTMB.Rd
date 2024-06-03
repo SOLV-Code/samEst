@@ -14,7 +14,8 @@ ricker_RTMB(
   stan_flag = 0,
   sig_p_sd = 1,
   logb_p_mean = -12,
-  logb_p_sd = 3
+  logb_p_sd = 3,
+  dautoreg = 0
 )
 }
 \arguments{
@@ -40,6 +41,8 @@ adjustment implemented. Only works if priors flag is also 1, Default is 0, jacob
 \item{logb_p_mean}{mean for prior on log b, default is -12.}
 
 \item{logb_p_sd}{sd for prior on log b, default is 3.#'}
+
+\item{dautoreg}{select model code for AR1}
 }
 \value{
 penalized (if priors_flag= TRUE) negative log likelihood

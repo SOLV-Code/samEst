@@ -233,6 +233,8 @@ pac$rho
 pac$alpha
 pac$beta
 pac$Smax
+pac$tmb_obj$fn()
+names(pac)
 
 devtools::document()
 devtools::load_all()
@@ -242,6 +244,8 @@ pac2$logalpha
 pac2$beta
 pac2$Smax
 pac2$sigAR
+
+pac2
 
 
 data=harck
@@ -264,8 +268,8 @@ dat<- list(
 param <- list(
     logalpha   = initlm$coefficients[[1]],
     logbeta = ifelse(initlm$coefficients[[2]]>0,log(magS),log(-initlm$coefficients[[2]])),
-    logsigobs = log(1))#,
-    #ar1_phi=3)
+    logsigobs = log(1),
+    ar1_phi=3.0)
 
 
 library(RTMB)

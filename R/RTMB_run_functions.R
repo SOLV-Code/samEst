@@ -27,6 +27,7 @@
 #' @param sig_p_sd sd for half normal prior on sigma parameter. default is 1.
 #' @param logb_p_mean mean for prior on log b, default is -12.
 #' @param logb_p_sd sd for prior on log b, default is 3.#' 
+#' @param dautoreg select model code for AR1
 #'
 #' @details  this function will
 #
@@ -43,7 +44,7 @@
 #' 
 ricker_RTMB <- function(data, silent = FALSE, control = TMBcontrol(), 
   tmb_map = list(), AC=FALSE, priors_flag=1, stan_flag=0, sig_p_sd=1.0,
-  logb_p_mean=-12.0, logb_p_sd=3.0){
+  logb_p_mean=-12.0, logb_p_sd=3.0,dautoreg=0){
 
   
   dat<- list(
@@ -78,7 +79,12 @@ ricker_RTMB <- function(data, silent = FALSE, control = TMBcontrol(),
       logsigobs = log(1.0),
       ar1_phi=0.0
     )
-    tmbfn<-function(param){ricker_ac_RTMB_fn(param,dat=dat)}
+    if(!dautoreg){
+        tmbfn<-function(param){ricker_ac_RTMB_fn(param,dat=dat)}
+      }else{
+        tmbfn<-function(param){ricker_ac_RTMB_fn_dautoreg(param,dat=dat)}  
+      }
+   
 
     
   }
