@@ -44,6 +44,9 @@ pac$rho
 #these are the same but I cannot tell why the results are so different. 
 pac2$rho
 pac3$rho
+pac4$rho
+
+
 
 pac$alpha
 #pac2$logalpha
@@ -51,7 +54,7 @@ pac3$logalpha
 
 #likelihoods are similar though
 pac$tmb_obj$fn()
-#pac2$obj$fn()
+pac2$obj$fn()
 pac3$obj$fn()
 
 

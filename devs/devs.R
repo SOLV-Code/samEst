@@ -245,7 +245,7 @@ pac2$beta
 pac2$Smax
 pac2$sigAR
 
-pac2
+pac2$obj$fn()
 
 
 data=harck
