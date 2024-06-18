@@ -2,46 +2,34 @@
 % Please edit documentation in R/WIP_stan_functions.R
 \name{stan_compile}
 \alias{stan_compile}
-\title{compile stan models}
+\title{stan compile - compiles stan versions of static, autocorrelated, random walk, and regime shift models}
 \usage{
-stan_compile(type = c("all"), par = c("a", "b", "both"))
+stan_compile(type = c("all"), par = c("prod", "cap", "both"))
 }
 \arguments{
-\item{data}{A list or data frame containing Spawners (S) and log(Recruits/Spawners) (logRS) time series.}
+\item{type}{Options for:
+\itemize{
+\item all (default) - compiles 8 model sets
+\item static - compiles the classic (static) Ricker model
+\item ac - compiles the static Ricker model with 1-y residual autocorrelation
+\item rw - random walk (time-varying) model, must also specify the parameter ('par') - see below
+\item hmm - hidden markov (regime shift) model, must also specify the parameter ('par') - see below
+}}
 
-\item{AC}{Logical. Are residuals autocorrelated? Default is FALSE}
-
-\item{control}{output of stancontrol}
-
-\item{warmup}{To be passed to rstan::sampling. A positive integer specifying the number of warmup (aka burnin) iterations per
-chain. The default is 200.}
-
-\item{chains}{To be passed to rstan::sampling. A positive integer specifying the number of Markov chains. The default is 6.}
-
-\item{iter}{To be passed to rstan::sampling. A positive integer specifying the number of iterations for each chain
-(including warmup). The default is 1000.}
-
-\item{lambertW}{Logical, indicating if lambertW functions should be used in stan code, requires git installation from stan}
-
-\item{...}{Anything else that would be passed to rstan::sampling}
+\item{par}{Options for:
+\itemize{
+\item prod - sets stock productivity to vary through time or regime
+\item cap - sets stock capacity (Smax) to vary through time or regime
+\item both - sets both stock productivity and capacity to vary through time or regime (generally not recommended)
+}}
 }
 \value{
-a list containing the
-\itemize{
-\item alpha - median estimates for the alpha parameter vector
-\item beta - median estimates for the beta parameter
-\item sigobs - median estimates for the observation error sigma
-\item stanfit - a stanfit model object
-\item mcmcsummary - summary over kept samples
-\item c_mcmcsummary - chain specific summary
-\item list of samples
-}
+Nothing. It will compile stan code so these models can be sampled, to be used before 'stan_fit' (see help)
 }
 \description{
-compile stan models
+stan compile - compiles stan versions of static, autocorrelated, random walk, and regime shift models
 }
 \examples{
-data(harck)
-rickerstan(data=harck)
-
+stan_compile()
+stan_compile(type='rw',par='prod')
 }

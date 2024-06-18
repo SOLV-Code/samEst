@@ -13,7 +13,7 @@
 #' @returns Nothing. It will compile stan code so these models can be sampled, to be used before 'stan_fit' (see help)
 #' 
 #' 
-#' @importFrom cmdstanr
+#' @import cmdstanr
 #' @examples
 #' stan_compile()
 #' stan_compile(type='rw',par='prod')

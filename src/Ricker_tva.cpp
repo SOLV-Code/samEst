@@ -74,6 +74,7 @@ Type objective_function<Type>::operator() ()
 
   DATA_VECTOR(obs_S);    // observed  Spawner
   DATA_VECTOR(obs_logRS);   // observed recruitment
+  DATA_UPDATE( obs_logRS );
   DATA_INTEGER(priors_flag); //flag indicating wether or not priors should be used
   DATA_INTEGER(stan_flag); //flag indicating wether or not tmbstan is used 
   DATA_SCALAR(sig_p_sd); //sd for sigma prior
@@ -109,10 +110,9 @@ Type objective_function<Type>::operator() ()
   Type pnll = Type(0.0);
   
   if(priors_flag == 1){
-    //ans -=dnorm(alphao,Type(0.0),Type(2.5),true);
-    //pnll -=dgamma(alphao,Type(3.0),Type(1.5),true);
+    
     pnll -=dnorm(alphao,Type(1.5),Type(2.5),true);
-    //pnll -=dnorm(alphao,Type(2.5),Type(3.0),true)- log(pnorm(Type(-2.0), Type(2.5),Type(3.0)));
+   
     pnll -= dnorm(logbeta,logb_p_mean,logb_p_sd,true);
     //ans -= dnorm(logsigobs,Type(0.0),Type(2.0),true);
     //ans -= dnorm(logsiga,Type(0.0),Type(2.0),true);
