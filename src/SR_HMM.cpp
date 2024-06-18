@@ -148,6 +148,7 @@ Type objective_function<Type>::operator() ()
 {
 
   DATA_VECTOR(yt);
+  DATA_UPDATE(yt);
   DATA_VECTOR(st);
   DATA_SCALAR(alpha_u); //upper bound for a
   DATA_SCALAR(alpha_l); //lower bound for a

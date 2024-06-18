@@ -17,7 +17,8 @@ ricker_rw_TMB(
   siga_p_sd = 1,
   sigb_p_sd = 0.3,
   logb_p_mean = -12,
-  logb_p_sd = 3
+  logb_p_sd = 3,
+  AICc_type = c("conditional", "marginal")[1]
 )
 }
 \arguments{
@@ -50,6 +51,8 @@ adjustment implemented. Default is 0, jacobian adjustment not included.}
 \item{logb_p_mean}{mean for prior on log b, default is -12.}
 
 \item{logb_p_sd}{sd for prior on log b, default is 3.}
+
+\item{AICc_type}{"conditional" (Thorson 2024) or "marginal"}
 }
 \value{
 a list containing several model outputs:

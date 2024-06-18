@@ -182,6 +182,7 @@ ricker_TMB <- function(data,  silent = FALSE, control = TMBcontrol(),
 #' @param logb_p_sd sd for prior on log b, default is 3.
 #' @param logb_p_mean mean for prior on log b, default is -12.
 #' @param logb_p_sd sd for prior on log b, default is 3.
+#' @param AICc_type "conditional" (Thorson 2024) or "marginal"
 #' 
 #' @details Priors: Weakly informative priors are included for the main parameterst of the model:
 #' alpha ~ gamma(3,1)
@@ -219,7 +220,8 @@ ricker_TMB <- function(data,  silent = FALSE, control = TMBcontrol(),
 #' 
 ricker_rw_TMB <- function(data, tv.par=c('a','b','both'), silent = FALSE, 
   control = TMBcontrol(), ini_param=NULL, tmb_map = list(), priors_flag=1, stan_flag=0,
-  sig_p_sd=1, siga_p_sd=1, sigb_p_sd=.3, logb_p_mean=-12,logb_p_sd=3) {
+  sig_p_sd=1, siga_p_sd=1, sigb_p_sd=.3, logb_p_mean=-12,logb_p_sd=3,
+  AICc_type=c("conditional", "marginal")[1]) {
 
   #===================================
   #prepare TMB input and options
