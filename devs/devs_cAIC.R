@@ -10,7 +10,7 @@
 devtools::document()
 devtools::load_all()
 
-source("devs/calculate_EDF.R")
+#source("devs/calculate_EDF.R")
 library(TMB)
 #fit my TMB version
 data(harck)
@@ -74,6 +74,17 @@ myEDF10 = calculate_EDF( obj=ptva$tmb_obj,
                       data_name = "obs_logRS",
                       nonvariance_fixed_effects=my_nonvariance_fixed_effects,
                       refit = "full")
+
+p <- ricker_TMB(data=harck,priors_flag=0)
+myEDF00 = calculate_EDF( obj=p$tmb_obj,
+                      opt=p$model,
+                      prediction_name = "pred_logRS",
+                      data_name = "obs_logRS",
+                      nonvariance_fixed_effects=c("alpha","logbeta"),
+                      refit = "full")
+
+
+length(p$model$par)
 
 mymAIC = 2*ptva$model$obj + 2*length(ptva$model$par)
 mycAIC = -2*sum(ptva$tmb_obj$report()$ll) + 2*myEDF10

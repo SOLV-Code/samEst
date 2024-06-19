@@ -266,10 +266,12 @@ ricker_rw_TMB <- function(data, tv.par=c('a','b','both'), silent = FALSE,
 
     lowlimit <- c(0.01,-20,log(0.01),log(0.01))
     hightlimit <- c(20,-4,log(2),log(2))
+    
+    nonvariance_fixed_effects<-c("alphao","logbeta")
 
-   clss <- "Ricker_tva"
-   npar <- 4
-   npar_all <- 4+(length(data$S)-1)
+    clss <- "Ricker_tva"
+    npar <- 4
+    npar_all <- 4+(length(data$S)-1)
 
   }else if(tv.par=="b"){
 
@@ -302,6 +304,8 @@ ricker_rw_TMB <- function(data, tv.par=c('a','b','both'), silent = FALSE,
 
     lowlimit <- c(-20,0.01,log(0.01),log(0.01))
     hightlimit <- c(-4,20,log(2),log(2))
+
+    nonvariance_fixed_effects<-c("alpha","logbetao")
 
     clss <- "Ricker_tvlogb"
     npar <- 4
@@ -342,6 +346,8 @@ ricker_rw_TMB <- function(data, tv.par=c('a','b','both'), silent = FALSE,
     lowlimit <- c(-20,0.01,log(0.0),log(0.01),log(0.01))
     hightlimit <- c(-4,20,log(2),log(2),log(2))
     
+    nonvariance_fixed_effects<-c("alphao","logbetao")
+
     clss <- "Ricker_tva_tvb"
     npar <- 5
     npar_all <- 5+(length(data$S)-1)*2
@@ -365,18 +371,31 @@ ricker_rw_TMB <- function(data, tv.par=c('a','b','both'), silent = FALSE,
   
   sd_report <- TMB::sdreport(tmb_obj)
   conv <- get_convergence_diagnostics(sd_report)
-
-  nll <- tmb_obj$fn()[1]
-  renll <- tmb_obj$report()$renll
-  allnll<- nll + renll
   
-  AICc  <- 2*nll + 2*npar +(2*npar*(npar+1)/(nrow(data)-npar-1))
-  AICc_fullll  <- 2*allnll + 2*npar +(2*npar*(npar+1)/(nrow(data)-npar-1))
-  AICc_allparam  <- 2*nll + 2*npar_all +(2*npar_all*(npar_all+1)/(nrow(data)-npar_all-1))
-  BIC  <- 2*nll + npar*log(nrow(data))
-  BIC_fullll  <- 2*allnll + npar*log(nrow(data))
-  BIC_allparam  <- 2*nll + npar_all*log(nrow(data))
+  if(AICc_type=="conditional"){
 
+    myEDF = calculate_EDF( obj=tmb_obj,
+                      opt=tmb_opt,
+                      prediction_name = "pred_logRS",
+                      data_name = "obs_logRS",
+                      nonvariance_fixed_effects=nonvariance_fixed_effects,
+                      refit = "full")
+    AICc = -2*sum(tmb_obj$report()$ll) + 2*myEDF +(2*myEDF*(myEDF+1)/(nrow(data)-myEDF-1))
+    BIC  <- 2*sum(tmb_obj$report()$ll) + myEDF*log(nrow(data))
+  
+  }else if(AICc_type== "marginal"){
+    nll <- tmb_obj$fn()[1]
+    renll <- tmb_obj$report()$renll
+    allnll<- nll + renll
+    AICc  <- 2*nll + 2*npar +(2*npar*(npar+1)/(nrow(data)-npar-1))
+    AICc_fullll  <- 2*allnll + 2*npar +(2*npar*(npar+1)/(nrow(data)-npar-1))
+    AICc_allparam  <- 2*nll + 2*npar_all +(2*npar_all*(npar_all+1)/(nrow(data)-npar_all-1))
+    BIC  <- 2*nll + npar*log(nrow(data))
+    BIC_fullll  <- 2*allnll + npar*log(nrow(data))
+    BIC_allparam  <- 2*nll + npar_all*log(nrow(data)) 
+  }
+  
+  
   #todo add alpha, beta and sigma parameter esitimates
   structure(list(
     alpha    = tmb_obj$report()$alpha,
@@ -399,10 +418,18 @@ ricker_rw_TMB <- function(data, tv.par=c('a','b','both'), silent = FALSE,
     tmb_obj    = tmb_obj,
     AICc       = AICc,
     BIC        = BIC,
-    AICc_fullll=AICc_fullll,
-    AICc_allparam=AICc_allparam,
-    BIC_fullll =BIC_fullll,
-    BIC_allparam=BIC_allparam,
+    AICc_fullll= ifelse(AICc_type== "marginal",
+                       AICc_fullll,
+                       NA),
+    AICc_allparam = ifelse(AICc_type== "marginal",
+                       AICc_allparam,
+                       NA),
+    BIC_fullll = ifelse(AICc_type== "marginal",
+                       BIC_fullll,
+                       NA),
+    BIC_allparam = ifelse(AICc_type== "marginal",
+                       BIC_allparam,
+                       NA),
     residuals  = tmb_obj$report()$residuals,
     gradients  = conv$final_grads,
     bad_eig    = conv$bad_eig,

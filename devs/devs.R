@@ -93,8 +93,14 @@ sum(lfostatic)
 sum(lfoac)
 names(p)
 
+ptva<- ricker_rw_TMB(data=harck,tv.par="a",sig_p_sd=1,AICc_type="conditional")
+ptvamaic<- ricker_rw_TMB(data=harck,tv.par="a",sig_p_sd=1, AICc_type="marginal")
 
-ptva<- ricker_rw_TMB(data=harck,tv.par="a",sig_p_sd=1)
+data.frame(
+  value=c(p$AICc
+ptvamaic$AICc
+ptva$AICc), 
+
 ptva_ip<- ricker_rw_TMB(data=harck,tv.par="a",sig_p_sd=1,logb_p_mean=ip_logb_mean,logb_p_sd=ip_logb_sd)
 
 ptva[1:6]
