@@ -831,7 +831,6 @@ get_convergence_diagnostics <- function(sd_report) {
 #'
 #' @useDynLib Ricker_simple
 #' @useDynLib Ricker_autocorr
-#' @useDynLib Ricker_autocorr_residnll
 #' @useDynLib Ricker_tva
 #' @useDynLib SR_HMM
 #' @useDynLib Ricker_tvlogb
