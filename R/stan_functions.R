@@ -19,8 +19,17 @@ sr_mod<- function(type=c('static','rw','hmm'),ac=FALSE,par=c('n','a','b','both')
     if(lfo==FALSE){
       m="data{
   int<lower=1> N;//number of annual samples (time-series length)
-  vector[N] R_S; //log(recruits per spawner)
-  vector[N] S; //spawners in time T
+  array[N] real R_S; //log(recruits per spawner)
+  array[N] real S; //spawners in time T
+  real pSmax_mean; //prior mean for Smax
+  real pSmax_sig; //prior variance for Smax
+}
+transformed data{
+real logbeta_pr;
+real logbeta_pr_sig;
+
+logbeta_pr_sig=sqrt(log(1+((1/pSmax_sig)*(1/pSmax_sig))/((1/pSmax_mean)*(1/pSmax_mean)))); //this converts sigma on the untransformed scale to a log scale
+logbeta_pr=log(1/pSmax_mean)-0.5*logbeta_pr_sig*logbeta_pr_sig; //convert smax prior to per capita slope - transform to log scale with bias correction
 }
 parameters {
   real log_a;// initial productivity (on log scale)
@@ -31,28 +40,28 @@ parameters {
     
 }
 transformed parameters{
+  vector[N] mu;
+  vector[N] epsilon; //residuals
   real b;
     
   b = exp(log_b); //prevents b (density dependence) from being negative (ie. positive)
+  mu = log_a - S*b; //expectation through time
+  epsilon = R_S - mu; //residual productivity series
 }
 model{
   //priors
   log_a ~ normal(1.5,2.5); //intrinsic productivity - wide prior
-  log_b ~ normal(-12,3); //per capita capacity parameter - wide prior
+  log_b ~ normal(logbeta_pr,logbeta_pr_sig); //per capita capacity parameter - informed by spawner counts
   
   //variance terms
-  //target += normal_lpdf(sigma | 0, 1) - normal_lcdf(0 | 0, 1); //remove density below zero
-  sigma ~ normal(0,1); //half normal on variance (lower limit of zero)
+  sigma ~ normal(0.5,1); //half normal on variance (lower limit of zero)
 
-   R_S ~ normal(log_a - S*b, sigma);
+   R_S ~ normal(mu, sigma);
 }
 generated quantities{
- vector[N] log_lik;
  real S_max;
  real U_msy;
  real S_msy;
- 
- for(n in 1:N) log_lik[n] = normal_lpdf(R_S[n]|log_a - S[n]*b, sigma);
  
 S_max = 1/b;
 U_msy = 1-lambert_w0(exp(1-log_a));
@@ -63,11 +72,20 @@ S_msy = (1-lambert_w0(exp(1-log_a)))/b;
     if(lfo==TRUE){
       m ="data{
       int<lower=1> N;//number of annual samples (time-series length)
-      vector[N] R_S; //log(recruits per spawner)
-      vector[N] S; //spawners in time T
+      array[N] real R_S; //log(recruits per spawner)
+      array[N] real S; //spawners in time T
       real y_oos; //log(recruits per spawner)
       real x_oos; //spawners in time T
-     }
+      real pSmax_mean; //prior mean for Smax
+     real pSmax_sig; //prior variance for Smax
+}
+transformed data{
+real logbeta_pr;
+real logbeta_pr_sig;
+
+logbeta_pr_sig=sqrt(log(1+((1/pSmax_sig)*(1/pSmax_sig))/((1/pSmax_mean)*(1/pSmax_mean)))); //this converts sigma on the untransformed scale to a log scale
+logbeta_pr=log(1/pSmax_mean)-0.5*logbeta_pr_sig*logbeta_pr_sig; //convert smax prior to per capita slope - transform to log scale with bias correction
+}
     parameters {
       real log_a;// initial productivity (on log scale)
       real<upper = 0> log_b; // rate capacity - fixed in this
@@ -77,19 +95,23 @@ S_msy = (1-lambert_w0(exp(1-log_a)))/b;
     
     }
     transformed parameters{
-    	real b;
-    	
-    	b = exp(log_b); //prevents b (density dependence) from being negative (ie. positive)
+    vector[N] mu;
+    vector[N] epsilon; //residuals
+    real b;
+    
+    b = exp(log_b); //prevents b (density dependence) from being negative (ie. positive)
+    mu = log_a - S*b; //expectation through time
+    epsilon = R_S - mu; //residual productivity series
     }
     model{
       log_a ~ normal(1.5,2.5); //intrinsic productivity - wide prior
-      log_b ~ normal(-12,3); //per capita capacity parameter - wide prior
-      
+      log_b ~ normal(logbeta_pr,logbeta_pr_sig); //per capita capacity parameter - informed by spawner counts
+ 
       //variance terms
       
-       sigma ~ normal(0,1); //half normal on variance (lower limit of zero)  
+       sigma ~ normal(0.5,1); //half normal on variance (lower limit of zero)  
       
-      R_S ~ normal(log_a - S*b, sigma);
+      R_S ~ normal(mu, sigma);
     }
     generated quantities{
      real log_lik_oos;
@@ -104,13 +126,22 @@ S_msy = (1-lambert_w0(exp(1-log_a)))/b;
       m="data{
   int<lower=1> N;//number of annual samples
   int<lower=1> L;//number years in the data series(time-series length)
-  int ii[N];//index of years with data
-  vector[N] R_S; //log(recruits per spawner)
-  vector[N] S; //spawners in time T
+  array[N] int ii;//index of years with data
+  array[N] real R_S; //log(recruits per spawner)
+  array[N] real S; //spawners in time T
+  real pSmax_mean; //prior mean for Smax
+  real pSmax_sig; //prior variance for Smax
+}
+transformed data{
+real logbeta_pr;
+real logbeta_pr_sig;
+
+logbeta_pr_sig=sqrt(log(1+((1/pSmax_sig)*(1/pSmax_sig))/((1/pSmax_mean)*(1/pSmax_mean)))); //this converts sigma on the untransformed scale to a log scale
+logbeta_pr=log(1/pSmax_mean)-0.5*logbeta_pr_sig*logbeta_pr_sig; //convert smax prior to per capita slope - transform to log scale with bias correction
 }
 parameters{
   real log_a;// initial productivity (on log scale)
-  real log_b; // rate capacity - fixed in this
+  real<upper = 0> log_b; // rate capacity - fixed in this
 
   //variance components  
   real<lower = 0> sigma;
@@ -136,7 +167,7 @@ transformed parameters{
 model{
   //priors
   log_a ~ normal(1.5,2.5); //intrinsic productivity - wide prior
-  log_b ~ normal(-12,3); //per capita capacity parameter - wide prior
+  log_b ~ normal(logbeta_pr,logbeta_pr_sig); //per capita capacity parameter - wide prior
       
   //variance terms
   sigma ~ normal(0,1); //half normal on variance (lower limit of zero)
@@ -146,18 +177,14 @@ model{
   rho ~ uniform(-1,1);
   
   R_S[1] ~ normal(mu[1], sigma);
-  for(t in 2:N) R_S[t] ~ normal(mu[t], sigma_AR);
+  R_S[2:N] ~ normal(mu[2:N], sigma_AR);
   
 }
 generated quantities{
-  vector[N] log_lik;
   real S_max;
   real U_msy;
   real S_msy;
   
-  log_lik[1] = normal_lpdf(R_S[1]|mu[1], sigma);
-  for(n in 1:N) log_lik[n] = normal_lpdf(R_S[n]|mu[n], sigma_AR);
-   
   S_max = 1/b;
   U_msy = 1-lambert_w0(exp(1-log_a));
   S_msy = (1-lambert_w0(exp(1-log_a)))/b;
@@ -169,13 +196,21 @@ if(lfo==TRUE){
   m ="data{
   int<lower=1> N;//number of annual samples (time-series length)
   int<lower=1> L;//number years in the data series(time-series length)
-  int ii[N];//index of years with data
-  vector[N] R_S; //log(recruits per spawner)
-  vector[N] S; //spawners in time T
+   array[N] int ii;//index of years with data
+  array[N] real R_S; //log(recruits per spawner)
+  array[N] real S; //spawners in time T
   real y_oos; //log(recruits per spawner)
   real x_oos; //spawners in time T
+ real pSmax_mean; //prior mean for Smax
+  real pSmax_sig; //prior variance for Smax
+}
+transformed data{
+real logbeta_pr;
+real logbeta_pr_sig;
 
- }
+logbeta_pr_sig=sqrt(log(1+((1/pSmax_sig)*(1/pSmax_sig))/((1/pSmax_mean)*(1/pSmax_mean)))); //this converts sigma on the untransformed scale to a log scale
+logbeta_pr=log(1/pSmax_mean)-0.5*logbeta_pr_sig*logbeta_pr_sig; //convert smax prior to per capita slope - transform to log scale with bias correction
+}
 parameters{
   real log_a;// initial productivity (on log scale)
   real<upper=0> log_b; // rate capacity - fixed in this
@@ -205,8 +240,8 @@ sigma_AR = sigma*sqrt(1-rho^2);
 model{
   //priors
   log_a ~ normal(1.5,2.5); //intrinsic productivity - wide prior
-  log_b ~ normal(-12,3); //per capita capacity parameter - wide prior
-      
+  log_b ~ normal(logbeta_pr,logbeta_pr_sig); //per capita capacity parameter - informative
+       
   //variance terms
   sigma ~ normal(0,1); //half normal on variance (lower limit of zero)
   
@@ -231,9 +266,18 @@ if(type=='rw'&par=='a'){
     m="data{
   int<lower=1> N;//number of annual samples 
   int L; //years covered by time-series
-  int ii[N];//index of years with data
-  vector[N] R_S; //log(recruits per spawner)
-  vector[N] S; //spawners in time T
+  array[N] int ii;//index of years with data
+  array[N] real R_S; //log(recruits per spawner)
+  array[N] real S; //spawners in time T
+  real pSmax_mean; //prior mean for Smax
+  real pSmax_sig; //prior variance for Smax
+}
+transformed data{
+real logbeta_pr;
+real logbeta_pr_sig;
+
+logbeta_pr_sig=sqrt(log(1+((1/pSmax_sig)*(1/pSmax_sig))/((1/pSmax_mean)*(1/pSmax_mean)))); //this converts sigma on the untransformed scale to a log scale
+logbeta_pr=log(1/pSmax_mean)-0.5*logbeta_pr_sig*logbeta_pr_sig; //convert smax prior to per capita slope - transform to log scale with bias correction
 }
 parameters{
   real log_a0;// initial productivity (on log scale)
@@ -262,8 +306,8 @@ transformed parameters{
 model{
   //priors
   log_a0 ~ normal(1.5,2.5); //initial productivity - wide prior
-  log_b ~ normal(-12,3); //per capita capacity parameter - wide prior
-  a_dev ~ std_normal(); //standardized (z-scales) deviances
+  log_b ~ normal(logbeta_pr,logbeta_pr_sig); //per capita capacity parameter - informative
+   a_dev ~ std_normal(); //standardized (z-scales) deviances
   
   //variance terms
   sigma ~ normal(0,1); //half normal on variance (lower limit of zero)
@@ -292,12 +336,21 @@ if(lfo==TRUE){
   m="data{
   int<lower=1> N;//number of annual samples
   int<lower=1> L;//number years in the data series(time-series length)
-  int ii[N];//index of years with data
-  vector[N] R_S; //log(recruits per spawner)
-  vector[N] S; //spawners in time T
+  array[N] int ii;//index of years with data
+  array[N] real R_S; //log(recruits per spawner)
+  array[N] real S; //spawners in time T
   real y_oos; //log(recruits per spawner)
   real x_oos; //spawners in time T
- }
+ real pSmax_mean; //prior mean for Smax
+  real pSmax_sig; //prior variance for Smax
+}
+transformed data{
+real logbeta_pr;
+real logbeta_pr_sig;
+
+logbeta_pr_sig=sqrt(log(1+((1/pSmax_sig)*(1/pSmax_sig))/((1/pSmax_mean)*(1/pSmax_mean)))); //this converts sigma on the untransformed scale to a log scale
+logbeta_pr=log(1/pSmax_mean)-0.5*logbeta_pr_sig*logbeta_pr_sig; //convert smax prior to per capita slope - transform to log scale with bias correction
+}
 parameters{
   real log_a0;// initial productivity (on log scale)
   real<upper = 0> log_b; // rate capacity - fixed in this
@@ -324,8 +377,8 @@ transformed parameters{
 model{
   //priors
   log_a0 ~ normal(1.5,2.5); //initial productivity - wide prior
-  log_b ~ normal(-12,3); //per capita capacity parameter - wide prior
-  a_dev ~ std_normal(); //standardized (z-scales) deviances
+  log_b ~ normal(logbeta_pr,logbeta_pr_sig); //per capita capacity parameter - informative
+    a_dev ~ std_normal(); //standardized (z-scales) deviances
   
   //variance terms
   sigma ~ normal(0,1); //half normal on variance (lower limit of zero)
@@ -356,9 +409,18 @@ if(type=='rw'&par=='b'){
     m="data{
   int<lower=1> N;//number of annual samples
   int<lower=1> L;//number years in the data series(time-series length)
-  int ii[N];//index of years with data
-  vector[N] R_S; //log(recruits per spawner)
-  vector[N] S; //spawners in time T
+    array[N] int ii;//index of years with data
+  array[N] real R_S; //log(recruits per spawner)
+  array[N] real S; //spawners in time T
+ real pSmax_mean; //prior mean for Smax
+  real pSmax_sig; //prior variance for Smax
+}
+transformed data{
+real logbeta_pr;
+real logbeta_pr_sig;
+
+logbeta_pr_sig=sqrt(log(1+((1/pSmax_sig)*(1/pSmax_sig))/((1/pSmax_mean)*(1/pSmax_mean)))); //this converts sigma on the untransformed scale to a log scale
+logbeta_pr=log(1/pSmax_mean)-0.5*logbeta_pr_sig*logbeta_pr_sig; //convert smax prior to per capita slope - transform to log scale with bias correction
 }
 parameters {
   real log_a;// initial productivity (on log scale) - fixed in this
@@ -387,11 +449,11 @@ transformed parameters{
 model{
   //priors
   log_a ~ normal(1.5,2.5); //productivity
-  b0 ~ normal(-12,3); //capacity
+  b0 ~  normal(logbeta_pr,logbeta_pr_sig); //per capita capacity parameter - informative
   
   //variance terms
   sigma ~ normal(0,1); //half normal on variance (lower limit of zero)
-  sigma_b ~ normal(0,1); //half normal on variance (lower limit of zero)
+  sigma_b ~ normal(0,logbeta_pr_sig); //half normal on variance (lower limit of zero)
   
    
   b_dev ~ std_normal();
@@ -417,12 +479,21 @@ if(lfo==TRUE){
   m="data{
   int<lower=1> N;//number of annual samples
   int<lower=1> L;//number years in the data series(time-series length)
-  int ii[N];//index of years with data
-  vector[N] R_S; //log(recruits per spawner)
-  vector[N] S; //spawners in time T
+  array[N] int ii;//index of years with data
+  array[N] real R_S; //log(recruits per spawner)
+  array[N] real S; //spawners in time T
   real y_oos; //log(recruits per spawner)
   real x_oos; //spawners in time T
- }
+ real pSmax_mean; //prior mean for Smax
+  real pSmax_sig; //prior variance for Smax
+}
+transformed data{
+real logbeta_pr;
+real logbeta_pr_sig;
+
+logbeta_pr_sig=sqrt(log(1+((1/pSmax_sig)*(1/pSmax_sig))/((1/pSmax_mean)*(1/pSmax_mean)))); //this converts sigma on the untransformed scale to a log scale
+logbeta_pr=log(1/pSmax_mean)-0.5*logbeta_pr_sig*logbeta_pr_sig; //convert smax prior to per capita slope - transform to log scale with bias correction
+}
 parameters {
   real log_a;// initial productivity (on log scale) - fixed in this
   real<upper = 0> b0; // rate capacity - fixed in this
@@ -450,11 +521,11 @@ transformed parameters{
 model{
   //priors
   log_a ~ normal(1.5,2.5); //productivity
-  b0 ~ normal(-12,3); //initial capacity
+  b0 ~ normal(logbeta_pr,logbeta_pr_sig); //initial capacity
   
   //variance terms
   sigma ~ normal(0,1); //half normal on variance (lower limit of zero)
-  sigma_b ~ normal(0,1); //half normal on variance (lower limit of zero)
+  sigma_b ~ normal(0,logbeta_pr_sig); //half normal on variance (lower limit of zero)
   
   b_dev ~ std_normal();
   
@@ -483,10 +554,19 @@ if(type=='rw'&par=='both'){
     m="data{
   int<lower=1> N;//number of annual samples (time-series length)
   int L; //total years covered by time-series
-  int ii[N];//index of years with data
-  vector[N] R_S; //log(recruits per spawner)
-  vector[N] S; //spawners in time T
- }
+   array[N] int ii;//index of years with data
+  array[N] real R_S; //log(recruits per spawner)
+  array[N] real S; //spawners in time T
+ real pSmax_mean; //prior mean for Smax
+  real pSmax_sig; //prior variance for Smax
+}
+transformed data{
+real logbeta_pr;
+real logbeta_pr_sig;
+
+logbeta_pr_sig=sqrt(log(1+((1/pSmax_sig)*(1/pSmax_sig))/((1/pSmax_mean)*(1/pSmax_mean)))); //this converts sigma on the untransformed scale to a log scale
+logbeta_pr=log(1/pSmax_mean)-0.5*logbeta_pr_sig*logbeta_pr_sig; //convert smax prior to per capita slope - transform to log scale with bias correction
+}
 parameters{
   real log_a0;// initial productivity (on log scale) - fixed in this
   real<upper=0> log_b0; // rate capacity - fixed in this
@@ -518,12 +598,12 @@ transformed parameters{
 model{
   //priors
   log_a0 ~ normal(1.5,2.5); //initial productivity
-  log_b0 ~ normal(-12,3); //initial capacity
+  log_b0 ~ normal(logbeta_pr,logbeta_pr_sig); //initial capacity
   
   //variance terms
   sigma ~ normal(0,1); //half normal on variance (lower limit of zero)
   sigma_a ~ normal(0,1); //half normal on variance (lower limit of zero)
-  sigma_b ~ normal(0,1); //half normal on variance (lower limit of zero)
+  sigma_b ~ normal(0,logbeta_pr_sig); //half normal on variance (lower limit of zero)
   
   
   a_dev ~ std_normal();
@@ -551,12 +631,21 @@ if(lfo==TRUE){
   m="data{
   int<lower=1> N;//number of annual samples (time-series length)
   int L; //total years covered by time-series
-  int ii[N];//index of years with data
-  vector[N] R_S; //log(recruits per spawner)
-  vector[N] S; //spawners in time T
+   array[N] int ii;//index of years with data
+  array[N] real R_S; //log(recruits per spawner)
+  array[N] real S; //spawners in time T
   real y_oos; //log(recruits per spawner)
   real x_oos; //spawners in time T
- }
+ real pSmax_mean; //prior mean for Smax
+  real pSmax_sig; //prior variance for Smax
+}
+transformed data{
+real logbeta_pr;
+real logbeta_pr_sig;
+
+logbeta_pr_sig=sqrt(log(1+((1/pSmax_sig)*(1/pSmax_sig))/((1/pSmax_mean)*(1/pSmax_mean)))); //this converts sigma on the untransformed scale to a log scale
+logbeta_pr=log(1/pSmax_mean)-0.5*logbeta_pr_sig*logbeta_pr_sig; //convert smax prior to per capita slope - transform to log scale with bias correction
+}
 parameters {
   real log_a0;// initial productivity (on log scale) - fixed in this
   real<upper=0> log_b0; // rate capacity - fixed in this
@@ -588,12 +677,12 @@ transformed parameters{
 model{
   //priors
   log_a0 ~ normal(1.5,2.5); //initial productivity
-  log_b0 ~ normal(-12,3); //initial capacity
+  log_b0 ~ normal(logbeta_pr,logbeta_pr_sig); //initial capacity
   
   //variance terms
   sigma ~ normal(0,1); //half normal on variance (lower limit of zero)
   sigma_a ~ normal(0,1); //half normal on variance (lower limit of zero)
-  sigma_b ~ normal(0,1); //half normal on variance (lower limit of zero)
+  sigma_b ~ normal(0,logbeta_pr_sig); //half normal on variance (lower limit of zero)
 
    
   a_dev ~ std_normal();
@@ -633,10 +722,11 @@ if(type=='hmm'&par=='a'){
 }
 data {
   int<lower=1> N;//number of annual samples (time-series length)
-  vector[N] R_S; //log(recruits per spawner)
-  vector[N] S; //spawners in time T
+   array[N] int ii;//index of years with data
+  array[N] real R_S; //log(recruits per spawner)
+  array[N] real S; //spawners in time T
   int<lower=1> K; //number of hidden regime states
-  vector[K] alpha_dirichlet; //prior inputs for dirichlet 
+  array[1] matrix[K,K] alpha_dirichlet; //prior inputs for dirichlet 
  }
 parameters {
   // Discrete state model
@@ -647,14 +737,21 @@ parameters {
   ordered[K] log_a; // max. productivity
   real log_b; // rate capacity - fixed in this
   real<lower=0> sigma; // observation standard deviations
+ real pSmax_mean; //prior mean for Smax
+  real pSmax_sig; //prior variance for Smax
+}
+transformed data{
+real logbeta_pr;
+real logbeta_pr_sig;
+
+logbeta_pr_sig=sqrt(log(1+((1/pSmax_sig)*(1/pSmax_sig))/((1/pSmax_mean)*(1/pSmax_mean)))); //this converts sigma on the untransformed scale to a log scale
+logbeta_pr=log(1/pSmax_mean)-0.5*logbeta_pr_sig*logbeta_pr_sig; //convert smax prior to per capita slope - transform to log scale with bias correction
 }
 
 transformed parameters {
   simplex[K] pi1; // initial state probabilities
   vector[K] logalpha[N];
   real b; //
-
-  pi1=rep_vector(1.0/K,K);
 
   b=exp(log_b);
 
@@ -678,12 +775,12 @@ transformed parameters {
 model{
 
   log_a ~ normal(1.5,2.5);
-  log_b ~ normal(-12,3);
-  
+  log_b ~ normal(logbeta_pr,logbeta_pr_sig);
+  pi1~ dirichlet(rep_vector(1,K));
   sigma ~ normal(0,1); //half normal on variance (lower limit of zero)
     
   for(k in 1:K){
-  A[k,] ~ dirichlet(alpha_dirichlet);
+  A[k,] ~ dirichlet(alpha_dirichlet[k,]);
   }
   
   target += log_sum_exp(logalpha[N]);
@@ -785,14 +882,23 @@ return x / sum(x);
 }
 data {
  int<lower=1> N;//number of annual samples (time-series length)
-  vector[N] R_S; //log(recruits per spawner)
-  vector[N] S; //spawners in time T
+   array[N] int ii;//index of years with data
+  array[N] real R_S; //log(recruits per spawner)
+  array[N] real S; //spawners in time T
   int<lower=1> K; //number of hidden regime states
-  vector[K] alpha_dirichlet; //prior inputs for dirichlet 
-  
+  array[1] matrix[K,K] alpha_dirichlet; //prior inputs for dirichlet 
   real y_oos; //log(recruits per spawner)
   real x_oos; //spawners in time T
- }
+ real pSmax_mean; //prior mean for Smax
+  real pSmax_sig; //prior variance for Smax
+}
+transformed data{
+real logbeta_pr;
+real logbeta_pr_sig;
+
+logbeta_pr_sig=sqrt(log(1+((1/pSmax_sig)*(1/pSmax_sig))/((1/pSmax_mean)*(1/pSmax_mean)))); //this converts sigma on the untransformed scale to a log scale
+logbeta_pr=log(1/pSmax_mean)-0.5*logbeta_pr_sig*logbeta_pr_sig; //convert smax prior to per capita slope - transform to log scale with bias correction
+}
 parameters {
 // Discrete state model
 simplex[K] A[K]; // transition probabilities
@@ -831,11 +937,11 @@ logalpha[t, j] = log_sum_exp(accumulator1);
 }
 model{
 log_a ~ normal(1.5,2.5);
-log_b ~ normal(-12,3);
+log_b ~ normal(logbeta_pr,logbeta_pr_sig);
 sigma ~ normal(0,1); //half normal on variance (lower limit of zero)
 
 for(k in 1:K){
-A[k,] ~ dirichlet(alpha_dirichlet);
+A[k,] ~ dirichlet(alpha_dirichlet[k,]);
 }
 
 target += log_sum_exp(logalpha[N]);
@@ -940,11 +1046,21 @@ return x / sum(x);
 }
 data {
  int<lower=1> N;//number of annual samples (time-series length)
-  vector[N] R_S; //log(recruits per spawner)
-  vector[N] S; //spawners in time T
+  array[N] int ii;//index of years with data
+  array[N] real R_S; //log(recruits per spawner)
+  array[N] real S; //spawners in time T
   int<lower=1> K; //number of hidden regime states
-  vector[K] alpha_dirichlet; //prior inputs for dirichlet 
- }
+  array[1] matrix[K,K] alpha_dirichlet; //prior inputs for dirichlet 
+ real pSmax_mean; //prior mean for Smax
+  real pSmax_sig; //prior variance for Smax
+}
+transformed data{
+real logbeta_pr;
+real logbeta_pr_sig;
+
+logbeta_pr_sig=sqrt(log(1+((1/pSmax_sig)*(1/pSmax_sig))/((1/pSmax_mean)*(1/pSmax_mean)))); //this converts sigma on the untransformed scale to a log scale
+logbeta_pr=log(1/pSmax_mean)-0.5*logbeta_pr_sig*logbeta_pr_sig; //convert smax prior to per capita slope - transform to log scale with bias correction
+}
 parameters {
 // Discrete state model
 simplex[K] A[K]; // transition probabilities
@@ -984,12 +1100,12 @@ logalpha[t, j] = log_sum_exp(accumulator);
 }
 model{
 log_a ~ normal(1.5,2.5);
-log_b ~ normal(-12,3);
+log_b ~ normal(logbeta_pr,logbeta_pr_sig);
 
 sigma ~ normal(0,1); //half normal on variance (lower limit of zero)
   
 for(k in 1:K){
-A[k,] ~ dirichlet(alpha_dirichlet);
+A[k,] ~ dirichlet(alpha_dirichlet[k,]);
 }
 
 target += log_sum_exp(logalpha[N]);
@@ -1090,13 +1206,23 @@ return x / sum(x);
 }
 data {
  int<lower=1> N;//number of annual samples (time-series length)
-  vector[N] R_S; //log(recruits per spawner)
-  vector[N] S; //spawners in time T
+   array[N] int ii;//index of years with data
+  array[N] real R_S; //log(recruits per spawner)
+  array[N] real S; //spawners in time T
   int<lower=1> K; //number of hidden regime states
-  vector[K] alpha_dirichlet; //prior inputs for dirichlet 
+  array[1] matrix[K,K] alpha_dirichlet; //prior inputs for dirichlet 
   real y_oos; //out of sample (1-year ahead) log(R/S)
   real x_oos; //spawners 1-year ahead
- }
+ real pSmax_mean; //prior mean for Smax
+  real pSmax_sig; //prior variance for Smax
+}
+transformed data{
+real logbeta_pr;
+real logbeta_pr_sig;
+
+logbeta_pr_sig=sqrt(log(1+((1/pSmax_sig)*(1/pSmax_sig))/((1/pSmax_mean)*(1/pSmax_mean)))); //this converts sigma on the untransformed scale to a log scale
+logbeta_pr=log(1/pSmax_mean)-0.5*logbeta_pr_sig*logbeta_pr_sig; //convert smax prior to per capita slope - transform to log scale with bias correction
+}
 parameters {
 // Discrete state model
 simplex[K] A[K]; // transition probabilities
@@ -1136,12 +1262,12 @@ logalpha[t, j] = log_sum_exp(accumulator);
 model{
 
 log_a ~ normal(1.5,2.5);
-log_b ~ normal(-12,3);
+log_b ~ normal(logbeta_pr,logbeta_pr_sig);
 
 sigma ~ normal(0,1); //half normal on variance (lower limit of zero)
 
 for(k in 1:K){
-A[k,] ~ dirichlet(alpha_dirichlet);
+A[k,] ~ dirichlet(alpha_dirichlet[k,]);
 }
 
 target += log_sum_exp(logalpha[N]);
@@ -1250,11 +1376,21 @@ if(type=='hmm'&par=='both'){
     }
     data {
       int<lower=1> N;//number of annual samples (time-series length)
-      vector[N] R_S; //log(recruits per spawner)
-      vector[N] S; //spawners in time T
-      int<lower=1> K; //number of hidden regime states
-      vector[K] alpha_dirichlet; //prior inputs for dirichlet 
-    }
+     array[N] int ii;//index of years with data
+  array[N] real R_S; //log(recruits per spawner)
+  array[N] real S; //spawners in time T
+  int<lower=1> K; //number of hidden regime states
+  array[1] matrix[K,K] alpha_dirichlet; //prior inputs for dirichlet 
+    real pSmax_mean; //prior mean for Smax
+  real pSmax_sig; //prior variance for Smax
+}
+transformed data{
+real logbeta_pr;
+real logbeta_pr_sig;
+
+logbeta_pr_sig=sqrt(log(1+((1/pSmax_sig)*(1/pSmax_sig))/((1/pSmax_mean)*(1/pSmax_mean)))); //this converts sigma on the untransformed scale to a log scale
+logbeta_pr=log(1/pSmax_mean)-0.5*logbeta_pr_sig*logbeta_pr_sig; //convert smax prior to per capita slope - transform to log scale with bias correction
+}
     parameters {
       // Discrete state model
       simplex[K] A[K]; // transition probabilities
@@ -1294,12 +1430,12 @@ if(type=='hmm'&par=='both'){
     model{
      
       log_a ~ normal(1.5,2.5);
-      log_b ~ normal(-12,3);
+      log_b ~ normal(logbeta_pr,logbeta_pr_sig);
 
       sigma ~ normal(0,1); //half normal on variance (lower limit of zero)
       
       for(k in 1:K){
-        A[k,] ~ dirichlet(alpha_dirichlet);
+        A[k,] ~ dirichlet(alpha_dirichlet[k,]);
       }
       
       target += log_sum_exp(logalpha[N]);
@@ -1402,13 +1538,23 @@ return x / sum(x);
 }
 data {
  int<lower=1> N;//number of annual samples (time-series length)
-  vector[N] R_S; //log(recruits per spawner)
-  vector[N] S; //spawners in time T
+   array[N] int ii;//index of years with data
+  array[N] real R_S; //log(recruits per spawner)
+  array[N] real S; //spawners in time T
   int<lower=1> K; //number of hidden regime states
-  vector[K] alpha_dirichlet; //prior inputs for dirichlet 
+  array[1] matrix[K,K] alpha_dirichlet; //prior inputs for dirichlet 
   real y_oos; //out of sample (1-year ahead) log(R/S)
   real x_oos; //spawners 1-year ahead
- }
+ real pSmax_mean; //prior mean for Smax
+  real pSmax_sig; //prior variance for Smax
+}
+transformed data{
+real logbeta_pr;
+real logbeta_pr_sig;
+
+logbeta_pr_sig=sqrt(log(1+((1/pSmax_sig)*(1/pSmax_sig))/((1/pSmax_mean)*(1/pSmax_mean)))); //this converts sigma on the untransformed scale to a log scale
+logbeta_pr=log(1/pSmax_mean)-0.5*logbeta_pr_sig*logbeta_pr_sig; //convert smax prior to per capita slope - transform to log scale with bias correction
+}
 parameters {
 // Discrete state model
 simplex[K] A[K]; // transition probabilities
@@ -1449,11 +1595,11 @@ logalpha[t, j] = log_sum_exp(accumulator);
 model{
 
 log_a ~ normal(1.5,2.5);
-log_b ~ normal(-12,3);
+log_b ~ normal(logbeta_pr,logbeta_pr_sig);
 sigma ~ normal(0,1); //half normal on variance (lower limit of zero)
 
 for(k in 1:K){
-A[k,] ~ dirichlet(alpha_dirichlet);
+A[k,] ~ dirichlet(alpha_dirichlet[k,]);
 }
 
 target += log_sum_exp(logalpha[N]);
