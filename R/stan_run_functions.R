@@ -52,8 +52,9 @@ compile_code<-function(type=c('static','rw','hmm'), ac=FALSE, par=c('n','a','b',
 
 #' Simple Ricker model estimated with stan
 #'
-#' @param data A list or data frame containing Spawners (S) and log(Recruits/Spawners) (logRS) time series. 
+#' @param data A list or data frame containing Spawners (S) and log(Recruits/Spawners) (logRS) time series.
 #' @param AC Logical. Are residuals autocorrelated? Default is FALSE
+#' @param smax_priors Options for custom Smax (capacity) priors - 2 values for the mean and the scale (variance). Defaults to mean = half maximum observed spawners, scale = max. observed spawners (from data) 
 #' @param control output of stancontrol
 #' @param warmup To be passed to rstan::sampling. A positive integer specifying the number of warmup (aka burnin) iterations per
 #'  chain. The default is 200.
@@ -84,7 +85,7 @@ compile_code<-function(type=c('static','rw','hmm'), ac=FALSE, par=c('n','a','b',
 #' data(harck)
 #' rickerstan(data=harck)
 #' 
-ricker_stan <- function(data,  AC=FALSE, control = stancontrol(), mod=NULL, warmup=300, chains = 6, iter = 1000,lambertW=FALSE,...) {
+ricker_stan <- function(data,  AC=FALSE, smax_priors=NULL, control = stancontrol(), mod=NULL, warmup=300, chains = 6, iter = 1000,lambertW=FALSE,...) {
  
 
  if(is.null(mod)){
@@ -99,13 +100,33 @@ ricker_stan <- function(data,  AC=FALSE, control = stancontrol(), mod=NULL, warm
                 L=max(data$by)-min(data$by)+1,
                 ii=seq_len(nrow(data)),
                 R_S =data$logRS,
-                S=data$S)
+                S=data$S,
+                pSmax_mean=max(data$S)/2,
+                pSmax_sig=max(data$S))
+    
+    if(is.null(smax_priors)==FALSE){
+      datm = list(N=nrow(data),
+                  L=max(data$by)-min(data$by)+1,
+                  ii=seq_len(nrow(data)),
+                  R_S =data$logRS,
+                  S=data$S,
+                  pSmax_mean=smax_priors[1],
+                  pSmax_sig=smax_priors[2])
+    }
+    
   }else{
     datm = list(N=nrow(data),
                 R_S =data$logRS,
-                S=data$S)
-  
-
+                S=data$S,
+                pSmax_mean=max(data$S)/2,
+                pSmax_sig=max(data$S))
+    if(is.null(smax_priors)==FALSE){
+      datm = list(N=nrow(data),
+                  R_S =data$logRS,
+                  S=data$S,
+                  pSmax_mean=smax_priors[1],
+                  pSmax_sig=smax_priors[2])
+    }
   }
   
   fit<-rstan::sampling(sm, data=datm,
@@ -182,7 +203,7 @@ ricker_stan <- function(data,  AC=FALSE, control = stancontrol(), mod=NULL, warm
 #' data(harck)
 #' ricker_rw_stan(data=harck)
 #' 
-ricker_rw_stan <- function(data, par=c('a','b','both'),  control = stancontrol(), mod=NULL,
+ricker_rw_stan <- function(data, par=c('a','b','both'),smax_priors=NULL,  control = stancontrol(), mod=NULL,
   warmup=300,  chains = 6, iter = 1000, lambertW=FALSE,...) {
   #par='b'
 
@@ -202,9 +223,23 @@ ricker_rw_stan <- function(data, par=c('a','b','both'),  control = stancontrol()
                                     L=max(data$by)-min(data$by)+1,
                                     ii=seq_along(data$logRS),
                                     R_S =data$logRS,
-                                    S=data$S),
+                                    S=data$S,
+                                    pSmax_mean=max(data$S)/2,
+                                    pSmax_sig=max(data$S)),
                         control = control, warmup = warmup, chains = chains, iter = iter,verbose=FALSE)
-  
+  if(is.null(smax_priors)==FALSE){
+    
+    fit <- rstan::sampling(sm, data = list(N=nrow(data),
+                                           L=max(data$by)-min(data$by)+1,
+                                           ii=seq_along(data$logRS),
+                                           R_S =data$logRS,
+                                           S=data$S,
+                                           pSmax_mean=smax_priors[1],
+                                           pSmax_sig=smax_priors[2]),
+                           control = control, warmup = warmup, chains = chains, iter = iter,verbose=FALSE)
+    
+    
+  }
   mc <- rstan::extract(fit, 
                 inc_warmup=FALSE, permuted=FALSE)
     
@@ -238,6 +273,7 @@ ricker_rw_stan <- function(data, par=c('a','b','both'),  control = stancontrol()
 #' @param data A list or data frame containing Spawners (S) and log(Recruits/Spawners) (logRS) time series. 
 #' @param par Which parameter should vary? Either productivity (intercept, a), capacity (slope, b) or both parameters
 #' @param k_regime number of regimes in the model, default is 2
+#' @param smax_priors Options for custom Smax (capacity) priors - 2 values for the mean and the scale (variance). Defaults to mean = half maximum observed spawners, scale = max. observed spawners (from data) 
 #' @param control output of stancontrol
 #' @param warmup To be passed to rstan::sampling. A positive integer specifying the number of warmup (aka burnin) iterations per
 #'  chain. The default is 200.
@@ -270,7 +306,7 @@ ricker_rw_stan <- function(data, par=c('a','b','both'),  control = stancontrol()
 #' data(harck)
 #' ricker_hmm_stan(data=harck)
 #' 
-ricker_hmm_stan <- function(data, par=c('a','b','both'), k_regime=2, dirichlet_prior=NULL,
+ricker_hmm_stan <- function(data, par=c('a','b','both'), k_regime=2, smax_priors=NULL, dirichlet_prior=NULL,
   control = stancontrol(), warmup=300,  chains = 6, iter = 1000, mod=NULL,
   lambertW=FALSE,...) {
   #par='both'
@@ -286,7 +322,7 @@ ricker_hmm_stan <- function(data, par=c('a','b','both'), k_regime=2, dirichlet_p
   #  sm <- sm_ext
   #}
   if(is.null(dirichlet_prior)){
-    dirichlet_prior<-matrix(1,nrow=k_regime,ncol=k_regime)
+    dirichlet_prior<-matrix(c(2,1,1,2),nrow=k_regime,ncol=k_regime)
   }else if(nrow(dirichlet_prior)!=k_regime |ncol(dirichlet_prior)!=k_regime){
     stop("dirichlet_prior should be a k_regime x k_regime matrix")
   }
@@ -297,10 +333,23 @@ ricker_hmm_stan <- function(data, par=c('a','b','both'), k_regime=2, dirichlet_p
                                     R_S =data$logRS,
                                     S=data$S,
                                     K=k_regime,
-                                    alpha_dirichlet=dirichlet_prior
-                                    ),
+                                    alpha_dirichlet=dirichlet_prior,
+                                    pSmax_mean=max(data$S)/2,
+                                    pSmax_sig=max(data$S)),
                         control = control, warmup = warmup, chains = chains, iter = iter,verbose=FALSE)
   
+  if(is.null(smax_priors)==FALSE){
+    fit <- rstan::sampling(sm, 
+                           data = list(N=nrow(data),
+                                       R_S =data$logRS,
+                                       S=data$S,
+                                       K=k_regime,
+                                       alpha_dirichlet=dirichlet_prior,
+                                       pSmax_mean=smax_priors[1],
+                                       pSmax_sig=smax_priors[2]),
+                           control = control, warmup = warmup, chains = chains, iter = iter,verbose=FALSE)
+    
+  }
 
   mc <- rstan::extract(fit, 
           inc_warmup=FALSE, permuted=FALSE)
