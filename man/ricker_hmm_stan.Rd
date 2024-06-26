@@ -8,6 +8,7 @@ ricker_hmm_stan(
   data,
   par = c("a", "b", "both"),
   k_regime = 2,
+  smax_priors = NULL,
   dirichlet_prior = NULL,
   control = stancontrol(),
   warmup = 300,
@@ -24,6 +25,8 @@ ricker_hmm_stan(
 \item{par}{Which parameter should vary? Either productivity (intercept, a), capacity (slope, b) or both parameters}
 
 \item{k_regime}{number of regimes in the model, default is 2}
+
+\item{smax_priors}{Options for custom Smax (capacity) priors - 2 values for the mean and the scale (variance). Defaults to mean = half maximum observed spawners, scale = max. observed spawners (from data)}
 
 \item{dirichlet_prior}{k_regime x k_regime matrix. Prior for transition probability matrix,
 if NULL prior is set to matrix(1,nrow=k_regime,ncol=k_regime)}

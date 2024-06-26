@@ -7,6 +7,7 @@
 ricker_rw_stan(
   data,
   par = c("a", "b", "both"),
+  smax_priors = NULL,
   control = stancontrol(),
   mod = NULL,
   warmup = 300,
