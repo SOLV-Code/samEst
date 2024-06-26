@@ -45,7 +45,7 @@ transformed parameters{
   real b;
     
   b = exp(log_b); //prevents b (density dependence) from being negative (ie. positive)
-  mu = log_a - S*b; //expectation through time
+  mu = log_a - b*S; //expectation through time
   epsilon = R_S - mu; //residual productivity series
 }
 model{
@@ -100,7 +100,7 @@ logbeta_pr=log(1/pSmax_mean)-0.5*logbeta_pr_sig*logbeta_pr_sig; //convert smax p
     real b;
     
     b = exp(log_b); //prevents b (density dependence) from being negative (ie. positive)
-    mu = log_a - S*b; //expectation through time
+    mu = log_a - b*S; //expectation through time
     epsilon = R_S - mu; //residual productivity series
     }
     model{
@@ -314,7 +314,7 @@ model{
   sigma_a ~ normal(0,1); //half normal on variance (lower limit of zero)
    
  
-  for(n in 1:N) R_S[n] ~ normal(log_a[ii[n]] - S[n]*b, sigma); 
+  for(n in 1:N) R_S[n] ~ normal(log_a[ii[n]] - b*S[n], sigma); 
   
 }
  generated quantities{
@@ -384,7 +384,7 @@ model{
   sigma ~ normal(0,1); //half normal on variance (lower limit of zero)
   sigma_a ~ normal(0,1); //half normal on variance (lower limit of zero)
    
-  for(n in 1:N) R_S[n] ~ normal(log_a[ii[n]] - S[n]*b, sigma);
+  for(n in 1:N) R_S[n] ~ normal(log_a[ii[n]] - b*S[n], sigma);
 }
   generated quantities{
   real log_a_3b;
