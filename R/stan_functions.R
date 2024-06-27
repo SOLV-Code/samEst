@@ -19,8 +19,8 @@ sr_mod<- function(type=c('static','rw','hmm'),ac=FALSE,par=c('n','a','b','both')
     if(lfo==FALSE){
       m="data{
   int<lower=1> N;//number of annual samples (time-series length)
-  array[N] real R_S; //log(recruits per spawner)
-  array[N] real S; //spawners in time T
+  vector[N] R_S; //log(recruits per spawner)
+  vector[N] S; //spawners in time T
   real pSmax_mean; //prior mean for Smax
   real pSmax_sig; //prior variance for Smax
 }
@@ -72,9 +72,8 @@ S_msy = (1-lambert_w0(exp(1-log_a)))/b;
     if(lfo==TRUE){
       m ="data{
       int<lower=1> N;//number of annual samples (time-series length)
-      array[N] real R_S; //log(recruits per spawner)
-      array[N] real S; //spawners in time T
-      real y_oos; //log(recruits per spawner)
+     vector[N] R_S; //log(recruits per spawner)
+     vector[N] S; //spawners in time T   real y_oos; //log(recruits per spawner)
       real x_oos; //spawners in time T
       real pSmax_mean; //prior mean for Smax
      real pSmax_sig; //prior variance for Smax
@@ -126,9 +125,9 @@ logbeta_pr=log(1/pSmax_mean)-0.5*logbeta_pr_sig*logbeta_pr_sig; //convert smax p
       m="data{
   int<lower=1> N;//number of annual samples
   int<lower=1> L;//number years in the data series(time-series length)
-  array[N] int ii;//index of years with data
-  array[N] real R_S; //log(recruits per spawner)
-  array[N] real S; //spawners in time T
+  vector[N] ii;//index of years with data
+  vector[N] R_S; //log(recruits per spawner)
+  vector[N] S; //spawners in time T
   real pSmax_mean; //prior mean for Smax
   real pSmax_sig; //prior variance for Smax
 }
@@ -196,9 +195,9 @@ if(lfo==TRUE){
   m ="data{
   int<lower=1> N;//number of annual samples (time-series length)
   int<lower=1> L;//number years in the data series(time-series length)
-   array[N] int ii;//index of years with data
-  array[N] real R_S; //log(recruits per spawner)
-  array[N] real S; //spawners in time T
+  vector[N] ii;//index of years with data
+  vector[N] R_S; //log(recruits per spawner)
+  vector[N] S; //spawners in time T
   real y_oos; //log(recruits per spawner)
   real x_oos; //spawners in time T
  real pSmax_mean; //prior mean for Smax
@@ -267,8 +266,8 @@ if(type=='rw'&par=='a'){
   int<lower=1> N;//number of annual samples 
   int L; //years covered by time-series
   array[N] int ii;//index of years with data
-  array[N] real R_S; //log(recruits per spawner)
-  array[N] real S; //spawners in time T
+  vector[N] R_S; //log(recruits per spawner)
+  vector[N] S; //spawners in time T
   real pSmax_mean; //prior mean for Smax
   real pSmax_sig; //prior variance for Smax
 }
@@ -337,8 +336,8 @@ if(lfo==TRUE){
   int<lower=1> N;//number of annual samples
   int<lower=1> L;//number years in the data series(time-series length)
   array[N] int ii;//index of years with data
-  array[N] real R_S; //log(recruits per spawner)
-  array[N] real S; //spawners in time T
+  vector[N] R_S; //log(recruits per spawner)
+  vector[N] S; //spawners in time T
   real y_oos; //log(recruits per spawner)
   real x_oos; //spawners in time T
  real pSmax_mean; //prior mean for Smax
@@ -409,9 +408,9 @@ if(type=='rw'&par=='b'){
     m="data{
   int<lower=1> N;//number of annual samples
   int<lower=1> L;//number years in the data series(time-series length)
-    array[N] int ii;//index of years with data
-  array[N] real R_S; //log(recruits per spawner)
-  array[N] real S; //spawners in time T
+  array[N] int ii;//index of years with data
+  vector[N] R_S; //log(recruits per spawner)
+  vector[N] S; //spawners in time T
  real pSmax_mean; //prior mean for Smax
   real pSmax_sig; //prior variance for Smax
 }
@@ -480,8 +479,8 @@ if(lfo==TRUE){
   int<lower=1> N;//number of annual samples
   int<lower=1> L;//number years in the data series(time-series length)
   array[N] int ii;//index of years with data
-  array[N] real R_S; //log(recruits per spawner)
-  array[N] real S; //spawners in time T
+  vector[N] R_S; //log(recruits per spawner)
+  vector[N] S; //spawners in time T
   real y_oos; //log(recruits per spawner)
   real x_oos; //spawners in time T
  real pSmax_mean; //prior mean for Smax
@@ -554,9 +553,9 @@ if(type=='rw'&par=='both'){
     m="data{
   int<lower=1> N;//number of annual samples (time-series length)
   int L; //total years covered by time-series
-   array[N] int ii;//index of years with data
-  array[N] real R_S; //log(recruits per spawner)
-  array[N] real S; //spawners in time T
+  array[N] int ii;//index of years with data
+  vector[N] R_S; //log(recruits per spawner)
+  vector[N] S; //spawners in time T
  real pSmax_mean; //prior mean for Smax
   real pSmax_sig; //prior variance for Smax
 }
@@ -631,9 +630,9 @@ if(lfo==TRUE){
   m="data{
   int<lower=1> N;//number of annual samples (time-series length)
   int L; //total years covered by time-series
-   array[N] int ii;//index of years with data
-  array[N] real R_S; //log(recruits per spawner)
-  array[N] real S; //spawners in time T
+  array[N] int ii;//index of years with data
+  vector[N] R_S; //log(recruits per spawner)
+  vector[N] S; //spawners in time T
   real y_oos; //log(recruits per spawner)
   real x_oos; //spawners in time T
  real pSmax_mean; //prior mean for Smax
@@ -722,22 +721,12 @@ if(type=='hmm'&par=='a'){
 }
 data {
   int<lower=1> N;//number of annual samples (time-series length)
-   array[N] int ii;//index of years with data
-  array[N] real R_S; //log(recruits per spawner)
-  array[N] real S; //spawners in time T
+  array[N] int ii;//index of years with data
+  vector[N] R_S; //log(recruits per spawner)
+  vector[N] S; //spawners in time T
   int<lower=1> K; //number of hidden regime states
-  array[1] matrix[K,K] alpha_dirichlet; //prior inputs for dirichlet 
- }
-parameters {
-  // Discrete state model
-  simplex[K] A[K]; // transition probabilities
-
-  // A[i][j] = p(z_t = j | z_{t-1} = i)
-  // Continuous observation model
-  ordered[K] log_a; // max. productivity
-  real log_b; // rate capacity - fixed in this
-  real<lower=0> sigma; // observation standard deviations
- real pSmax_mean; //prior mean for Smax
+  matrix[K,K] alpha_dirichlet; //prior inputs for dirichlet 
+  real pSmax_mean; //prior mean for Smax
   real pSmax_sig; //prior variance for Smax
 }
 transformed data{
@@ -747,7 +736,16 @@ real logbeta_pr_sig;
 logbeta_pr_sig=sqrt(log(1+((1/pSmax_sig)*(1/pSmax_sig))/((1/pSmax_mean)*(1/pSmax_mean)))); //this converts sigma on the untransformed scale to a log scale
 logbeta_pr=log(1/pSmax_mean)-0.5*logbeta_pr_sig*logbeta_pr_sig; //convert smax prior to per capita slope - transform to log scale with bias correction
 }
+parameters {
+  // Discrete state model
+  simplex[K] A[K]; // transition probabilities
 
+  // A[i][j] = p(z_t = j | z_{t-1} = i)
+  // Continuous observation model
+  ordered[K] log_a; // max. productivity
+  real log_b; // rate capacity - fixed in this
+  real<lower=0> sigma; // observation standard deviations
+}
 transformed parameters {
   simplex[K] pi1; // initial state probabilities
   vector[K] logalpha[N];
@@ -882,11 +880,11 @@ return x / sum(x);
 }
 data {
  int<lower=1> N;//number of annual samples (time-series length)
-   array[N] int ii;//index of years with data
-  array[N] real R_S; //log(recruits per spawner)
-  array[N] real S; //spawners in time T
+ array[N] int ii;//index of years with data
+ vector[N] R_S; //log(recruits per spawner)
+ vector[N] S; //spawners in time T
   int<lower=1> K; //number of hidden regime states
-  array[1] matrix[K,K] alpha_dirichlet; //prior inputs for dirichlet 
+ matrix[K,K] alpha_dirichlet; //prior inputs for dirichlet 
   real y_oos; //log(recruits per spawner)
   real x_oos; //spawners in time T
  real pSmax_mean; //prior mean for Smax
@@ -1047,10 +1045,10 @@ return x / sum(x);
 data {
  int<lower=1> N;//number of annual samples (time-series length)
   array[N] int ii;//index of years with data
-  array[N] real R_S; //log(recruits per spawner)
-  array[N] real S; //spawners in time T
+ vector[N] R_S; //log(recruits per spawner)
+ vector[N] S; //spawners in time T
   int<lower=1> K; //number of hidden regime states
-  array[1] matrix[K,K] alpha_dirichlet; //prior inputs for dirichlet 
+ matrix[K,K] alpha_dirichlet; //prior inputs for dirichlet 
  real pSmax_mean; //prior mean for Smax
   real pSmax_sig; //prior variance for Smax
 }
@@ -1207,10 +1205,10 @@ return x / sum(x);
 data {
  int<lower=1> N;//number of annual samples (time-series length)
    array[N] int ii;//index of years with data
-  array[N] real R_S; //log(recruits per spawner)
-  array[N] real S; //spawners in time T
+  vector[N] R_S; //log(recruits per spawner)
+  vector[N] S; //spawners in time T
   int<lower=1> K; //number of hidden regime states
-  array[1] matrix[K,K] alpha_dirichlet; //prior inputs for dirichlet 
+ matrix[K,K] alpha_dirichlet; //prior inputs for dirichlet 
   real y_oos; //out of sample (1-year ahead) log(R/S)
   real x_oos; //spawners 1-year ahead
  real pSmax_mean; //prior mean for Smax
@@ -1376,11 +1374,11 @@ if(type=='hmm'&par=='both'){
     }
     data {
       int<lower=1> N;//number of annual samples (time-series length)
-     array[N] int ii;//index of years with data
-  array[N] real R_S; //log(recruits per spawner)
-  array[N] real S; //spawners in time T
+   array[N] int ii;//index of years with data
+  vector[N] R_S; //log(recruits per spawner)
+  vector[N] S; //spawners in time T
   int<lower=1> K; //number of hidden regime states
-  array[1] matrix[K,K] alpha_dirichlet; //prior inputs for dirichlet 
+  matrix[K,K] alpha_dirichlet; //prior inputs for dirichlet 
     real pSmax_mean; //prior mean for Smax
   real pSmax_sig; //prior variance for Smax
 }
@@ -1538,11 +1536,11 @@ return x / sum(x);
 }
 data {
  int<lower=1> N;//number of annual samples (time-series length)
-   array[N] int ii;//index of years with data
-  array[N] real R_S; //log(recruits per spawner)
-  array[N] real S; //spawners in time T
+  array[N] int ii;//index of years with data
+  vector[N] R_S; //log(recruits per spawner)
+  vector[N] S; //spawners in time T
   int<lower=1> K; //number of hidden regime states
-  array[1] matrix[K,K] alpha_dirichlet; //prior inputs for dirichlet 
+  matrix[K,K] alpha_dirichlet; //prior inputs for dirichlet 
   real y_oos; //out of sample (1-year ahead) log(R/S)
   real x_oos; //spawners 1-year ahead
  real pSmax_mean; //prior mean for Smax
