@@ -1,56 +1,3 @@
-
-
-
-
-
-
-#' compile stan models
-#'
-#' @param data A list or data frame containing Spawners (S) and log(Recruits/Spawners) (logRS) time series. 
-#' @param AC Logical. Are residuals autocorrelated? Default is FALSE
-#' @param control output of stancontrol
-#' @param warmup To be passed to rstan::sampling. A positive integer specifying the number of warmup (aka burnin) iterations per
-#'  chain. The default is 200.
-#' @param chains To be passed to rstan::sampling. A positive integer specifying the number of Markov chains. The default is 6.
-#' @param iter To be passed to rstan::sampling. A positive integer specifying the number of iterations for each chain 
-#' (including warmup). The default is 1000.
-#' @param lambertW Logical, indicating if lambertW functions should be used in stan code, requires git installation from stan
-#' @param ... Anything else that would be passed to rstan::sampling
-#' 
-#' 
-#' @returns a list containing the 
-#' * alpha - median estimates for the alpha parameter vector
-#' * beta - median estimates for the beta parameter 
-#' * sigobs - median estimates for the observation error sigma         
-#' * stanfit - a stanfit model object
-#' * mcmcsummary - summary over kept samples
-#' * c_mcmcsummary - chain specific summary 
-#' * list of samples
-#' 
-#' 
-#' @importFrom rstan stan extract summary 
-#' 
-#' 
-#' @export
-#' 
-#' @examples
-#' data(harck)
-#' rickerstan(data=harck)
-#' 
-compile_code<-function(type=c('static','rw','hmm'), ac=FALSE, par=c('n','a','b','both'),lambertW=FALSE) {
-   
-  if(lambertW==FALSE){
-    sm <- sr_mod2(type=type, ac=ac, par=par, lfo=FALSE, modelcode=TRUE)
-    }
-  if(lambertW==TRUE){
-    sm <- sr_mod(type=type, ac=ac, par=par, lfo=FALSE, modelcode=TRUE)
-  }
-  
-   mod <- rstan::stan_model(model_name="stanmod",model_code=sm)
-   
-   return(mod)
-}
-
 #' Simple Ricker model estimated with stan
 #'
 #' @param data A list or data frame containing Spawners (S) and log(Recruits/Spawners) (logRS) time series.
@@ -62,7 +9,6 @@ compile_code<-function(type=c('static','rw','hmm'), ac=FALSE, par=c('n','a','b',
 #' @param chains To be passed to rstan::sampling. A positive integer specifying the number of Markov chains. The default is 6.
 #' @param iter To be passed to rstan::sampling. A positive integer specifying the number of iterations for each chain 
 #' (including warmup). The default is 1000.
-#' @param lambertW Logical, indicating if lambertW functions should be used in stan code, requires git installation from stan
 #' 
 #' @param ... Anything else that would be passed to rstan::sampling
 #' 
@@ -86,15 +32,9 @@ compile_code<-function(type=c('static','rw','hmm'), ac=FALSE, par=c('n','a','b',
 #' data(harck)
 #' rickerstan(data=harck)
 #' 
-ricker_stan <- function(data,  AC=FALSE, smax_priors=NULL, control = stancontrol(), mod=NULL, warmup=300, chains = 6, iter = 1000,lambertW=FALSE,...) {
+ricker_stan <- function(data,  AC=FALSE, smax_priors=NULL, control = stancontrol(), mod=NULL, warmup=300, chains = 6, iter = 1000,...) {
  
-
- if(is.null(mod)){
-   sm <- compile_code(type='static',ac=AC,par='n',lambertW=lambertW)
-  }else{
-   sm <-mod
-  }
-  
+   sm=samEst::sr_mod(type='static',ac=AC,par='n')
 
   if(AC){
     datm = list(N=nrow(data),
@@ -137,30 +77,27 @@ ricker_stan <- function(data,  AC=FALSE, smax_priors=NULL, control = stancontrol
   #                      data = datm,
   #                      control = control, warmup = warmup, chains = chains, iter = iter)
   #
-  
-  mc <- rstan::extract(fit, 
-                inc_warmup=FALSE, permuted=FALSE)
-    
+  if(AC==FALSE){
+    mc <- rstan::extract(fit,pars=c('log_a','S_max','U_msy','S_msy','sigma'),
+                         inc_warmup=FALSE, permuted=FALSE)
+  }
+  if(AC==TRUE){
+    mc <- rstan::extract(fit,pars=c('log_a','S_max','U_msy','S_msy','sigma','rho'),
+                         inc_warmup=FALSE, permuted=FALSE)
+  }
     
   aa <- rstan::summary(fit)
   
-  ans<-list(alpha=aa$summary["log_a","50%"],
-   beta=aa$summary["b","50%"],
-   Smax=aa$summary["S_max","50%"],
-   sigobs=aa$summary["sigma","50%"], 
-   #Smsy=aa$summary["S_msy","50%"],
-   #umsy=aa$summary["U_msy","50%"],
-   stanfit=fit, 
-   mcmcsummary=aa$summary,
-   c_mcmcsummary=aa$c_summary, 
-   samples=mc ) 
-
-  if(lambertW){
-    ans$Smsy=aa$summary["S_msy","50%"]
-    ans$umsy=aa$summary["U_msy","50%"]
-  }
-
-  return(ans )
+  ans<-list(alpha=c(aa$summary["log_a","50%"],aa$summary["log_a","sd"],aa$summary["log_a","2.5%"],aa$summary["log_a","97.5%"]),
+   beta=c(aa$summary["b","50%"],aa$summary["b","sd"],aa$summary["b","2.5%"],aa$summary["b","97.5%"]),
+   Smax=c(aa$summary["'S_max'","50%"],aa$summary["'S_max'","sd"],aa$summary["'S_max'","2.5%"],aa$summary["'S_max'","97.5%"]),
+   Smsy=c(aa$summary["'S_msy'","50%"],aa$summary["'S_msy'","sd"],aa$summary["'S_msy'","2.5%"],aa$summary["'S_msy'","97.5%"]),
+   Umsy=c(aa$summary["'U_msy'","50%"],aa$summary["'U_msy'","sd"],aa$summary["'U_msy'","2.5%"],aa$summary["'U_msy'","97.5%"]),
+   sigma=c(aa$summary["'sigma'","50%"],aa$summary["'sigma'","sd"],aa$summary["'sigma'","2.5%"],aa$summary["'sigma'","97.5%"]),
+   summary=fit,
+   samples=mc) 
+  
+  return(ans)
 
 }
 
@@ -416,6 +353,22 @@ ricker_hmm_stan <- function(data, par=c('a','b','both'), k_regime=2, smax_priors
 stancontrol <- function(adapt_delta = 0.99,  ...) {
   list(adapt_delta = 0.99, ...)
 }
+
+#' Prior predictive check 
+#'
+#' Any arguments to pass to [rstan::sampling].
+#'
+#' @param fit A model fit in rstan from e.g. ricker_stan, ricker_rw_stan, ricker_hmm_stan
+#'
+#' @export
+post_check<- function(fit,data){
+  yrep=rstan::extract(fit,pars='y_rep')
+  
+  
+  
+}
+
+
 
 #' Posterior predictive check 
 #'
