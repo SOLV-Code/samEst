@@ -18,7 +18,8 @@ ricker_rw_TMB(
   sigb_p_sd = 0.3,
   logb_p_mean = -12,
   logb_p_sd = 3,
-  AICc_type = c("conditional", "marginal")[1]
+  AICc_type = c("conditional", "marginal")[1],
+  deltaEDF = 0.01
 )
 }
 \arguments{

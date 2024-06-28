@@ -25,9 +25,9 @@
 calculate_EDF <- function( obj,
           opt,
           nonvariance_fixed_effects = "",
-          prediction_name = "yhat_t",
+          prediction_name = "pred_logRS",
           data_name = "obs_logRS",
-          delta = 0.01,
+          delta = 0.1,
           show_progress = FALSE,
           refit = c("random", "full")[1],
           what = c("EDF","grad_i")[1] ){

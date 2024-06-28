@@ -14,7 +14,23 @@ devtools::load_all()
 library(TMB)
 #fit my TMB version
 data(harck)
+p <- ricker_TMB(data=harck,sig_p_sd=1,priors_flag=0)
 ptva<- ricker_rw_TMB(data=harck,tv.par="a",sig_p_sd=1,priors_flag=0)
+ptvb<- ricker_rw_TMB(data=harck,tv.par="b",sig_p_sd=1,priors_flag=0)
+
+ptvap<- ricker_rw_TMB(data=harck,tv.par="a",sig_p_sd=1,priors_flag=1)
+ptvbp<- ricker_rw_TMB(data=harck,tv.par="b",sig_p_sd=1,priors_flag=1)
+
+
+p$AICc
+ptva$AICc
+ptvb$AICc
+ptvap$AICc
+ptvbp$AICc
+
+
+
+
 ptva$tmb_obj$fn()[1]
 ptva$tmb_obj$report()$nll
 ptva$tmb_obj$report()$renll
@@ -414,3 +430,53 @@ pl <- as.list(sdr, "Est")
 plsd <- as.list(sdr, "Std")
 
 
+#======================================
+
+
+#test with simulated data
+
+simdat<-readRDS("C:/Users/worc/Documents/timevar/simest-tv/outs/SamSimOutputs/simData/stationary/stationary/stationary_fixedER_CUsrDat.RData")$srDatout
+
+u=1
+
+dat <- simdat[simdat$iteration==u,]
+dat <- dat[dat$year>(max(dat$year)-46),]
+dat <- dat[!is.na(dat$obsRecruits),]
+df <- data.frame(by=dat$year,
+                  S=dat$obsSpawners,
+                  R=dat$obsRecruits,
+                  logRS=log(dat$obsRecruits/dat$obsSpawners))
+
+Smax_mean<-(max(df$S)*.5)
+Smax_sd<-Smax_mean
+ 
+logbeta_pr_sig=sqrt(log(1+((1/ Smax_sd)*(1/ Smax_sd))/((1/Smax_mean)*(1/Smax_mean))))
+logbeta_pr=log(1/(Smax_mean))-0.5*logbeta_pr_sig^2
+  
+
+ 
+p0 <- ricker_TMB(data=df,priors_flag=0)
+ptva0 <- ricker_rw_TMB(data=df,tv.par='a',priors_flag=0)
+ptvb0 <- ricker_rw_TMB(data=df,tv.par='b',priors_flag=0)
+
+
+p0$AICc
+ptva0$AICc
+ptvb0$AICc
+ 
+p <- ricker_TMB(data=df,logb_p_mean=logbeta_pr,logb_p_sd=logbeta_pr_sig)
+ptva <- ricker_rw_TMB(data=df,tv.par='a',logb_p_mean=logbeta_pr,logb_p_sd=logbeta_pr_sig)
+ptvb <- ricker_rw_TMB(data=df, tv.par='b',sigb_p_sd=1,logb_p_mean=logbeta_pr,logb_p_sd=logbeta_pr_sig)
+
+ptvb$model$convergence
+ptvb$conv_problem
+ 
+
+
+ptvb0$model$convergence
+ptvb0$conv_problem
+ 
+
+p$AICc
+ptva$AICc
+ptvb$AICc

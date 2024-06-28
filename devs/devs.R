@@ -194,7 +194,10 @@ phmmb <- ricker_hmm_TMB(data=harck, tv.par='b')
 phmm <- ricker_hmm_TMB(data=harck, tv.par='both')
 
 
+phmma$tmb_obj$report()$nll+
+phmma$tmb_obj$report()$pnll
 
+phmma$tmb_obj$fn()
 
 c(
 p$AICc,

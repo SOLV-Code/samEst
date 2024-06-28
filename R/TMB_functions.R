@@ -124,7 +124,7 @@ ricker_TMB <- function(data,  silent = FALSE, control = TMBcontrol(),
   sd_report <- TMB::sdreport(tmb_obj)
   conv <- get_convergence_diagnostics(sd_report)
 
-  nll <- tmb_obj$fn()[1]
+  nll <- tmb_obj$report()$nll #tmb_obj$fn()[1]
   npar <- length(tmb_params)
  
   AICc  <- 2*nll + 2*npar +(2*npar*(npar+1)/(nrow(data)-npar-1))
@@ -221,7 +221,7 @@ ricker_TMB <- function(data,  silent = FALSE, control = TMBcontrol(),
 ricker_rw_TMB <- function(data, tv.par=c('a','b','both'), silent = FALSE, 
   control = TMBcontrol(), ini_param=NULL, tmb_map = list(), priors_flag=1, stan_flag=0,
   sig_p_sd=1, siga_p_sd=1, sigb_p_sd=.3, logb_p_mean=-12,logb_p_sd=3,
-  AICc_type=c("conditional", "marginal")[1]) {
+  AICc_type=c("conditional", "marginal")[1], deltaEDF=0.01) {
 
   #===================================
   #prepare TMB input and options
@@ -378,10 +378,15 @@ ricker_rw_TMB <- function(data, tv.par=c('a','b','both'), silent = FALSE,
                       opt=tmb_opt,
                       prediction_name = "pred_logRS",
                       data_name = "obs_logRS",
+                      delta = deltaEDF,
                       nonvariance_fixed_effects=nonvariance_fixed_effects,
                       refit = "full")
-    AICc = -2*sum(tmb_obj$report()$ll) + 2*myEDF +(2*myEDF*(myEDF+1)/(nrow(data)-myEDF-1))
-    BIC  <- 2*sum(tmb_obj$report()$ll) + myEDF*log(nrow(data))
+    
+    pennll<-  tmb_obj$report()$nll+tmb_obj$report()$pnll
+    AICc = 2*pennll + 2*myEDF +(2*myEDF*(myEDF+1)/(nrow(data)-myEDF-1))
+    BIC  <- 2*pennll + myEDF*log(nrow(data))
+
+
   
   }else if(AICc_type== "marginal"){
     nll <- tmb_obj$fn()[1]
@@ -416,6 +421,7 @@ ricker_rw_TMB <- function(data, tv.par=c('a','b','both'), silent = FALSE,
     tmb_map    = tmb_map,
     tmb_random = tmb_random,
     tmb_obj    = tmb_obj,
+    EDF      = myEDF,
     AICc       = AICc,
     BIC        = BIC,
     AICc_fullll= ifelse(AICc_type== "marginal",
@@ -633,7 +639,7 @@ ricker_hmm_TMB <- function(data,
   conv <- get_convergence_diagnostics(sd_report)
   
   npar <- length(unlist(tmb_params))
-  nll <- tmb_obj$fn()[1]
+  nll <- tmb_obj$report()$nll#tmb_obj$fn()[1]
   
  
   AICc  <- 2*nll + 2*npar +(2*npar*(npar+1)/(nrow(data)-npar-1))
