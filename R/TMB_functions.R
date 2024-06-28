@@ -220,8 +220,8 @@ ricker_TMB <- function(data,  silent = FALSE, control = TMBcontrol(),
 #' 
 ricker_rw_TMB <- function(data, tv.par=c('a','b','both'), silent = FALSE, 
   control = TMBcontrol(), ini_param=NULL, tmb_map = list(), priors_flag=1, stan_flag=0,
-  sig_p_sd=1, siga_p_sd=1, sigb_p_sd=.3, logb_p_mean=-12,logb_p_sd=3,
-  AICc_type=c("conditional", "marginal")[1], deltaEDF=0.01) {
+  sig_p_sd=1, siga_p_sd=1, sigb_p_sd=.3, logb_p_mean=-12, logb_p_sd=3,
+  AICc_type=c("conditional", "marginal")[1], deltaEDF=0.0001) {
 
   #===================================
   #prepare TMB input and options
@@ -252,7 +252,7 @@ ricker_rw_TMB <- function(data, tv.par=c('a','b','both'), silent = FALSE,
                                    log(-initlm$coefficients[[2]])),
                    logsigobs = log(.5),
                    logsiga = log(.5),
-                   alpha = rep(1,length(tmb_data$obs_S)))
+                   alpha = rep(initlm$coefficients[[1]],length(tmb_data$obs_S)))
     }else{
       tmb_params <-ini_param
     }

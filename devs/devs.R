@@ -168,7 +168,9 @@ sum(lfohmmb$regime_average)
 phmmb <- ricker_hmm_TMB(data=harck, tv.par='b')
 phmmb[1:5]
 
-
+ptva$EDF
+ptvb$EDF
+ptvab$EDF
 
 
 #stan functions
@@ -333,5 +335,27 @@ obj$report()$Smax
 
 pl <- as.list(sdr, "Est")
 plsd <- as.list(sdr, "Std")
+
+
+
+p<-ricker_TMB(data=df,logb_p_mean=logbeta_pr,logb_p_sd=logbeta_pr_sig)
+
+ptva <- ricker_rw_TMB(data=df,tv.par='a',logb_p_mean=logbeta_pr,
+    logb_p_sd=logbeta_pr_sig, deltaEDF=0.01)
+
+ptvb <- ricker_rw_TMB(data=df, tv.par='b',sigb_p_sd=1,
+  logb_p_mean=logbeta_pr,logb_p_sd=logbeta_pr_sig, deltaEDF=0.01)
+
+
+
+p$AICc
+ptva$AICc
+ptvb$AICc
+
+ptva$EDF
+ptvb$EDF
+
+
+
 
 
