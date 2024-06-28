@@ -38,9 +38,7 @@
 #' rickerstan(data=harck)
 #' 
 compile_code<-function(type=c('static','rw','hmm'), ac=FALSE, par=c('n','a','b','both'),lambertW=FALSE) {
-  rstan::rstan_options(auto_write = TRUE)
-  options(mc.cores = parallel::detectCores())
-  
+   
   if(lambertW==FALSE){
     sm <- sr_mod2(type=type, ac=ac, par=par, lfo=FALSE, modelcode=TRUE)
     }
@@ -419,5 +417,16 @@ stancontrol <- function(adapt_delta = 0.99,  ...) {
   list(adapt_delta = 0.99, ...)
 }
 
-
-
+#' Posterior predictive check 
+#'
+#' Any arguments to pass to [rstan::sampling].
+#'
+#' @param fit A model fit in rstan from e.g. ricker_stan, ricker_rw_stan, ricker_hmm_stan
+#'
+#' @export
+post_check<- function(fit,data){
+  yrep=rstan::extract(fit,pars='y_rep')
+  
+  
+  
+}
