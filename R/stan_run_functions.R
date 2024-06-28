@@ -38,6 +38,9 @@
 #' rickerstan(data=harck)
 #' 
 compile_code<-function(type=c('static','rw','hmm'), ac=FALSE, par=c('n','a','b','both'),lambertW=FALSE) {
+  rstan::rstan_options(auto_write = TRUE)
+  options(mc.cores = parallel::detectCores())
+  
   if(lambertW==FALSE){
     sm <- sr_mod2(type=type, ac=ac, par=par, lfo=FALSE, modelcode=TRUE)
     }
@@ -46,7 +49,7 @@ compile_code<-function(type=c('static','rw','hmm'), ac=FALSE, par=c('n','a','b',
   }
   
    mod <- rstan::stan_model(model_name="stanmod",model_code=sm)
-
+   
    return(mod)
 }
 
@@ -390,8 +393,6 @@ ricker_hmm_stan <- function(data, par=c('a','b','both'), k_regime=2, smax_priors
     ans$umsy=ifelse(par=="a"|par=="both",list(aa$summary[grep("U_msy\\[",row.names(aa$summary)),"50%"]),aa$summary["U_msy","50%"])[[1]]
    
   }
-
-
 
    return(ans)
 

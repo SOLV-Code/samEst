@@ -15,7 +15,7 @@
 
 sr_plot=function(df,mod,title,make.pdf=FALSE,path,type=c('static','rw','hmm'),par=c('a','b','both'),form=c('stan','tmb'),ac=FALSE,sr_only=FALSE){
   if(type=='static'){ #static====
-    x_new=seq(min(df$S),max(df$S),length.out=200)
+    x_new=seq(0,max(df$S),length.out=200)
 
     if(form=='stan'){
       post=rstan::extract(mod)
