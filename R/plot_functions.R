@@ -651,7 +651,7 @@ post_check<- function(fit,data){
   
   cols=RColorBrewer::brewer.pal(n=7,'Blues')
   
-  par(mfrow=c(1,2))
+  par(mfrow=c(2,2))
   
   hist(data$logRS,main='',xaxt='n',breaks=30,freq=T,xlab='',ylab='Counts of observations in time-series',col=adjustcolor('darkred',alpha.f=0.6),border='white',xlim=c(min(yrep_RS),max(yrep_RS)),xaxt='n')
   text('empirical obs.',x=par('usr')[2]-((par('usr')[2]-par('usr')[1])*0.2),y=par('usr')[4]-((par('usr')[4]-par('usr')[3])*0.1),col=adjustcolor('darkred',alpha.f=0.6))
@@ -676,6 +676,16 @@ post_check<- function(fit,data){
   ticksat <- as.vector(sapply(pow, function(p) (1:10)*10^p))
   axis(1, log10(ticksat), col="black", labels=NA,
        tcl=-0.2, lwd=0, lwd.ticks=1)
+  
+  smaxs=rstan::extract(fit$summary,pars=c('prior_Smax','S_max'))
+  dens_sm_prior=density(smaxs$prior_Smax,bw=0.05)
+  dens_sm_post=density(smaxs$S_max,bw=0.05)
+  plot(dens_sm_prior$y~c(dens_sm_prior$x/1e3),type='l',col='darkorange',ylab='probability density',xlab='spawners (1000s)',xlim=c(0,max(c(smaxs[[1]]/1e3,smaxs[[2]]/1e3))))
+  lines(dens_sm_post$y~c(dens_sm_post$x/1e3),col='navy')
+  text('Smax prior',x=par('usr')[2]-((par('usr')[2]-par('usr')[1])*0.2),y=par('usr')[4]-((par('usr')[4]-par('usr')[3])*0.1),col='darkorange')
+  text('Smax posterior',x=par('usr')[2]-((par('usr')[2]-par('usr')[1])*0.2),y=par('usr')[4]-((par('usr')[4]-par('usr')[3])*0.2),col='navy')
+  
+  
 }
 
 sr_plot2=function(df,mod,title,make.pdf=FALSE,path,type=c('static','rw','hmm'),par=c('a','b','both'),form=c('stan','tmb'),ac=FALSE,sr_only=FALSE){
