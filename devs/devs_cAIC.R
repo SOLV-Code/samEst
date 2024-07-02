@@ -21,13 +21,17 @@ ptvb<- ricker_rw_TMB(data=harck,tv.par="b",sig_p_sd=1,priors_flag=0)
 ptvap<- ricker_rw_TMB(data=harck,tv.par="a",sig_p_sd=1,priors_flag=1)
 ptvbp<- ricker_rw_TMB(data=harck,tv.par="b",sig_p_sd=1,priors_flag=1)
 
+ptvam<- ricker_rw_TMB(data=harck,tv.par="a",sig_p_sd=1,priors_flag=1,
+ AICc_type="marginal")
 
 p$AICc
 ptva$AICc
+ptva$EDF
+
 ptvb$AICc
 ptvap$AICc
 ptvbp$AICc
-
+ptvam$AICc
 
 
 
@@ -115,321 +119,6 @@ comp<-data.frame(my=c(mymAIC,mycAIC), th=c(mAIC10,cAIC10), type=c("marginal","co
 comp$diff=comp$my-comp$th
 
 
-#remotes::install_git('https://github.com/Pacific-salmon-assess/samEst', force=TRUE)
-#library(samEst)
-
-#read in data 
-#use Harrison as an example
-
-
-#sr <- read.csv("C:/Users/worc/Documents/timevarproject/simeval/data/samsimHarCk/HARSR.csv")
-
-#head(sr)
-
-
-#har<-data.frame(by=sr$Brood.Year,
-#	S=sr$Sum.Total.Spawners,
-#	R=sr$AEQ_Recruitment..age.2.5.,
-#	logRS=log(sr$AEQ_Recruitment..age.2.5./sr$Sum.Total.Spawners))
-
-
-#harck<-har[!is.na(har$S),]
-
-#setwd("C:\\Users\\worc\\Documents\\timevarproject\\samEst\\data")
-#usethis::use_data(harck)
-#library(samEst)
-data(harck)
-plot(harck$S,harck$R)
-
-
-##testing functions
-
-p <- ricker_TMB(data=harck)
-p$Smax
-p$alpha
-
-fullLL<-ricker_kf_TMB(data=harck,fullLL=TRUE)
-reLL<-ricker_kf_TMB(data=harck)
-
-fullLL$tmb_obj$fn()
-reLL$tmb_obj$fn()
-
-2*fullLL$tmb_obj$fn()+2*3
-
-2*reLL$tmb_obj$fn()+2*3
-
-pkf<-ricker_TMB(data=harck, AC=TRUE)
-
-
-ip_logb_mean<-log(1/(max(harck$S)*.5))
-ip_logb_sd<-sqrt(log(1+1))
-
-p_ip <- ricker_TMB(data=harck,logb_p_mean=ip_logb_mean,logb_p_sd=ip_logb_sd)
-p_ip$Smax
-p_ip$alpha
-
-simple_mod <- samEst::compile_code(type='static', ac=FALSE, par='n',lambertW = FALSE)
-b <- ricker_stan(data=harck,iter = 800, mod=simple_mod)
-
-pnp <- ricker_TMB(data=harck,prior=0)
-
-pb <- ricker_stan(data=harck,iter = 2000)
-
-mymod <- compile_code(type='static',ac=TRUE,par='n',caphigh=FALSE)
-pb2 <- ricker_stan(data=harck,iter = 2000,AC=TRUE, mod = mymod)
-
-names(pb)
-p$alpha
-pb$alpha
-
-p$beta
-pb$beta
-
-
-pac<-ricker_TMB(data=harck, AC=TRUE)
-pac[1:10]
-
-lfostatic<-tmb_mod_lfo_cv(data=harck,model='static')
-lfoac <- tmb_mod_lfo_cv(data=harck,model='staticAC')
-
-
-sum(lfostatic)
-sum(lfoac)
-names(p)
-
-
-ptva<- ricker_rw_TMB(data=harck,tv.par="a",sig_p_sd=1)
-ptva_ip<- ricker_rw_TMB(data=harck,tv.par="a",sig_p_sd=1,logb_p_mean=ip_logb_mean,logb_p_sd=ip_logb_sd)
-
-ptva[1:6]
-ptva_ip[1:6]
-pac$tmb_obj$report()$nll
-
-pkfa<- ricker_kf_TMB(data=harck)
-pkfa[1:6]
-
-pkfa2<- ricker_kf_TMB(data=harck,fullLL=T)
-pkfa2[1:6]
-
-lfoalpha <- tmb_mod_lfo_cv(data=harck,tv.par='a', siglfo="obs")
-sum(lfoalpha$lastparam)
-sum(lfoalpha$last3paramavg)
-sum(lfoalpha$last5paramavg)
-
-
-phmm <- ricker_hmm_TMB(data=harck, tv.par='both')
-phmm[1:10]
-
-dirpr<-matrix(c(4,1,1,4),2,2)
-phmm_dirpr <- ricker_hmm_TMB(data=harck, tv.par='both',dirichlet_prior=dirpr)
-phmm_dirpr[1:10]
-
-
-pbhmm <- ricker_hmm_stan(data, par='b')
-
-
-
-phmmb <- ricker_hmm_TMB(data=harck, tv.par='b')
-phmmb[1:8]
-
-
-ptvb <- ricker_rw_TMB(data=harck,tv.par="b")
-
-ptvab <- ricker_rw_TMB(data=harck,tv.par="both")
-
-
-
-lfohmm <- tmb_mod_lfo_cv(data=harck,tv.par='HMM')
-
-sum(lfohmm$regime_pick,na.rm=T)
-sum(lfohmm$regime_average)
-
-
-phmma <- ricker_hmm_TMB(data=harck, tv.par='a')
-
-phmma <- ricker_hmm_TMB(data=harck, tv.par='a')
-
-
-phmma[1:5]
-
-lfohmma <- tmb_mod_lfo_cv(data=harck,tv.par='HMM_a')
-
-sum(lfohmma$regime_pick)
-sum(lfohmma$regime_average)
-
-lfohmmb <- tmb_mod_lfo_cv(data=harck,tv.par='HMM_b')
-
-sum(lfohmmb$regime_pick,na.rm=T)
-sum(lfohmmb$regime_average)
-
-
-phmmb <- ricker_hmm_TMB(data=harck, tv.par='b')
-phmmb[1:5]
-
-
-
-
-#stan functions
-
-#lfo tmb testing
-lfostatic<-tmb_mod_lfo_cv(data=harck,model='static', L=round((2/3)*nrow(harck)))
-lfoac <- tmb_mod_lfo_cv(data=harck,model='staticAC', L=round((2/3)*nrow(harck)))
-lfoalpha <- tmb_mod_lfo_cv(data=harck,model='rw_a', siglfo="obs", L=round((2/3)*nrow(harck)))
-lfobeta <- tmb_mod_lfo_cv(data=harck,model='rw_b', siglfo="obs", L=round((2/3)*nrow(harck)))
-lfoalphabeta <- tmb_mod_lfo_cv(data=harck,model='rw_both', siglfo="obs", L=round((2/3)*nrow(harck)))
-lfohmma <- tmb_mod_lfo_cv(data=harck,model='HMM_a', L=round((2/3)*nrow(harck)))
-lfohmmb <- tmb_mod_lfo_cv(data=harck,model='HMM_b', L=round((2/3)*nrow(harck)))
-lfohmm <- tmb_mod_lfo_cv(data=harck,model='HMM', L=round((2/3)*nrow(harck)))
-
-
-p <- ricker_TMB(data=harck)
-pac<-ricker_TMB(data=harck, AC=TRUE)
-ptva<- ricker_rw_TMB(data=harck,tv.par="a")
-ptvb <- ricker_rw_TMB(data=harck,tv.par="b",sig_p_sd=1)
-ptvab <- ricker_rw_TMB(data=harck,tv.par="both",sig_p_sd=.5)
-phmma <- ricker_hmm_TMB(data=harck, tv.par='a')
-phmmb <- ricker_hmm_TMB(data=harck, tv.par='b')
-phmm <- ricker_hmm_TMB(data=harck, tv.par='both')
-
-
-
-
-c(
-p$AICc,
-pac$AICc,
-ptva$AICc,
-ptvb$AICc, 
-ptvab$AICc,
-phmma$AICc,
-phmmb$AICc,
-phmm$AICc)
-
-c(
-p$BIC,
-pac$BIC,
-ptva$BIC,
-ptvb$BIC, 
-ptvab$BIC,
-phmma$BIC,
-phmmb$BIC,
-phmm$BIC)
-
-
-
-
-#=====================================================
-#RTMB
-
-
-devtools::document()
-devtools::load_all()
-#library(RTMB)
-
-
-p <- ricker_TMB(data=harck)
-p2 <- ricker_RTMB(data=harck)
-
-p$alpha
-p2$logalpha
-
-pac <- ricker_TMB(data=harck,AC=TRUE,priors_flag=0)
-pac$rho
-pac$alpha
-pac$beta
-pac$Smax
-pac$tmb_obj$fn()
-names(pac)
-
-devtools::document()
-devtools::load_all()
-pac2 <- ricker_RTMB(data=harck,AC=TRUE,priors_flag=0)
-pac2$rho
-pac2$logalpha
-pac2$beta
-pac2$Smax
-pac2$sigAR
-
-pac2$obj$fn()
-
-
-data=harck
-dat<- list(
-    obs_S = as.numeric(data$S),
-    obs_logRS = data$logRS,
-    by = data$by,
-    priors_flag=1,
-    stan_flag=0,
-    sig_p_sd=1,
-    logb_p_mean=-12,
-    logb_p_sd=3
-  )
-  
-
-  magS <- log10_ceiling(max(data$S))
-  initlm <- lm(obs_logRS~obs_S, data=dat)
-
- 
-param <- list(
-    logalpha   = initlm$coefficients[[1]],
-    logbeta = ifelse(initlm$coefficients[[2]]>0,log(magS),log(-initlm$coefficients[[2]])),
-    logsigobs = log(1),
-    ar1_phi=3.0)
-
-
-library(RTMB)
-ricker_ac_RTMB_fn(param,dat)
-
-
-tmbfn<-function(param){ricker_ac_RTMB_fn(param,dat=dat)}
-obj <- MakeADFun(tmbfn, param, silent=TRUE)
-
-
-opt <- nlminb(obj$par, obj$fn, obj$gr)
-
-sdr <- sdreport(obj)
-
-
-p$alpha
-obj$report()$logalpha
-
-p$Smax
-obj$report()$Smax
-
-
-
- final_grads <- sdr$gradient.fixed
-  bad_eig <- FALSE
-  conv_problem<-FALSE
-  if (!is.null(sdr$pdHess)) {
-    if (!sdr$pdHess) {
-      warning("The model may not have converged: ",
-        "non-positive-definite Hessian matrix.", call. = FALSE)
-      conv_problem<-TRUE
-    } else {
-      eigval <- try(1 / eigen(sdr$cov.fixed)$values, silent = TRUE)
-      if (is(eigval, "try-error") || (min(eigval) < .Machine$double.eps * 10)) {
-        warning("The model may not have converged: ",
-          "extreme or very small eigen values detected.", call. = FALSE)
-        bad_eig <- TRUE
-        conv_problem<-TRUE
-      }
-      if (any(final_grads > 0.01)){
-        warning("The model may not have converged. ",
-          "Maximum final gradient: ", max(final_grads), ".", call. = FALSE)
-        conv_problem<-TRUE
-
-
-
-(Smsy <- (1 - gsl::lambert_W0(exp(1 - p$alpha))) /p$beta)
-(Smsy2 <- (1 - samest_lambertW(exp(1 - p$alpha))) /p$beta)
-
-
-
-
-pl <- as.list(sdr, "Est")
-plsd <- as.list(sdr, "Std")
-
-
 #======================================
 
 
@@ -452,11 +141,180 @@ Smax_sd<-Smax_mean
  
 logbeta_pr_sig=sqrt(log(1+((1/ Smax_sd)*(1/ Smax_sd))/((1/Smax_mean)*(1/Smax_mean))))
 logbeta_pr=log(1/(Smax_mean))-0.5*logbeta_pr_sig^2
+
+
+#options
+silent = FALSE 
+control = TMBcontrol()
+ini_param=NULL
+tmb_map = list()
+priors_flag=1
+stan_flag=0
+sig_p_sd=1
+siga_p_sd=1
+sigb_p_sd=.3
+logb_p_mean=logbeta_pr
+logb_p_sd=logbeta_pr_sig
   
+AICc_type=c("conditional", "marginal")[1]
+deltaEDF=0.0001
+
+tmb_data <- list(
+    obs_S = df$S,
+    obs_logRS = df$logRS,
+    priors_flag=priors_flag,
+    stan_flag=stan_flag,
+    sig_p_sd=sig_p_sd,
+    logb_p_mean=logb_p_mean,
+    logb_p_sd=logb_p_sd
+  )
+
+  
+magS <- log10_ceiling(max(df$S))
+initlm<-lm(logRS~S, data=df)
+  
+tmb_data$siga_p_sd=siga_p_sd
+
+
+tmb_params <- list(alphao   = initlm$coefficients[[1]],
+                   logbeta = ifelse(initlm$coefficients[[2]]>0,
+                                   log(1/magS),
+                                   log(-initlm$coefficients[[2]])),
+                   logsigobs = log(.5),
+                   logsiga = log(.5),
+                   alpha = rep(initlm$coefficients[[1]],length(tmb_data$obs_S)))
+    
+tmb_random <- "alpha"
+tmb_obj <- TMB::MakeADFun(data = tmb_data, 
+                              parameters = tmb_params, 
+                              map = tmb_map,
+                              random = tmb_random, 
+                              DLL = "Ricker_tva", 
+                              silent = silent)
+
+lowlimit <- c(0.01,-20,log(0.01),log(0.01))
+hightlimit <- c(20,-4,log(2),log(2))
+    
+nonvariance_fixed_effects<-c("alphao","logbeta")
+
+clss <- "Ricker_tva"
+npar <- 4
+npar_all <- 4+(length(df$S)-1)
+
+  
+ 
+
+#===================================
+# TMB fit
+#===================================
+
+tmb_opt <- stats::nlminb(
+    start = tmb_obj$par, 
+    objective = tmb_obj$fn, 
+    gradient = tmb_obj$gr,
+    control = control,
+    lower = lowlimit, 
+    upper = hightlimit)
+
+grads_nstp<-matrix(NA, ncol=4,nrow=20)
+myEDF<- rep(NA,20)
+mypars<-matrix(NA, ncol=4,nrow=20)
+  
+sd_report <- TMB::sdreport(tmb_obj)
+conv <- get_convergence_diagnostics(sd_report)
+grads_nstp[1,]<-conv$final_grads
+mypars[1,] <-tmb_opt$par
+fittoedf = list( "Opt"=tmb_opt,
+              "SD" = sd_report,
+              "Obj"=tmb_obj,
+              "nonvariance_fixed_effects"=nonvariance_fixed_effects )
+
+  
+myEDF[1] = calculate_EDF( obj=fittoedf$Obj,
+                      opt=fittoedf$Opt,
+                      prediction_name = "pred_logRS",
+                      data_name = "obs_logRS",
+                      delta = deltaEDF,
+                      nonvariance_fixed_effects=fittoedf$nonvariance_fixed_effects,
+                      refit = "full")
+
+
+
+#newton steps
+for(i in seq_len(19)){
+  g = as.numeric( tmb_obj$gr(tmb_opt$par) )
+  h = optimHess(tmb_opt$par, fn=tmb_obj$fn, gr=tmb_obj$gr)
+  tmb_opt$par = tmb_opt$par - solve(h, g)
+  tmb_opt$objective = tmb_obj$fn(tmb_opt$par)
+  sd_report <- TMB::sdreport(tmb_obj)
+  conv <- get_convergence_diagnostics(sd_report)
+  grads_nstp[i+1,]<-conv$final_grads
+  mypars[i+1,] <-tmb_opt$par
+  fittoedf = list( "Opt"=tmb_opt,
+              "SD" = sd_report,
+              "Obj"=tmb_obj,
+              "nonvariance_fixed_effects"=nonvariance_fixed_effects )
+  
+  
+  myEDF[i+1] = calculate_EDF( obj=fittoedf$Obj,
+                      opt=fittoedf$Opt,
+                      prediction_name = "pred_logRS",
+                      data_name = "obs_logRS",
+                      delta = deltaEDF,
+                      nonvariance_fixed_effects=fittoedf$nonvariance_fixed_effects,
+                      refit = "full")
+}
+
+
+
+fittoedf = list( "Opt"=tmb_opt,
+              "SD" = sd_report,
+              "Obj"=tmb_obj,
+              "nonvariance_fixed_effects"=nonvariance_fixed_effects )
+
+  
+myEDF = calculate_EDF( obj=fittoedf$Obj,
+                      opt=fittoedf$Opt,
+                      prediction_name = "pred_logRS",
+                      data_name = "obs_logRS",
+                      delta = deltaEDF,
+                      nonvariance_fixed_effects=fittoedf$nonvariance_fixed_effects,
+                      refit = "full")
+
+
+
+myEDF2 = calculate_EDF( obj=tmb_obj,
+                      opt=tmb_opt,
+                      prediction_name = "pred_logRS",
+                      data_name = "obs_logRS",
+                      delta = deltaEDF,
+                      nonvariance_fixed_effects=fittoedf$nonvariance_fixed_effects,
+                      refit = "full")
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+palla0<-ricker_rw_TMBall(data=df,tv.par='a',priors_flag=0) 
+palla0$alpha
+palla0$tmb_obj$fn()[1]
+
+ptva0 <- ricker_rw_TMB(data=df,tv.par='a',priors_flag=0)
+ptva0$alpha
+ptva0$tmb_obj$fn()[1]
+
 
  
 p0 <- ricker_TMB(data=df,priors_flag=0)
-ptva0 <- ricker_rw_TMB(data=df,tv.par='a',priors_flag=0)
 ptvb0 <- ricker_rw_TMB(data=df,tv.par='b',priors_flag=0)
 
 
@@ -464,6 +322,8 @@ p0$AICc
 ptva0$AICc
 ptvb0$AICc
  
+ptva0$EDF
+
 p <- ricker_TMB(data=df,logb_p_mean=logbeta_pr,logb_p_sd=logbeta_pr_sig)
 ptva <- ricker_rw_TMB(data=df,tv.par='a',logb_p_mean=logbeta_pr,logb_p_sd=logbeta_pr_sig)
 ptvb <- ricker_rw_TMB(data=df, tv.par='b',sigb_p_sd=1,logb_p_mean=logbeta_pr,logb_p_sd=logbeta_pr_sig)
@@ -480,3 +340,12 @@ ptvb0$conv_problem
 p$AICc
 ptva$AICc
 ptvb$AICc
+
+
+
+
+
+
+
+
+

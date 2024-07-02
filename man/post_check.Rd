@@ -2,13 +2,17 @@
 % Please edit documentation in R/stan_run_functions.R
 \name{post_check}
 \alias{post_check}
-\title{Posterior predictive check}
+\title{Prior predictive check}
 \usage{
+post_check(fit, data)
+
 post_check(fit, data)
 }
 \arguments{
 \item{fit}{A model fit in rstan from e.g. ricker_stan, ricker_rw_stan, ricker_hmm_stan}
 }
 \description{
+Any arguments to pass to \link[rstan:stanmodel-method-sampling]{rstan::sampling}.
+
 Any arguments to pass to \link[rstan:stanmodel-method-sampling]{rstan::sampling}.
 }
