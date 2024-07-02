@@ -88,12 +88,12 @@ ricker_stan <- function(data,  AC=FALSE, smax_priors=NULL, control = stancontrol
     
   aa <- rstan::summary(fit)
   
-  ans<-list(alpha=c(aa$summary["log_a","50%"],aa$summary["log_a","sd"],aa$summary["log_a","2.5%"],aa$summary["log_a","97.5%"]),
-   beta=c(aa$summary["b","50%"],aa$summary["b","sd"],aa$summary["b","2.5%"],aa$summary["b","97.5%"]),
-   Smax=c(aa$summary["S_max","50%"],aa$summary["S_max","sd"],aa$summary["S_max","2.5%"],aa$summary["S_max","97.5%"]),
-   Smsy=c(aa$summary["S_msy","50%"],aa$summary["S_msy","sd"],aa$summary["S_msy","2.5%"],aa$summary["S_msy","97.5%"]),
-   Umsy=c(aa$summary["U_msy","50%"],aa$summary["U_msy","sd"],aa$summary["U_msy","2.5%"],aa$summary["U_msy","97.5%"]),
-   sigma=c(aa$summary["'sigma'","50%"],aa$summary["'sigma'","sd"],aa$summary["'sigma'","2.5%"],aa$summary["'sigma'","97.5%"]),
+  ans<-list(alpha=c(median=aa$summary["log_a","50%"],sd=aa$summary["log_a","sd"],est2.5=aa$summary["log_a","2.5%"],est97.5=aa$summary["log_a","97.5%"]),
+   beta=c(median=aa$summary["b","50%"],sd=aa$summary["b","sd"],est2.5=aa$summary["b","2.5%"],est97.5=aa$summary["b","97.5%"]),
+   Smax=c(median=aa$summary["S_max","50%"],sd=aa$summary["S_max","sd"],est2.5=aa$summary["S_max","2.5%"],est97.5=aa$summary["S_max","97.5%"]),
+   Smsy=c(median=aa$summary["S_msy","50%"],sd=aa$summary["S_msy","sd"],est2.5=aa$summary["S_msy","2.5%"],est97.5=aa$summary["S_msy","97.5%"]),
+   Umsy=c(median=aa$summary["U_msy","50%"],sd=aa$summary["U_msy","sd"],est2.5=aa$summary["U_msy","2.5%"],est97.5=aa$summary["U_msy","97.5%"]),
+   sigma=c(median=aa$summary["sigma","50%"],sd=aa$summary["sigma","sd"],est2.5=aa$summary["sigma","2.5%"],est97.5=aa$summary["sigma","97.5%"]),
    summary=fit,
    samples=mc) 
   
@@ -354,32 +354,5 @@ stancontrol <- function(adapt_delta = 0.99,  ...) {
   list(adapt_delta = 0.99, ...)
 }
 
-#' Prior predictive check 
-#'
-#' Any arguments to pass to [rstan::sampling].
-#'
-#' @param fit A model fit in rstan from e.g. ricker_stan, ricker_rw_stan, ricker_hmm_stan
-#'
-#' @export
-post_check<- function(fit,data){
-  yrep=rstan::extract(fit,pars='y_rep')
-  
-  
-  
-}
 
 
-
-#' Posterior predictive check 
-#'
-#' Any arguments to pass to [rstan::sampling].
-#'
-#' @param fit A model fit in rstan from e.g. ricker_stan, ricker_rw_stan, ricker_hmm_stan
-#'
-#' @export
-post_check<- function(fit,data){
-  yrep=rstan::extract(fit,pars='y_rep')
-  
-  
-  
-}

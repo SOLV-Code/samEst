@@ -557,6 +557,122 @@ sr_plot=function(df,mod,title,make.pdf=FALSE,path,type=c('static','rw','hmm'),pa
   
   }
 
+#' Prior predictive check 
+#'
+#' Any arguments to pass to [rstan::sampling].
+#'
+#' @param fit A model fit in rstan from e.g. ricker_stan, ricker_rw_stan, ricker_hmm_stan
+#'
+#' @export
+prior_check<- function(data,type=c('static','rw'),AC=FALSE,par=c('a','b','both'),control = stancontrol()){
+  if(type=='static'&AC==FALSE){
+   
+    sm=sr_prior_mod(type='static')
+      
+   if(is.null(smax_priors)==T){
+      datm = list(N=nrow(data),
+                  L=max(data$by)-min(data$by)+1,
+                  ii=seq_len(nrow(data)),
+                  R_S =data$logRS,
+                  S=data$S,
+                  pSmax_mean=max(data$S)/2,
+                  pSmax_sig=max(data$S))
+      
+    }
+    if(is.null(smax_priors)==F){
+      datm = list(N=nrow(data),
+                  L=max(data$by)-min(data$by)+1,
+                  ii=seq_len(nrow(data)),
+                  R_S =data$logRS,
+                  S=data$S,
+                  pSmax_mean=smax_priors[1],
+                  pSmax_sig=smax_priors[2])
+    }
+  }
+  if(type=='static'&AC==TRUE){
+    if(is.null(smax_priors)==T){
+      sm=sr_prior_mod(type='static',AC=TRUE)
+    }
+    if(is.null(smax_priors)==F){
+      sm=sr_prior_mod(type='static',AC=TRUE,smax_priors=smax_priors)
+    }
+  }
+  
+  if(type=='rw'&par=='a'){
+    if(is.null(smax_priors)==T){
+      sm=sr_prior_mod(type='rw',par='a')
+    }
+    if(is.null(smax_priors)==F){
+      sm=sr_prior_mod(type='rw',par='a',smax_priors=smax_priors)
+    }
+  }
+  if(type=='rw'&par=='b'){
+    if(is.null(smax_priors)==T){
+      sm=sr_prior_mod(type='rw',par='b')
+    }
+    if(is.null(smax_priors)==F){
+      sm=sr_prior_mod(type='rw',par='b',smax_priors=smax_priors)
+    }
+  }
+  if(type=='rw'&par=='both'){
+    if(is.null(smax_priors)==T){
+      sm=sr_prior_mod(type='rw',par='both')
+    }
+    if(is.null(smax_priors)==F){
+      sm=sr_prior_mod(type='rw',par='both',smax_priors=smax_priors)
+    }
+  }
+  
+  fit<-rstan::sampling(sm, data=datm,
+                       control = control, warmup = warmup, 
+                       chains = chains, iter = iter,verbose=FALSE)
+  
+  yrep=rstan::extract(fit,pars='y_rep')
+  
+  
+  
+}
+
+
+#' Posterior predictive check plot
+#'
+#' @param fit A model fit in rstan from e.g. ricker_stan, ricker_rw_stan, ricker_hmm_stan
+#' @param data the data that were used for the model in 'fit'
+#' @export
+post_check<- function(fit,data){
+  yrep_RS=rstan::extract(fit$summary,pars='y_rep',permuted=FALSE)
+  yrep_R=array(NA,dim=dim(yrep_RS))
+  for(t in 1:6){
+    yrep_R[,t,]=exp(yrep_RS[,t,])*data$S
+  }
+  
+  emp_RS=density(data$logRS,bw=0.02) #empirical distribution of log(R/S)
+  emp_R=density(log10(data$R),bw=0.02) #empirical distribution of recruits
+  
+  cols=RColorBrewer::brewer.pal(n=7,'Blues')
+  
+  par(mfrow=c(1,2))
+  
+  hist(data$logRS,main='',xaxt='n',breaks=30,freq=T,xlab='',ylab='count',col=adjustcolor('darkred',alpha.f=0.6),border='white')
+  par(new=T)
+  plot(emp_RS$y~emp_RS$x,type='n',col='darkred',ylab='density',xlab='log(R/S)',xlim=c(min(yrep_RS),max(yrep_RS)))
+  for(i in 1:6){
+    d=density(yrep_RS[,i,],bw=0.02)
+    lines(d$y~d$x,col=cols[i+1])
+    text(paste('chain',i,sep=' '),x=par('usr')[2]*0.8,y=par('usr')[4]*(0.9-0.05*i),col=cols[i+1])
+  }
+  plot(emp_R$y~emp_R$x,type='l',col='darkred',ylab='density',xlab='log10(recruits)',xlim=c(min(log10(yrep_R)),max(log10(yrep_R))),xaxt='n')
+  axis(1, col="black", at=seq(min(round(log10(data$R)))-1,max(round(log10(data$R))),by=1),   tcl=-0.45, cex.axis=1.2)
+  pow <- c(min(round(log10(data$R)))-1):c(max(round(log10(data$R))))
+  ticksat <- as.vector(sapply(pow, function(p) (1:10)*10^p))
+  axis(1, log10(ticksat), col="black", labels=NA,
+       tcl=-0.2, lwd=0, lwd.ticks=1)
+  for(i in 1:6){
+    d=density(log10(yrep_R[,i,]),bw=0.02)
+    lines(d$y~d$x,col=cols[i+1])
+    text(paste('pred. chain',i,sep=' '),x=par('usr')[2]*0.8,y=par('usr')[4]*(0.9-0.05*i),col=cols[i+1])
+  }
+}
 
 sr_plot2=function(df,mod,title,make.pdf=FALSE,path,type=c('static','rw','hmm'),par=c('a','b','both'),form=c('stan','tmb'),ac=FALSE,sr_only=FALSE){
   if(type=='static'){ #static====
