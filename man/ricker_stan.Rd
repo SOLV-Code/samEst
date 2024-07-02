@@ -34,8 +34,6 @@ chain. The default is 200.}
 (including warmup). The default is 1000.}
 
 \item{...}{Anything else that would be passed to rstan::sampling}
-
-\item{lambertW}{Logical, indicating if lambertW functions should be used in stan code, requires git installation from stan}
 }
 \value{
 a list containing the
