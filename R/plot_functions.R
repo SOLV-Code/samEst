@@ -643,7 +643,7 @@ post_check<- function(fit,data){
   yrep_RS=rstan::extract(fit$summary,pars='y_rep',permuted=FALSE)
   yrep_R=array(NA,dim=dim(yrep_RS))
   for(t in 1:6){
-    yrep_R[,t,]=exp(yrep_RS[,t,])*data$S
+    yrep_R[,t,]=log10(exp(yrep_RS[,t,])*data$S)
   }
   
   emp_RS=density(data$logRS,bw=0.02) #empirical distribution of log(R/S)
@@ -653,25 +653,29 @@ post_check<- function(fit,data){
   
   par(mfrow=c(1,2))
   
-  hist(data$logRS,main='',xaxt='n',breaks=30,freq=T,xlab='',ylab='count',col=adjustcolor('darkred',alpha.f=0.6),border='white')
+  hist(data$logRS,main='',xaxt='n',breaks=30,freq=T,xlab='',ylab='Counts of observations in time-series',col=adjustcolor('darkred',alpha.f=0.6),border='white',xlim=c(min(yrep_RS),max(yrep_RS)),xaxt='n')
+  text('empirical obs.',x=par('usr')[2]-((par('usr')[2]-par('usr')[1])*0.2),y=par('usr')[4]-((par('usr')[4]-par('usr')[3])*0.1),col=adjustcolor('darkred',alpha.f=0.6))
   par(new=T)
-  plot(emp_RS$y~emp_RS$x,type='n',col='darkred',ylab='density',xlab='log(R/S)',xlim=c(min(yrep_RS),max(yrep_RS)))
-  for(i in 1:6){
+  plot(rep(0,length(emp_RS$x))~emp_RS$x,type='n',col='darkred',ylab='',xlab='log(R/S)',xlim=c(min(yrep_RS),max(yrep_RS)),ylim=c(0,1),yaxt='n')
+   for(i in 1:6){
     d=density(yrep_RS[,i,],bw=0.02)
-    lines(d$y~d$x,col=cols[i+1])
-    text(paste('chain',i,sep=' '),x=par('usr')[2]*0.8,y=par('usr')[4]*(0.9-0.05*i),col=cols[i+1])
+    lines(d$y/max(d$y)~d$x,col=cols[i+1])
+    text(paste('pred. chain',i,sep=' '),x=par('usr')[2]-((par('usr')[2]-par('usr')[1])*0.2),y=par('usr')[4]-((par('usr')[4]-par('usr')[3])*(0.1+0.05*i)),col=cols[i+1])
   }
-  plot(emp_R$y~emp_R$x,type='l',col='darkred',ylab='density',xlab='log10(recruits)',xlim=c(min(log10(yrep_R)),max(log10(yrep_R))),xaxt='n')
-  axis(1, col="black", at=seq(min(round(log10(data$R)))-1,max(round(log10(data$R))),by=1),   tcl=-0.45, cex.axis=1.2)
+  hist(log10(data$R),main='',xaxt='n',breaks=30,freq=T,xlab='',ylab='Counts of observations in time-series',col=adjustcolor('darkred',alpha.f=0.6),border='white',xlim=c(min(yrep_R),max(yrep_R)),xaxt='n')
+  text('empirical obs.',x=par('usr')[2]-((par('usr')[2]-par('usr')[1])*0.2),y=par('usr')[4]-((par('usr')[4]-par('usr')[3])*0.1),col=adjustcolor('darkred',alpha.f=0.6))
+  par(new=T)
+  plot(rep(0,length(emp_R$x))~emp_R$x,type='n',col='darkred',ylab='',xlab='recuits (log10 axis)',xlim=c(min(yrep_R),max(yrep_R)),ylim=c(0,1),yaxt='n',xaxt='n')
+  for(i in 1:6){
+    d=density(yrep_R[,i,],bw=0.02)
+    lines(d$y/max(d$y)~d$x,col=cols[i+1])
+    text(paste('pred. chain',i,sep=' '),x=par('usr')[2]-((par('usr')[2]-par('usr')[1])*0.2),y=par('usr')[4]-((par('usr')[4]-par('usr')[3])*(0.1+0.05*i)),col=cols[i+1])
+  }
   pow <- c(min(round(log10(data$R)))-1):c(max(round(log10(data$R))))
+  axis(1, col="black", at=seq(min(round(log10(data$R)))-1,max(round(log10(data$R))),by=1),tcl=-0.45, cex.axis=1.2,labels=10^pow)
   ticksat <- as.vector(sapply(pow, function(p) (1:10)*10^p))
   axis(1, log10(ticksat), col="black", labels=NA,
        tcl=-0.2, lwd=0, lwd.ticks=1)
-  for(i in 1:6){
-    d=density(log10(yrep_R[,i,]),bw=0.02)
-    lines(d$y~d$x,col=cols[i+1])
-    text(paste('pred. chain',i,sep=' '),x=par('usr')[2]*0.8,y=par('usr')[4]*(0.9-0.05*i),col=cols[i+1])
-  }
 }
 
 sr_plot2=function(df,mod,title,make.pdf=FALSE,path,type=c('static','rw','hmm'),par=c('a','b','both'),form=c('stan','tmb'),ac=FALSE,sr_only=FALSE){

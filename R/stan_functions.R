@@ -187,6 +187,8 @@ generated quantities{
   real S_max;
   real U_msy;
   real S_msy;
+  real prior_Smax=lognormal_rng(logbeta_pr,logbeta_pr_sig);
+
   vector[N] y_rep;
   for(n in 1:N) y_rep[n]=normal_rng(mu[n],sigma);
   
@@ -326,6 +328,8 @@ model{
      real S_max;
      vector[L] U_msy;
      vector[L] S_msy;
+     real prior_Smax=lognormal_rng(logbeta_pr,logbeta_pr_sig);
+
     vector[N] y_rep;
     for(n in 1:N) y_rep[n]=normal_rng(log_a[ii[n]] - b*S[n],sigma);
    
