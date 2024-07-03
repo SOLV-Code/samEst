@@ -36,14 +36,14 @@ ricker_stan <- function(data,  AC=FALSE, smax_priors=NULL, control = stancontrol
  
    sm=samEst::sr_mod(type='static',ac=AC,par='n')
 
-  if(AC){
+  if(AC==TRUE){
     datm = list(N=nrow(data),
                 L=max(data$by)-min(data$by)+1,
                 ii=seq_len(nrow(data)),
                 R_S =data$logRS,
                 S=data$S,
                 pSmax_mean=max(data$S)/2,
-                pSmax_sig=max(data$S)*2)
+                pSmax_sig=max(data$S)/2)
     
     if(is.null(smax_priors)==FALSE){
       datm = list(N=nrow(data),
@@ -60,7 +60,7 @@ ricker_stan <- function(data,  AC=FALSE, smax_priors=NULL, control = stancontrol
                 R_S =data$logRS,
                 S=data$S,
                 pSmax_mean=max(data$S)/2,
-                pSmax_sig=max(data$S)*2)
+                pSmax_sig=max(data$S)/2)
     if(is.null(smax_priors)==FALSE){
       datm = list(N=nrow(data),
                   R_S =data$logRS,

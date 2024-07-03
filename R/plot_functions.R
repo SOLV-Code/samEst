@@ -639,7 +639,7 @@ prior_check<- function(data,type=c('static','rw'),AC=FALSE,par=c('a','b','both')
 #' @param fit A model fit in rstan from e.g. ricker_stan, ricker_rw_stan, ricker_hmm_stan
 #' @param data the data that were used for the model in 'fit'
 #' @export
-post_check<- function(fit,data){
+post_check<- function(fit,data,pdf=FALSE,path=NULL,filename=NULL){
   yrep_RS=rstan::extract(fit$summary,pars='y_rep',permuted=FALSE)
   yrep_R=array(NA,dim=dim(yrep_RS))
   for(t in 1:6){
@@ -651,21 +651,22 @@ post_check<- function(fit,data){
   
   cols=RColorBrewer::brewer.pal(n=7,'Blues')
   
+  if(pdf==T){pdf(paste(path,'/',filename,'.pdf',sep=''),height=12,width=8)}
   par(mfrow=c(2,2))
   
-  hist(data$logRS,main='',xaxt='n',breaks=30,freq=T,xlab='',ylab='Counts of observations in time-series',col=adjustcolor('darkred',alpha.f=0.6),border='white',xlim=c(min(yrep_RS),max(yrep_RS)),xaxt='n')
+  hist(data$logRS,main='',xaxt='n',breaks=30,freq=T,xlab='',ylab='counts of observations in time-series',col=adjustcolor('darkred',alpha.f=0.6),border='white',xlim=c(min(yrep_RS),max(yrep_RS)),xaxt='n')
   text('empirical obs.',x=par('usr')[2]-((par('usr')[2]-par('usr')[1])*0.2),y=par('usr')[4]-((par('usr')[4]-par('usr')[3])*0.1),col=adjustcolor('darkred',alpha.f=0.6))
   par(new=T)
-  plot(rep(0,length(emp_RS$x))~emp_RS$x,type='n',col='darkred',ylab='',xlab='log(R/S)',xlim=c(min(yrep_RS),max(yrep_RS)),ylim=c(0,1),yaxt='n')
+  plot(rep(0,length(emp_RS$x))~emp_RS$x,type='n',col='darkred',ylab='',xlab='log(R/S)',xlim=c(min(yrep_RS),max(yrep_RS)),ylim=c(0,1),yaxt='n',bty='l')
    for(i in 1:6){
     d=density(yrep_RS[,i,],bw=0.02)
     lines(d$y/max(d$y)~d$x,col=cols[i+1])
     text(paste('pred. chain',i,sep=' '),x=par('usr')[2]-((par('usr')[2]-par('usr')[1])*0.2),y=par('usr')[4]-((par('usr')[4]-par('usr')[3])*(0.1+0.05*i)),col=cols[i+1])
   }
-  hist(log10(data$R),main='',xaxt='n',breaks=30,freq=T,xlab='',ylab='Counts of observations in time-series',col=adjustcolor('darkred',alpha.f=0.6),border='white',xlim=c(min(yrep_R),max(yrep_R)),xaxt='n')
+  hist(log10(data$R),main='',xaxt='n',breaks=30,freq=T,xlab='',ylab='counts of observations in time-series',col=adjustcolor('darkred',alpha.f=0.6),border='white',xlim=c(min(yrep_R),max(yrep_R)),xaxt='n')
   text('empirical obs.',x=par('usr')[2]-((par('usr')[2]-par('usr')[1])*0.2),y=par('usr')[4]-((par('usr')[4]-par('usr')[3])*0.1),col=adjustcolor('darkred',alpha.f=0.6))
   par(new=T)
-  plot(rep(0,length(emp_R$x))~emp_R$x,type='n',col='darkred',ylab='',xlab='recuits (log10 axis)',xlim=c(min(yrep_R),max(yrep_R)),ylim=c(0,1),yaxt='n',xaxt='n')
+  plot(rep(0,length(emp_R$x))~emp_R$x,type='n',col='darkred',ylab='',xlab='recuits (log10 axis)',xlim=c(min(yrep_R),max(yrep_R)),ylim=c(0,1),yaxt='n',xaxt='n',bty='l')
   for(i in 1:6){
     d=density(yrep_R[,i,],bw=0.02)
     lines(d$y/max(d$y)~d$x,col=cols[i+1])
@@ -678,14 +679,25 @@ post_check<- function(fit,data){
        tcl=-0.2, lwd=0, lwd.ticks=1)
   
   smaxs=rstan::extract(fit$summary,pars=c('prior_Smax','S_max'))
-  dens_sm_prior=density(smaxs$prior_Smax,bw=0.05)
-  dens_sm_post=density(smaxs$S_max,bw=0.05)
-  plot(dens_sm_prior$y~c(dens_sm_prior$x/1e3),type='l',col='darkorange',ylab='probability density',xlab='spawners (1000s)',xlim=c(0,max(c(smaxs[[1]]/1e3,smaxs[[2]]/1e3))))
-  lines(dens_sm_post$y~c(dens_sm_post$x/1e3),col='navy')
+  hist(c(smaxs$prior_Smax/1e3),breaks=30,freq=T,xlim=c(0,max(c(smaxs[[1]]/1e3,smaxs[[2]]/1e3))),xlab='spawners (1000s)',col=adjustcolor('darkorange',alpha.f=0.5),border='white',main='')
+  par(new=T)
+  hist(c(smaxs$S_max/1e3),breaks=30,freq=T,xlim=c(0,max(c(smaxs[[1]]/1e3,smaxs[[2]]/1e3))),xlab='spawners (1000s)',col=adjustcolor('navy',alpha.f=0.5),border='white',main='',yaxt='n')
   text('Smax prior',x=par('usr')[2]-((par('usr')[2]-par('usr')[1])*0.2),y=par('usr')[4]-((par('usr')[4]-par('usr')[3])*0.1),col='darkorange')
   text('Smax posterior',x=par('usr')[2]-((par('usr')[2]-par('usr')[1])*0.2),y=par('usr')[4]-((par('usr')[4]-par('usr')[3])*0.2),col='navy')
   
-  
+  plot(c(data$R/1e3)~c(data$S/1e3),xlab='spawners (1000s)',ylab='recruits (1000s)',type='n',ylim=c(0,max(data$R/1e3)),xlim=c(0,max(data$S/1e3)*1.2),bty='l')
+  sn=seq(0,max(data$S))
+  muR=exp(fit$alpha[1]-fit$beta[1]*sn)*sn
+  lines(c(muR/1e3)~c(sn/1e3))
+  par(new=T)
+  hist(c(smaxs$prior_Smax/1e3),breaks=30,freq=T,xlim=c(0,max(data$S/1e3)*1.2),ylim=c(0,1e3),xlab='',col=adjustcolor('darkorange',alpha.f=0.5),border='white',main='',xaxt='n',yaxt='n',ylab='')
+  par(new=T)
+  hist(c(smaxs$S_max/1e3),breaks=30,freq=T,xlim=c(0,max(data$S/1e3)*1.2),ylim=c(0,1e3),xlab='',col=adjustcolor('navy',alpha.f=0.5),border='white',main='',yaxt='n',xaxt='n',ylab='')
+  text(y=c(data$R/1e3),x=c(data$S/1e3),data$by,col='darkred',cex=0.8,font=2) 
+  if(pdf==T){
+    dev.off()
+    dev.off()
+    }
 }
 
 sr_plot2=function(df,mod,title,make.pdf=FALSE,path,type=c('static','rw','hmm'),par=c('a','b','both'),form=c('stan','tmb'),ac=FALSE,sr_only=FALSE){
