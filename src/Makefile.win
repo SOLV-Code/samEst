@@ -9,6 +9,9 @@ Ricker_autocorr.dll: Ricker_autocorr.cpp
 Ricker_tva.dll: Ricker_tva.cpp
 	Rscript --vanilla -e "TMB::compile('Ricker_tva.cpp','-O1 -g', DLLFLAGS='', framework = 'TMBad')"
 
+Ricker_tv_all.dll: Ricker_tv_all.cpp
+	Rscript --vanilla -e "TMB::compile('Ricker_tv_all.cpp','-O1 -g', DLLFLAGS='', framework = 'TMBad')"
+
 Ricker_tvlogb.dll: Ricker_tvlogb.cpp
 	Rscript --vanilla -e "TMB::compile('Ricker_tvlogb.cpp','-O1 -g', DLLFLAGS='', framework = 'TMBad')"
 

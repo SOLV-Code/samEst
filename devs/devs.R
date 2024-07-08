@@ -94,7 +94,23 @@ sum(lfoac)
 names(p)
 
 ptva<- ricker_rw_TMB(data=harck,tv.par="a",sig_p_sd=1,AICc_type="conditional")
+ptva$alpha
+ptva$grad_i
 ptvamaic<- ricker_rw_TMB(data=harck,tv.par="a",sig_p_sd=1, AICc_type="marginal")
+
+ptvath_centered<- ricker_rw_TMB_centered(data=harck,tv.par="a",sig_p_sd=1,AICc_type="conditional")
+ptvath_centered$logalpha
+ptvath_centered$beta
+ptvath_centered$grad_i
+
+ptvbth_centered<- ricker_rw_TMB_centered(data=harck,tv.par="b",sig_p_sd=1,AICc_type="conditional")
+ptvbth_centered$logalpha
+ptvbth_centered$beta
+ptvbth_centered$grad_i
+names(ptvath_centered)
+
+
+
 
 data.frame(
   value=c(p$AICc

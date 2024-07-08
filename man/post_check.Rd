@@ -4,7 +4,7 @@
 \alias{post_check}
 \title{Posterior predictive check plot}
 \usage{
-post_check(fit, data)
+post_check(fit, data, pdf = FALSE, path = NULL, filename = NULL)
 }
 \arguments{
 \item{fit}{A model fit in rstan from e.g. ricker_stan, ricker_rw_stan, ricker_hmm_stan}
