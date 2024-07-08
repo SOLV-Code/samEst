@@ -19,7 +19,9 @@ ricker_rw_TMB(
   logb_p_mean = -12,
   logb_p_sd = 3,
   AICc_type = c("conditional", "marginal")[1],
-  deltaEDF = 1e-04
+  deltaEDF = 1e-04,
+  newton_stp = TRUE,
+  useEDF = TRUE
 )
 }
 \arguments{
@@ -54,6 +56,10 @@ adjustment implemented. Default is 0, jacobian adjustment not included.}
 \item{logb_p_sd}{sd for prior on log b, default is 3.}
 
 \item{AICc_type}{"conditional" (Thorson 2024) or "marginal"}
+
+\item{newton_stp}{logical. use newton step to improve estimates and gradients}
+
+\item{useEDF}{lofical use EDf algorithm describef in Thorson 2024}
 }
 \value{
 a list containing several model outputs:

@@ -161,6 +161,10 @@ ricker_TMB <- function(data,  silent = FALSE, control = TMBcontrol(),
 
 
 
+
+
+
+
 #' Ricker model with random walk in a, b or both parameters with TMB
 #'
 #' @param data A list or data frame containing Spawners (S) and log(Recruits/Spawners) (logRS) time series. 
@@ -183,6 +187,8 @@ ricker_TMB <- function(data,  silent = FALSE, control = TMBcontrol(),
 #' @param logb_p_mean mean for prior on log b, default is -12.
 #' @param logb_p_sd sd for prior on log b, default is 3.
 #' @param AICc_type "conditional" (Thorson 2024) or "marginal"
+#' @param newton_stp logical. use newton step to improve estimates and gradients
+#' @param useEDF lofical use EDf algorithm describef in Thorson 2024
 #' 
 #' @details Priors: Weakly informative priors are included for the main parameterst of the model:
 #' alpha ~ gamma(3,1)
@@ -221,298 +227,8 @@ ricker_TMB <- function(data,  silent = FALSE, control = TMBcontrol(),
 ricker_rw_TMB <- function(data, tv.par=c('a','b','both'), silent = FALSE, 
   control = TMBcontrol(), ini_param=NULL, tmb_map = list(), priors_flag=1, stan_flag=0,
   sig_p_sd=1, siga_p_sd=1, sigb_p_sd=.3, logb_p_mean=-12, logb_p_sd=3,
-  AICc_type=c("conditional", "marginal")[1], deltaEDF=0.0001) {
-
-  #===================================
-  #prepare TMB input and options
-  #===================================
-  tmb_data <- list(
-    obs_S = data$S,
-    obs_logRS = data$logRS,
-    priors_flag=priors_flag,
-    stan_flag=stan_flag,
-    sig_p_sd=sig_p_sd,
-    logb_p_mean=logb_p_mean,
-    logb_p_sd=logb_p_sd
-  )
-
-  if(is.null(ini_param)){
-    magS <- log10_ceiling(max(data$S))
-    initlm<-lm(logRS~S, data=data)
-  }
-
-  if(tv.par=="a"){
-
-    tmb_data$siga_p_sd=siga_p_sd
-
-    if(is.null(ini_param)){
-      tmb_params <- list(alphao   = initlm$coefficients[[1]],
-                   logbeta = ifelse(initlm$coefficients[[2]]>0,
-                                   log(1/magS),
-                                   log(-initlm$coefficients[[2]])),
-                   logsigobs = log(.5),
-                   logsiga = log(.5),
-                   alpha = rep(initlm$coefficients[[1]],length(tmb_data$obs_S)))
-    }else{
-      tmb_params <-ini_param
-    }
-    tmb_random <- "alpha"
-    tmb_obj <- TMB::MakeADFun(data = tmb_data, 
-                              parameters = tmb_params, 
-                              map = tmb_map,
-                              random = tmb_random, 
-                              DLL = "Ricker_tva", 
-                              silent = silent)
-
-    lowlimit <- c(0.01,-20,log(0.01),log(0.01))
-    hightlimit <- c(20,-4,log(2),log(2))
-    
-    nonvariance_fixed_effects<-c("alphao","logbeta")
-
-    clss <- "Ricker_tva"
-    npar <- 4
-    npar_all <- 4+(length(data$S)-1)
-
-  }else if(tv.par=="b"){
-
-    tmb_data$sigb_p_sd=sigb_p_sd
-
-    if(is.null(ini_param)){
-     
-      tmb_params <- list(logbetao = ifelse(initlm$coefficients[[2]]>0,
-                                           log(1/magS),
-                                           log(-initlm$coefficients[[2]])),
-                        alpha   = max(initlm$coefficients[[1]],.5),                 
-                        logsigobs = log(.6),
-                        logsigb = log(.2),
-                        logbeta=rep(ifelse(initlm$coefficients[[2]]>0,
-                                           log(1/max(data$S)),
-                                           log(-initlm$coefficients[[2]])),
-                                    length(data$S)))
-    }else{
-      tmb_params <-ini_param
-    }
-
-    tmb_random <- "logbeta"
-
-    tmb_obj <- TMB::MakeADFun(data = tmb_data, 
-      parameters = tmb_params, 
-      map = tmb_map,
-      random = tmb_random, 
-      DLL = "Ricker_tvlogb", 
-      silent = silent)
-
-    lowlimit <- c(-20,0.01,log(0.01),log(0.01))
-    hightlimit <- c(-4,20,log(2),log(2))
-
-    nonvariance_fixed_effects<-c("alpha","logbetao")
-
-    clss <- "Ricker_tvlogb"
-    npar <- 4
-    npar_all <- 4+(length(data$S)-1)
-
-  }else if(tv.par=="both"){
-
-    tmb_data$siga_p_sd=siga_p_sd
-    tmb_data$sigb_p_sd=sigb_p_sd
-    
-    if(is.null(ini_param)){    
-      tmb_params <- list(logbetao = ifelse(initlm$coefficients[[2]]>0,
-                                           log(1/magS),
-                                           log(-initlm$coefficients[[2]])),
-                        alphao   = max(initlm$coefficients[[1]],.5),                 
-                        logsigobs = log(.6),
-                        logsiga = log(.2),
-                        logsigb = log(.2),
-                        logbeta=log(rep(ifelse(initlm$coefficients[[2]]>0,
-                                               log(magS),
-                                               -initlm$coefficients[[2]]),
-                                        length(data$S))),
-                        alpha = rep(1,length(tmb_data$obs_S))      
-     )
-
-    }else{
-      tmb_params <-ini_param
-    }
-    tmb_random <- c("logbeta", "alpha")
-
-    tmb_obj <- TMB::MakeADFun(data = tmb_data, 
-      parameters = tmb_params, 
-      map = tmb_map,
-      random = tmb_random, 
-      DLL = "Ricker_tva_tvb", 
-      silent = silent)
-  
-    lowlimit <- c(-20,0.01,log(0.0),log(0.01),log(0.01))
-    hightlimit <- c(-4,20,log(2),log(2),log(2))
-    
-    nonvariance_fixed_effects<-c("alphao","logbetao")
-
-    clss <- "Ricker_tva_tvb"
-    npar <- 5
-    npar_all <- 5+(length(data$S)-1)*2
-
-  }else{
-    stop(paste("tv.par",tv.par,"not recognized."))
-  }
- 
-
-  #===================================
-  # TMB fit
-  #===================================
-
-  tmb_opt <- stats::nlminb(
-    start = tmb_obj$par, 
-    objective = tmb_obj$fn, 
-    gradient = tmb_obj$gr,
-    control = control,
-    lower = lowlimit, 
-    upper = hightlimit)
-  
-  sd_report <- TMB::sdreport(tmb_obj)
-  conv <- get_convergence_diagnostics(sd_report)
-  
-  if(AICc_type=="conditional"){
-
-    myEDF = calculate_EDF( obj=tmb_obj,
-                      opt=tmb_opt,
-                      prediction_name = "pred_logRS",
-                      data_name = "obs_logRS",
-                      delta = deltaEDF,
-                      nonvariance_fixed_effects=nonvariance_fixed_effects,
-                      refit = "full")
-    
-    pennll<-  tmb_obj$report()$nll
-    AICc = 2*pennll + 2*myEDF +(2*myEDF*(myEDF+1)/(nrow(data)-myEDF-1))
-    BIC  <- 2*pennll + myEDF*log(nrow(data))
-
-
-  
-  }else if(AICc_type== "marginal"){
-    nll <- tmb_obj$fn()[1]- tmb_obj$report()$pnll
-    renll <- tmb_obj$report()$renll
-    allnll<- nll + renll
-    AICc  <- 2*nll + 2*npar +(2*npar*(npar+1)/(nrow(data)-npar-1))
-    AICc_fullll  <- 2*allnll + 2*npar +(2*npar*(npar+1)/(nrow(data)-npar-1))
-    AICc_allparam  <- 2*nll + 2*npar_all +(2*npar_all*(npar_all+1)/(nrow(data)-npar_all-1))
-    BIC  <- 2*nll + npar*log(nrow(data))
-    BIC_fullll  <- 2*allnll + npar*log(nrow(data))
-    BIC_allparam  <- 2*nll + npar_all*log(nrow(data)) 
-  }
-  
-  
- 
-  structure(list(
-    alpha    = tmb_obj$report()$alpha,
-    beta     = tmb_obj$report()$beta,
-    Smax     = tmb_obj$report()$Smax,
-    sig      = tmb_obj$report()$sigobs,
-    Smsy      = tmb_obj$report()$Smsy,
-    umsy      = tmb_obj$report()$umsy,
-    siga      = ifelse(tv.par=="a"|tv.par=="both",
-                       tmb_obj$report()$siga,
-                       NA),
-    sigb      = ifelse(tv.par=="b"|tv.par=="both",
-                       tmb_obj$report()$sigb,
-                       NA),
-    model      = tmb_opt,
-    tmb_data   = tmb_data,
-    tmb_params = tmb_params,
-    tmb_map    = tmb_map,
-    tmb_random = tmb_random,
-    tmb_obj    = tmb_obj,
-    EDF      = ifelse(AICc_type== "conditional",
-                       myEDF,
-                       NA),
-    AICc       = AICc,
-    BIC        = BIC,
-    AICc_fullll= ifelse(AICc_type== "marginal",
-                       AICc_fullll,
-                       NA),
-    AICc_allparam = ifelse(AICc_type== "marginal",
-                       AICc_allparam,
-                       NA),
-    BIC_fullll = ifelse(AICc_type== "marginal",
-                       BIC_fullll,
-                       NA),
-    BIC_allparam = ifelse(AICc_type== "marginal",
-                       BIC_allparam,
-                       NA),
-    residuals  = tmb_obj$report()$residuals,
-    gradients  = conv$final_grads,
-    bad_eig    = conv$bad_eig,
-    conv_problem= conv$conv_problem,
-    call       = match.call(expand.dots = TRUE),
-    sd_report  = sd_report),
-    class      = clss)
-
-}
-
-
-
-
-#' Ricker model with random walk in a, b or both parameters with TMB
-#'
-#' @param data A list or data frame containing Spawners (S) and log(Recruits/Spawners) (logRS) time series. 
-#' @param tv.par Which parameters should vary? Either productivity (intercept, a), capacity (slope, b) or both parameters
-#' @param silent Logical Silent or optimization details? default is FALSE
-#' @param control output from TMBcontrol() function, to be passed to nlminb()
-#' @param ini_param Optional. A list with initial parameter guesses. The list should contain: alphao (a number),
-#' logbeta (a number), logsigobs (a number), logsiga (a number), and alpha ( a vector with the same length as the data). 
-#' @param tmb_map optional, mapping list indicating if parameters should be estimated of fixed. 
-#' Default is all parameters are estimated
-#' @param priors_flag Integer, 1 priors are included in estimation model, 0 priors are not included.
-#'  See details for priors documentation. See details for priors documentation.
-#' @param stan_flag Integer, flag indicating wether or not TMB code will be used with TMBstan - Jacobian
-#' adjustment implemented. Default is 0, jacobian adjustment not included.
-#' @param sig_p_sd sd for half normal prior on sigma parameter. default is 1.
-#' @param siga_p_sd sd for half normal prior on sigma for alpha random walk parameter. default is 1.
-#' @param sigb_p_sd sd for half normal prior on sigma for beta random walk parameter. default is 1.
-#' @param logb_p_mean mean for prior on log b, default is -12.
-#' @param logb_p_sd sd for prior on log b, default is 3.
-#' @param logb_p_mean mean for prior on log b, default is -12.
-#' @param logb_p_sd sd for prior on log b, default is 3.
-#' @param AICc_type "conditional" (Thorson 2024) or "marginal"
-#' @param newton_stp logical. use newton step to improve estimates and gradients
-#' 
-#' @details Priors: Weakly informative priors are included for the main parameterst of the model:
-#' alpha ~ gamma(3,1)
-#' logbeta ~ N(-12,3)
-#' sigobs ~ gamma(2,1/3)
-#' siga ~ gamma(2,1/3) 
-#' sigb ~ gamma(2,1/3)  
-#' 
-#' 
-#' @returns a list containing several model outputs:
-#' * alpha - MLE estimates for the alpha parameter vector
-#' * beta - MLE estimates for the beta parameter 
-#' * sig - MLE estimates for the observation error standard deviation     
-#' * siga - MLE estimates for the process error (variation in alpha) standard deviation
-#' * sigb - MLE estimates for the process error (variation in beta) standard deviation   
-#' * AICc - AICc values, given by 2*nll + 2*npar +(2*npar*(npar+1)/(nrow(data)-npar-1)), excluding prior components
-#' * BIC - BIC values, excluding prior components
-#' * model - opt object, generated by the `stats::nlminb()`  
-#' * tmb_data - data provided to TMB,
-#' * tmb_params - parameter intial guesses,
-#' * tmb_map - mapping indicating which parameters should be fixed or estimated,
-#' * tmb_obj - obj object, generated by the `TMB::MakeADFun()` 
-#' * gradients - final convergence gradient
-#' * bad_eig - eigen value
-#' * call - original function call
-#' * sd_report - MLE estimates and sdt Error estimates for main parameter estimates
-#' * class - name of cpp model
-#' 
-#' 
-#' @export
-#' @examples 
-#' data(harck)
-#' ricker_rwa_TMB(data=harck)
-#' 
-#' 
-ricker_rw_TMBall <- function(data, tv.par=c('a','b','both'), silent = FALSE, 
-  control = TMBcontrol(), ini_param=NULL, tmb_map = list(), priors_flag=1, stan_flag=0,
-  sig_p_sd=1, siga_p_sd=1, sigb_p_sd=.3, logb_p_mean=-12, logb_p_sd=3,
-  AICc_type=c("conditional", "marginal")[1], deltaEDF=0.0001,newton_stp=TRUE) {
+  AICc_type=c("conditional", "marginal")[1], deltaEDF=0.0001,newton_stp=TRUE,
+  useEDF=TRUE) {
 
   #===================================
   #prepare TMB input and options
@@ -679,20 +395,26 @@ ricker_rw_TMBall <- function(data, tv.par=c('a','b','both'), silent = FALSE,
   
   if(AICc_type=="conditional"){
 
+
+
     myEDFo <- calculate_EDF( obj=tmb_obj,
                       opt=tmb_opt,
                       prediction_name = "pred_logRS",
                       data_name = "obs_logRS",
                       delta = deltaEDF,
                       nonvariance_fixed_effects=nonvariance_fixed_effects,
-                      refit = "full")
-    myEDF <- max(myEDFo,npar)
+                      refit = "full",
+                      what="all")
+    myEDF <- max(myEDFo$EDF,npar)
     
+    if(useEDF){
+      condnpar<-myEDF
+    }else{
+      condnpar<-npar
+    }
     pennll<-  tmb_obj$report()$nll
-    AICc = 2*pennll + 2*myEDF +(2*myEDF*(myEDF+1)/(nrow(data)-myEDF-1))
-    BIC  <- 2*pennll + myEDF*log(nrow(data))
-
-
+    AICc = 2*pennll + 2*condnpar +(2*condnpar*(condnpar+1)/(nrow(data)-condnpar-1))
+    BIC  <- 2*pennll + condnpar*log(nrow(data))
   
   }else if(AICc_type== "marginal"){
     nll <- tmb_obj$fn()[1]- tmb_obj$report()$pnll
@@ -727,7 +449,277 @@ ricker_rw_TMBall <- function(data, tv.par=c('a','b','both'), silent = FALSE,
     tmb_map    = tmb_map,
     tmb_random = tmb_random,
     tmb_obj    = tmb_obj,
-    EDF      = myEDF,
+    EDF= ifelse(AICc_type== "conditional",
+                       myEDF,
+                       NA),
+    grad_i= if(AICc_type== "conditional"){myEDFo$grad_i}else{NA},,
+    AICc       = AICc,
+    BIC        = BIC,
+    AICc_fullll= ifelse(AICc_type== "marginal",
+                       AICc_fullll,
+                       NA),
+    AICc_allparam = ifelse(AICc_type== "marginal",
+                       AICc_allparam,
+                       NA),
+    BIC_fullll = ifelse(AICc_type== "marginal",
+                       BIC_fullll,
+                       NA),
+    BIC_allparam = ifelse(AICc_type== "marginal",
+                       BIC_allparam,
+                       NA),
+    residuals  = tmb_obj$report()$residuals,
+    gradients  = conv$final_grads,
+    bad_eig    = conv$bad_eig,
+    conv_problem= conv$conv_problem,
+    call       = match.call(expand.dots = TRUE),
+    sd_report  = sd_report),
+    class      = clss)
+
+}
+
+
+
+
+
+
+#' Ricker model with random walk in a, b or both parameters with TMB
+#'
+#' @param data A list or data frame containing Spawners (S) and log(Recruits/Spawners) (logRS) time series. 
+#' @param tv.par Which parameters should vary? Either productivity (intercept, a), capacity (slope, b) or both parameters
+#' @param silent Logical Silent or optimization details? default is FALSE
+#' @param control output from TMBcontrol() function, to be passed to nlminb()
+#' @param ini_param Optional. A list with initial parameter guesses. The list should contain: alphao (a number),
+#' logbeta (a number), logsigobs (a number), logsiga (a number), and alpha ( a vector with the same length as the data). 
+#' @param tmb_map optional, mapping list indicating if parameters should be estimated of fixed. 
+#' Default is all parameters are estimated
+#' @param priors_flag Integer, 1 priors are included in estimation model, 0 priors are not included.
+#'  See details for priors documentation. See details for priors documentation.
+#' @param stan_flag Integer, flag indicating wether or not TMB code will be used with TMBstan - Jacobian
+#' adjustment implemented. Default is 0, jacobian adjustment not included.
+#' @param sig_p_sd sd for half normal prior on sigma parameter. default is 1.
+#' @param siga_p_sd sd for half normal prior on sigma for alpha random walk parameter. default is 1.
+#' @param sigb_p_sd sd for half normal prior on sigma for beta random walk parameter. default is 1.
+#' @param logb_p_mean mean for prior on log b, default is -12.
+#' @param logb_p_sd sd for prior on log b, default is 3.
+#' @param logb_p_mean mean for prior on log b, default is -12.
+#' @param logb_p_sd sd for prior on log b, default is 3.
+#' @param AICc_type "conditional" (Thorson 2024) or "marginal"
+#' @param newton_stp logical. use newton step to improve estimates and gradients
+#' @param useEDF lofical use EDf algorithm describef in Thorson 2024
+#' 
+#' @details Priors: Weakly informative priors are included for the main parameterst of the model:
+#' alpha ~ gamma(3,1)
+#' logbeta ~ N(-12,3)
+#' sigobs ~ gamma(2,1/3)
+#' siga ~ gamma(2,1/3) 
+#' sigb ~ gamma(2,1/3)  
+#' 
+#' 
+#' @returns a list containing several model outputs:
+#' * alpha - MLE estimates for the alpha parameter vector
+#' * beta - MLE estimates for the beta parameter 
+#' * sig - MLE estimates for the observation error standard deviation     
+#' * siga - MLE estimates for the process error (variation in alpha) standard deviation
+#' * sigb - MLE estimates for the process error (variation in beta) standard deviation   
+#' * AICc - AICc values, given by 2*nll + 2*npar +(2*npar*(npar+1)/(nrow(data)-npar-1)), excluding prior components
+#' * BIC - BIC values, excluding prior components
+#' * model - opt object, generated by the `stats::nlminb()`  
+#' * tmb_data - data provided to TMB,
+#' * tmb_params - parameter intial guesses,
+#' * tmb_map - mapping indicating which parameters should be fixed or estimated,
+#' * tmb_obj - obj object, generated by the `TMB::MakeADFun()` 
+#' * gradients - final convergence gradient
+#' * bad_eig - eigen value
+#' * call - original function call
+#' * sd_report - MLE estimates and sdt Error estimates for main parameter estimates
+#' * class - name of cpp model
+#' 
+#' 
+#' @export
+#' @examples 
+#' data(harck)
+#' ricker_rwa_TMB(data=harck)
+#' 
+#' 
+ricker_rw_TMB_centered <- function(data, tv.par=c('a','b','both'), silent = FALSE, 
+  control = TMBcontrol(), ini_param=NULL, tmb_map = list(), priors_flag=1, 
+  stan_flag=0, sig_p_sd=1, siga_p_sd=1, sigb_p_sd=.3, logb_p_mean=-12, logb_p_sd=3,
+  AICc_type=c("conditional", "marginal")[1], deltaEDF=0.0001,newton_stp=TRUE,
+  useEDF=TRUE) {
+
+  #===================================
+  #prepare TMB input and options
+  #===================================
+  tmb_data <- list(
+    obs_S = data$S,
+    obs_logRS = data$logRS,
+    priors_flag=priors_flag,
+    stan_flag=stan_flag,
+    sig_p_sd=sig_p_sd,
+    logb_p_mean=logb_p_mean,
+    logb_p_sd=logb_p_sd,
+    siga_p_sd=siga_p_sd,
+    sigb_p_sd=sigb_p_sd
+
+  )
+
+  if(is.null(ini_param)){
+    magS <- log10_ceiling(max(data$S))
+    initlm<-lm(logRS~S, data=data)
+  }
+
+  if(is.null(ini_param)){
+      tmb_params <- list(logalpha   = initlm$coefficients[[1]],
+                   logbeta = ifelse(initlm$coefficients[[2]]>0,
+                                   log(1/magS),
+                                   log(-initlm$coefficients[[2]])),
+                   logsigobs = log(.5),
+                   logsiga = log(.5),
+                   logsigb = log(.5),
+                   epslogalpha_t=rep(0,length(tmb_data$obs_S)),
+                   epslogbeta_t=rep(0,length(tmb_data$obs_S)))
+  }else{
+    tmb_params <-ini_param
+  }
+
+  if(tv.par=="a"){
+
+    tmb_data$options_z=c(1,0)
+
+    tmb_random <- "epslogalpha_t"
+
+    tmb_map$logsigb = factor(NA)
+    tmb_map$epslogbeta_t = factor( rep(NA,length(tmb_params$epslogbeta_t)) )
+     
+    npar <- 4
+    npar_all <- 4+(length(data$S)-1)
+
+  }else if(tv.par=="b"){
+
+    tmb_data$options_z=c(0,1)
+
+    tmb_random <- "epslogbeta_t"
+
+    tmb_map$logsiga = factor(NA)
+    tmb_map$epslogalpha_t = factor( rep(NA,length(tmb_params$epslogbeta_t)) )
+
+    npar <- 4
+    npar_all <- 4+(length(data$S)-1)
+
+  }else if(tv.par=="both"){
+
+    tmb_data$options_z=c(1,1)
+       
+    tmb_random <- c("epslogalpha_t", "epslogbeta_t")
+
+    npar <- 5
+    npar_all <- 5+(length(data$S)-1)*2
+
+  }else{
+    stop(paste("tv.par",tv.par,"not recognized."))
+  }
+ 
+   
+  tmb_obj <- TMB::MakeADFun(data = tmb_data, 
+                              parameters = tmb_params, 
+                              map = tmb_map,
+                              random = tmb_random, 
+                              DLL = "Ricker_tv_all", 
+                              silent = silent)
+
+  lowlimit <- c(0.01,-20,log(0.01),log(0.01),log(0.01))
+  hightlimit <- c(20,-4,log(2),log(2),log(2))
+    
+  nonvariance_fixed_effects<-c("logalpha","logbeta")
+  clss <- "Ricker_tv_all"
+  #===================================
+  # TMB fit
+  #===================================
+
+  tmb_opt <- stats::nlminb(
+    start = tmb_obj$par, 
+    objective = tmb_obj$fn, 
+    gradient = tmb_obj$gr,
+    control = control,
+    lower = lowlimit, 
+    upper = hightlimit)
+  
+  maxgrad<-max(tmb_obj$gr(tmb_opt$par))
+  if(newton_stp==TRUE){
+    j<-1
+    while(maxgrad>0.01){
+      j<-j+1
+      if(j>20){break}
+      g <- as.numeric( tmb_obj$gr(tmb_opt$par) )
+      h <- optimHess(tmb_opt$par, fn=tmb_obj$fn, gr=tmb_obj$gr)
+      tmb_opt$par <- tmb_opt$par - solve(h, g)
+      tmb_opt$objective <- tmb_obj$fn(tmb_opt$par)
+    }
+
+  }
+
+  sd_report <- TMB::sdreport(tmb_obj)
+  conv <- get_convergence_diagnostics(sd_report)
+  
+  if(AICc_type=="conditional"){
+
+
+    myEDFo <- calculate_EDF( obj=tmb_obj,
+                      opt=tmb_opt,
+                      prediction_name = "pred_logRS",
+                      data_name = "obs_logRS",
+                      delta = deltaEDF,
+                      nonvariance_fixed_effects=nonvariance_fixed_effects,
+                      refit = "full",
+                      what="all")
+    myEDF <- max(myEDFo$EDF,npar)
+    
+    if(useEDF){
+      condnpar<-myEDF
+    }else{
+      condnpar<-npar
+    }
+    pennll<-  tmb_obj$report()$nll
+    AICc = 2*pennll + 2*condnpar +(2*condnpar*(condnpar+1)/(nrow(data)-condnpar-1))
+    BIC  <- 2*pennll + condnpar*log(nrow(data))
+  
+  }else if(AICc_type== "marginal"){
+    nll <- tmb_obj$fn()[1]- tmb_obj$report()$pnll
+    renll <- tmb_obj$report()$renll
+    allnll<- nll + renll
+    AICc  <- 2*nll + 2*npar +(2*npar*(npar+1)/(nrow(data)-npar-1))
+    AICc_fullll  <- 2*allnll + 2*npar +(2*npar*(npar+1)/(nrow(data)-npar-1))
+    AICc_allparam  <- 2*nll + 2*npar_all +(2*npar_all*(npar_all+1)/(nrow(data)-npar_all-1))
+    BIC  <- 2*nll + npar*log(nrow(data))
+    BIC_fullll  <- 2*allnll + npar*log(nrow(data))
+    BIC_allparam  <- 2*nll + npar_all*log(nrow(data)) 
+  }
+  
+  
+  #todo add alpha, beta and sigma parameter esitimates
+  structure(list(
+    logalpha    = tmb_obj$report()$logalpha_t,
+    beta     = tmb_obj$report()$beta_t,
+    Smax     = tmb_obj$report()$Smax_t,
+    sig      = tmb_obj$report()$sigobs,
+    Smsy      = tmb_obj$report()$Smsy,
+    umsy      = tmb_obj$report()$umsy,
+    siga      = ifelse(tv.par=="a"|tv.par=="both",
+                       tmb_obj$report()$siga,
+                       NA),
+    sigb      = ifelse(tv.par=="b"|tv.par=="both",
+                       tmb_obj$report()$sigb,
+                       NA),
+    model      = tmb_opt,
+    tmb_data   = tmb_data,
+    tmb_params = tmb_params,
+    tmb_map    = tmb_map,
+    tmb_random = tmb_random,
+    tmb_obj    = tmb_obj,
+    EDF= ifelse(AICc_type== "conditional",
+                       myEDF,
+                       NA),
+    grad_i= if(AICc_type== "conditional"){myEDFo$grad_i}else{NA},
     AICc       = AICc,
     BIC        = BIC,
     AICc_fullll= ifelse(AICc_type== "marginal",
@@ -1148,6 +1140,7 @@ get_convergence_diagnostics <- function(sd_report) {
 #' @useDynLib SR_HMM
 #' @useDynLib Ricker_tvlogb
 #' @useDynLib Ricker_tva_tvb
+#' @useDynLib Ricker_tv_all
 #' @useDynLib SR_HMM_a
 #' @useDynLib SR_HMM_b
 #' @useDynLib Rickerkf

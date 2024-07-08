@@ -174,11 +174,15 @@ Type objective_function<Type>::operator() ()
       nll+=-ll(i);
     }
   }
+  Type beta = exp(logbeta);
+  Type Smax = Type(1.0)/beta;
 
   Type ans= nll + renll + pnll;
 
   REPORT(logalpha)
   REPORT(logbeta)
+  REPORT(beta)
+  REPORT(Smax)
   REPORT(logalpha_t)
   REPORT(beta_t)
   REPORT(sigobs)

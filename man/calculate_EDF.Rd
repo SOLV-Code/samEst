@@ -16,7 +16,7 @@ calculate_EDF(
   delta = 0.1,
   show_progress = FALSE,
   refit = c("random", "full")[1],
-  what = c("EDF", "grad_i")[1]
+  what = c("EDF", "grad_i", "all")[1]
 )
 }
 \arguments{
@@ -35,7 +35,8 @@ fixed effects in models with random effects}
 
 \item{refit}{refit for all data points}
 
-\item{what}{what to output}
+\item{what}{what to output, "EDF": just EDF, "grad_i": individual
+gradients for each data point, or "all"}
 }
 \value{
 Sgen likelihood

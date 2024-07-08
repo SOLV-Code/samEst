@@ -14,7 +14,8 @@
 #' @param data_name observed y value
 #' @param delta see thorson paper
 #' @param refit refit for all data points
-#' @param what what to output
+#' @param what what to output, "EDF": just EDF, "grad_i": individual 
+#' gradients for each data point, or "all"
 #' 
 #' @export
 #' 
@@ -30,7 +31,7 @@ calculate_EDF <- function( obj,
           delta = 0.1,
           show_progress = FALSE,
           refit = c("random", "full")[1],
-          what = c("EDF","grad_i")[1] ){
+          what = c("EDF","grad_i","all")[1] ){
 
   # Extract stuff
   pred = obj$report()[[prediction_name]]

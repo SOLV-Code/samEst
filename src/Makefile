@@ -27,6 +27,8 @@ SR_HMM_b.so: SR_HMM_b.cpp
 Rickerkf.so: Rickerkf.cpp
 	Rscript --vanilla -e "TMB::compile('Rickerkf.cpp')"
 
+Ricker_tv_all.so: Ricker_tv_all.cpp
+	Rscript --vanilla -e "TMB::compile('Ricker_tv_all.cpp')"
 
 
 clean:

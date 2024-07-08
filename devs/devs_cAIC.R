@@ -124,9 +124,9 @@ comp$diff=comp$my-comp$th
 
 #test with simulated data
 
-simdat<-readRDS("C:/Users/worc/Documents/timevar/simest-tv/outs/SamSimOutputs/simData/stationary/stationary/stationary_fixedER_CUsrDat.RData")$srDatout
+simdat<-readRDS("C:/Users/worc/Documents/timevar/simest-tv/outs/SamSimOutputs/simData/regimeProd10/regimeProd10/regimeProd10_fixedER_CUsrDat.RData")$srDatout
 
-u=1
+u=776
 
 dat <- simdat[simdat$iteration==u,]
 dat <- dat[dat$year>(max(dat$year)-46),]
@@ -142,6 +142,10 @@ Smax_sd<-Smax_mean
 logbeta_pr_sig=sqrt(log(1+((1/ Smax_sd)*(1/ Smax_sd))/((1/Smax_mean)*(1/Smax_mean))))
 logbeta_pr=log(1/(Smax_mean))-0.5*logbeta_pr_sig^2
 
+ptva1<- ricker_rw_TMBall(data=df,tv.par="a",sig_p_sd=1,logb_p_mean=logbeta_pr,
+                  logb_p_sd=logbeta_pr_sig,deltaEDF=0.0001)
+
+ptva1$EDF
 
 #options
 silent = FALSE 
@@ -185,6 +189,7 @@ tmb_params <- list(alphao   = initlm$coefficients[[1]],
                    alpha = rep(initlm$coefficients[[1]],length(tmb_data$obs_S)))
     
 tmb_random <- "alpha"
+myEDF<- rep(NA,20)
 tmb_obj <- TMB::MakeADFun(data = tmb_data, 
                               parameters = tmb_params, 
                               map = tmb_map,
@@ -217,7 +222,7 @@ tmb_opt <- stats::nlminb(
     upper = hightlimit)
 
 grads_nstp<-matrix(NA, ncol=4,nrow=20)
-myEDF<- rep(NA,20)
+
 mypars<-matrix(NA, ncol=4,nrow=20)
   
 sd_report <- TMB::sdreport(tmb_obj)
@@ -230,11 +235,11 @@ fittoedf = list( "Opt"=tmb_opt,
               "nonvariance_fixed_effects"=nonvariance_fixed_effects )
 
   
-myEDF[1] = calculate_EDF( obj=fittoedf$Obj,
+myEDF[2] = calculate_EDF( obj=fittoedf$Obj,
                       opt=fittoedf$Opt,
                       prediction_name = "pred_logRS",
                       data_name = "obs_logRS",
-                      delta = deltaEDF,
+                      delta = 0.0001,
                       nonvariance_fixed_effects=fittoedf$nonvariance_fixed_effects,
                       refit = "full")
 
