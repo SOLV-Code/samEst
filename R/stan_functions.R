@@ -64,6 +64,8 @@ generated quantities{
  real S_max;
  real U_msy;
  real S_msy;
+ real prior_Smax=1/lognormal_rng(logbeta_pr,logbeta_pr_sig);
+ 
  vector[N] y_rep;
  
 S_max = 1/b;
@@ -187,6 +189,8 @@ generated quantities{
   real S_max;
   real U_msy;
   real S_msy;
+  real prior_Smax=1/lognormal_rng(logbeta_pr,logbeta_pr_sig);
+
   vector[N] y_rep;
   for(n in 1:N) y_rep[n]=normal_rng(mu[n],sigma);
   
@@ -326,6 +330,8 @@ model{
      real S_max;
      vector[L] U_msy;
      vector[L] S_msy;
+     real prior_Smax=1/lognormal_rng(logbeta_pr,logbeta_pr_sig);
+
     vector[N] y_rep;
     for(n in 1:N) y_rep[n]=normal_rng(log_a[ii[n]] - b*S[n],sigma);
    
@@ -458,6 +464,8 @@ generated quantities{
      vector[L] S_max;
      real U_msy;
      vector[L] S_msy;
+     real prior_Smax=1/lognormal_rng(logbeta_pr,logbeta_pr_sig);
+     
     vector[N] y_rep;
     for(n in 1:N) y_rep[n]=normal_rng(log_a - b[ii[n]]*S[n],sigma);
      
@@ -601,6 +609,8 @@ model{
      vector[L] U_msy;
      vector[L] S_msy;
      vector[N] y_rep;
+     real prior_Smax=1/lognormal_rng(logbeta_pr,logbeta_pr_sig);
+     
     for(n in 1:N) y_rep[n]=normal_rng(log_a[ii[n]] - b[ii[n]]*S[n],sigma);
 
    for(l in 1:L){ S_max[l] = 1/b[l];
@@ -781,6 +791,8 @@ generated quantities {
   vector[K] U_msy;
   vector[K] S_msy;
   vector[N] y_rep;
+  
+  real prior_Smax=1/lognormal_rng(logbeta_pr,logbeta_pr_sig);
   
   { // Forward algortihm
   for (t in 1:N)
@@ -1094,6 +1106,8 @@ vector[N] y_rep;
 vector[K] S_max;
 real U_msy;
 vector[K] S_msy;
+
+real prior_Smax=1/lognormal_rng(logbeta_pr,logbeta_pr_sig);
 
 { // Forward algortihm
 for (t in 1:N)
@@ -1413,6 +1427,8 @@ vector[K] gamma[N]; //forward-backward state probabilities
 vector[K] S_max;
 vector[K] U_msy;
 vector[K] S_msy;
+
+real prior_Smax=1/lognormal_rng(logbeta_pr,logbeta_pr_sig);
 
 { // Forward algortihm
 for (t in 1:N)
