@@ -188,7 +188,7 @@ ricker_TMB <- function(data,  silent = FALSE, control = TMBcontrol(),
 #' @param logb_p_sd sd for prior on log b, default is 3.
 #' @param AICc_type "conditional" (Thorson 2024) or "marginal"
 #' @param newton_stp logical. use newton step to improve estimates and gradients
-#' @param useEDF lofical use EDf algorithm describef in Thorson 2024
+#' @param useEDF logical use EDF algorithm describef in Thorson 2024
 #' 
 #' @details Priors: Weakly informative priors are included for the main parameterst of the model:
 #' alpha ~ gamma(3,1)
