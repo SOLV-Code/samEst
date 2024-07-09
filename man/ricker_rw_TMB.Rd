@@ -59,7 +59,7 @@ adjustment implemented. Default is 0, jacobian adjustment not included.}
 
 \item{newton_stp}{logical. use newton step to improve estimates and gradients}
 
-\item{useEDF}{lofical use EDf algorithm describef in Thorson 2024}
+\item{useEDF}{logical use EDF algorithm describef in Thorson 2024}
 }
 \value{
 a list containing several model outputs:
