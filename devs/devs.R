@@ -41,6 +41,7 @@ plot(harck$S,harck$R)
 ##testing functions
 
 p <- ricker_TMB(data=harck)
+sgen<-sGenCalc(p$alpha,p$beta,p$Smsy)
 p$Smax
 p$alpha
 
