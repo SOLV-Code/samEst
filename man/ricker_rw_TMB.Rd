@@ -21,7 +21,7 @@ ricker_rw_TMB(
   AICc_type = c("conditional", "marginal")[1],
   deltaEDF = 1e-04,
   newton_stp = TRUE,
-  useEDF = TRUE
+  useEDF = FALSE
 )
 }
 \arguments{

@@ -10,6 +10,8 @@
 devtools::document()
 devtools::load_all()
 
+#render the vignette
+devtools::build_rmd("vignettes/samEst.Rmd")
 
 #remotes::install_git('https://github.com/Pacific-salmon-assess/samEst', force=TRUE)
 #library(samEst)
@@ -40,8 +42,11 @@ plot(harck$S,harck$R)
 
 ##testing functions
 
-p <- ricker_TMB(data=harck)
-sgen<-sGenCalc(p$alpha,p$beta,p$Smsy)
+library(samEst)
+sgen<-samEst::sGenCalc(p$alpha,p$beta,p$Smsy)
+
+
+
 p$Smax
 p$alpha
 

@@ -228,7 +228,7 @@ ricker_rw_TMB <- function(data, tv.par=c('a','b','both'), silent = FALSE,
   control = TMBcontrol(), ini_param=NULL, tmb_map = list(), priors_flag=1, stan_flag=0,
   sig_p_sd=1, siga_p_sd=1, sigb_p_sd=.3, logb_p_mean=-12, logb_p_sd=3,
   AICc_type=c("conditional", "marginal")[1], deltaEDF=0.0001,newton_stp=TRUE,
-  useEDF=TRUE) {
+  useEDF=FALSE) {
 
   #===================================
   #prepare TMB input and options
@@ -376,7 +376,7 @@ ricker_rw_TMB <- function(data, tv.par=c('a','b','both'), silent = FALSE,
     lower = lowlimit, 
     upper = hightlimit)
   
-  maxgrad<-max(tmb_obj$gr(tmb_opt$par))
+  maxgrad <-max(tmb_obj$gr(tmb_opt$par))
   if(newton_stp==TRUE){
     j<-1
     while(maxgrad>0.01){
@@ -544,8 +544,8 @@ ricker_rw_TMB <- function(data, tv.par=c('a','b','both'), silent = FALSE,
 ricker_rw_TMB_centered <- function(data, tv.par=c('a','b','both'), silent = FALSE, 
   control = TMBcontrol(), ini_param=NULL, tmb_map = list(), priors_flag=1, 
   stan_flag=0, sig_p_sd=1, siga_p_sd=1, sigb_p_sd=.3, logb_p_mean=-12, logb_p_sd=3,
-  AICc_type=c("conditional", "marginal")[1], deltaEDF=0.0001,newton_stp=TRUE,
-  useEDF=TRUE) {
+  AICc_type=c("conditional", "marginal")[1], deltaEDF=0.0001, newton_stp=TRUE,
+  useEDF=FALSE) {
 
   #===================================
   #prepare TMB input and options
@@ -560,7 +560,6 @@ ricker_rw_TMB_centered <- function(data, tv.par=c('a','b','both'), silent = FALS
     logb_p_sd=logb_p_sd,
     siga_p_sd=siga_p_sd,
     sigb_p_sd=sigb_p_sd
-
   )
 
   if(is.null(ini_param)){
@@ -576,8 +575,8 @@ ricker_rw_TMB_centered <- function(data, tv.par=c('a','b','both'), silent = FALS
                    logsigobs = log(.5),
                    logsiga = log(.5),
                    logsigb = log(.5),
-                   epslogalpha_t=rep(0,length(tmb_data$obs_S)),
-                   epslogbeta_t=rep(0,length(tmb_data$obs_S)))
+                   epslogalpha_t=rep(0.1,length(tmb_data$obs_S)),
+                   epslogbeta_t=rep(0.1,length(tmb_data$obs_S)))
   }else{
     tmb_params <-ini_param
   }
@@ -618,8 +617,7 @@ ricker_rw_TMB_centered <- function(data, tv.par=c('a','b','both'), silent = FALS
   }else{
     stop(paste("tv.par",tv.par,"not recognized."))
   }
- 
-   
+    
   tmb_obj <- TMB::MakeADFun(data = tmb_data, 
                               parameters = tmb_params, 
                               map = tmb_map,
@@ -643,9 +641,11 @@ ricker_rw_TMB_centered <- function(data, tv.par=c('a','b','both'), silent = FALS
     control = control,
     lower = lowlimit, 
     upper = hightlimit)
+
   
-  maxgrad<-max(tmb_obj$gr(tmb_opt$par))
-  if(newton_stp==TRUE){
+  maxgrad <- max(tmb_obj$gr(tmb_opt$par))
+
+  if(newton_stp==TRUE & tmb_opt$convergence == 0){
     j<-1
     while(maxgrad>0.01){
       j<-j+1

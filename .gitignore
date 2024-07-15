@@ -22,3 +22,4 @@
 Harrison_Apr18.csv
 *.o
 *.dll
+inst/doc

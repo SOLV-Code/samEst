@@ -19,3 +19,9 @@ Sgen estimate
 \description{
 compute Sgen estimate
 }
+\examples{
+m1<- ricker_TMB(data=harck)
+sgen<-sGenCalc(m1$alpha,m1$beta,m1$Smsy)
+
+
+}
