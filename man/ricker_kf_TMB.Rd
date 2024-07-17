@@ -2,7 +2,7 @@
 % Please edit documentation in R/TMB_functions.R
 \name{ricker_kf_TMB}
 \alias{ricker_kf_TMB}
-\title{Ricker model with time-varying alpha estimated with Kalman Filter}
+\title{Ricker model with time-varying logalpha estimated with Kalman Filter}
 \usage{
 ricker_kf_TMB(
   data,
@@ -43,7 +43,7 @@ a list containing several model outputs:
 }
 }
 \description{
-Ricker model with time-varying alpha estimated with Kalman Filter
+Ricker model with time-varying logalpha estimated with Kalman Filter
 }
 \examples{
 data(harck)

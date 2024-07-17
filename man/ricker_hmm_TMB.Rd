@@ -2,13 +2,13 @@
 % Please edit documentation in R/TMB_functions.R
 \name{ricker_hmm_TMB}
 \alias{ricker_hmm_TMB}
-\title{Ricker hidden markov model with regime shiftts for alpha and beta.}
+\title{Ricker hidden markov model with regime shiftts for logalpha and beta.}
 \usage{
 ricker_hmm_TMB(
   data,
   tv.par = c("a", "b", "both"),
   k_regime = 2,
-  alpha_limits = c(0.01, 20),
+  logalpha_limits = c(0.01, 20),
   beta_limits = c(1e-10, 0.1),
   initDist = NULL,
   silent = FALSE,
@@ -30,9 +30,9 @@ ricker_hmm_TMB(
 
 \item{k_regime}{Number of regimes to be considered}
 
-\item{alpha_limits}{vector containing two values: upper and lower limit for alpha parameters. default is c(0,20)}
+\item{logalpha_limits}{vector containing two values: upper and lower limit for logalpha parameters. default is c(0,20)}
 
-\item{beta_limits}{vector containing two values: upper and lower limit for alpha parameters. default is c(1e-10,.1)}
+\item{beta_limits}{vector containing two values: upper and lower limit for beta parameters. default is c(1e-10,.1)}
 
 \item{initDist}{Initial probability of being in each state, default is equal probabilities assigned to all regimes.}
 
@@ -43,7 +43,7 @@ ricker_hmm_TMB(
 \item{ini_param}{Optional. A list with initial parameter guesses. The list should contain: lalpha (vector of length k_regime),
 lbeta (vector of length k_regime), logsigma, pi1_tran (vector of length k_regime-1),
 and qij_tran (matrix with nrow=k_regime, and ncol=k_regime-1). Keep in mind that the main
-parameters (alpha and beta) are transformed with a logistic function to account for the custom upper and lower values.}
+parameters (logalpha and beta) are transformed with a logistic function to account for the custom upper and lower values.}
 
 \item{priors_flag}{Integer, 1 priors are included in estimation model, 0 priors are not included.
 See details for priors documentation. See details for priors documentation.}
@@ -59,7 +59,7 @@ if NULL prior is set to matrix(1,nrow=k_regime,ncol=k_regime)}
 \value{
 a list containing several model outputs:
 \itemize{
-\item alpha - MLE estimates for the alpha parameter vector
+\item logalpha - MLE estimates for the logalpha parameter vector
 \item beta - MLE estimates for the beta parameter
 \item sig  - MLE estimates for the observation error sigma
 \item pi  - MLE estimates for the initial state probabilities vector of length k_regime
@@ -84,14 +84,14 @@ a list containing several model outputs:
 }
 }
 \description{
-Ricker hidden markov model with regime shiftts for alpha and beta.
+Ricker hidden markov model with regime shiftts for logalpha and beta.
 }
 \details{
 This model was published in Tang et al. 2021 Identification of recruitment regime shifts with a hidden Markov stock-recruitment model.
 The code for this model was a contribution by Xiaozhuo Tang.
 
 Priors: Weakly informative priors are included for the main parameterst of the model:
-alpha ~ gamma(3,1)
+logalpha ~ N(1.5,2.5)
 logbeta ~ N(-12,3)
 sigobs ~ gamma(2,1/3)
 qi ~ gamma(2,1/3)

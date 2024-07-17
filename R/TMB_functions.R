@@ -25,13 +25,13 @@
 #'
 #'
 #' @details Priors: Weakly informative priors are included for the main parameterst of the model:
-#' alpha ~ gamma(3,1)
+#' logalpha ~ N(1.5,2.5)
 #' logbeta ~ N(-12,3)
 #' sigobs ~ gamma(2,1/3) 
 #' 
 #' 
 #' @returns a list containing several model outputs:
-#' * alpha - MLE estimates for the alpha parameter vector
+#' * logalpha - MLE estimates for the alpha parameter vector
 #' * beta - MLE estimates for the beta parameter 
 #' * sigobs - MLE estimates for the observation error sigma         
 #' * AICc - AICc values, given by 2*nll + 2*npar +(2*npar*(npar+1)/(nrow(data)-npar-1)), excluding prior components
@@ -78,7 +78,7 @@ ricker_TMB <- function(data,  silent = FALSE, control = TMBcontrol(),
 
   if(!AC){
     tmb_params <- list(
-      alpha   = initlm$coefficients[[1]],
+      logalpha   = initlm$coefficients[[1]],
       logbeta = ifelse(initlm$coefficients[[2]]>0,log(magS),log(-initlm$coefficients[[2]])),
       logsigobs = log(1)
     )
@@ -92,7 +92,7 @@ ricker_TMB <- function(data,  silent = FALSE, control = TMBcontrol(),
   
   }else{
     tmb_params <- list(
-      alpha   = initlm$coefficients[[1]],
+      logalpha   = initlm$coefficients[[1]],
       logbeta = ifelse(initlm$coefficients[[2]]>0,log(magS),log(-initlm$coefficients[[2]])),
       logsigobs = log(1),
       rho=0
@@ -133,7 +133,7 @@ ricker_TMB <- function(data,  silent = FALSE, control = TMBcontrol(),
   
   
   structure(list(
-    alpha      = tmb_obj$report()$alpha,
+    logalpha   = tmb_obj$report()$logalpha,
     beta       = tmb_obj$report()$beta,
     Smax       = tmb_obj$report()$Smax,
     sig        = tmb_obj$report()$sigobs,
@@ -171,8 +171,7 @@ ricker_TMB <- function(data,  silent = FALSE, control = TMBcontrol(),
 #' @param tv.par Which parameters should vary? Either productivity (intercept, a), capacity (slope, b) or both parameters
 #' @param silent Logical Silent or optimization details? default is FALSE
 #' @param control output from TMBcontrol() function, to be passed to nlminb()
-#' @param ini_param Optional. A list with initial parameter guesses. The list should contain: alphao (a number),
-#' logbeta (a number), logsigobs (a number), logsiga (a number), and alpha ( a vector with the same length as the data). 
+#' @param ini_param Optional. A list with initial parameter guesses.  
 #' @param tmb_map optional, mapping list indicating if parameters should be estimated of fixed. 
 #' Default is all parameters are estimated
 #' @param priors_flag Integer, 1 priors are included in estimation model, 0 priors are not included.
@@ -180,7 +179,7 @@ ricker_TMB <- function(data,  silent = FALSE, control = TMBcontrol(),
 #' @param stan_flag Integer, flag indicating wether or not TMB code will be used with TMBstan - Jacobian
 #' adjustment implemented. Default is 0, jacobian adjustment not included.
 #' @param sig_p_sd sd for half normal prior on sigma parameter. default is 1.
-#' @param siga_p_sd sd for half normal prior on sigma for alpha random walk parameter. default is 1.
+#' @param siga_p_sd sd for half normal prior on sigma for logalpha random walk parameter. default is 1.
 #' @param sigb_p_sd sd for half normal prior on sigma for beta random walk parameter. default is 1.
 #' @param logb_p_mean mean for prior on log b, default is -12.
 #' @param logb_p_sd sd for prior on log b, default is 3.
@@ -191,7 +190,7 @@ ricker_TMB <- function(data,  silent = FALSE, control = TMBcontrol(),
 #' @param useEDF logical use EDF algorithm describef in Thorson 2024
 #' 
 #' @details Priors: Weakly informative priors are included for the main parameterst of the model:
-#' alpha ~ gamma(3,1)
+#' logalpha ~ N(1.5,2.5)
 #' logbeta ~ N(-12,3)
 #' sigobs ~ gamma(2,1/3)
 #' siga ~ gamma(2,1/3) 
@@ -199,10 +198,10 @@ ricker_TMB <- function(data,  silent = FALSE, control = TMBcontrol(),
 #' 
 #' 
 #' @returns a list containing several model outputs:
-#' * alpha - MLE estimates for the alpha parameter vector
+#' * logalpha - MLE estimates for the alpha parameter vector
 #' * beta - MLE estimates for the beta parameter 
 #' * sig - MLE estimates for the observation error standard deviation     
-#' * siga - MLE estimates for the process error (variation in alpha) standard deviation
+#' * siga - MLE estimates for the process error (variation in logalpha) standard deviation
 #' * sigb - MLE estimates for the process error (variation in beta) standard deviation   
 #' * AICc - AICc values, given by 2*nll + 2*npar +(2*npar*(npar+1)/(nrow(data)-npar-1)), excluding prior components
 #' * BIC - BIC values, excluding prior components
@@ -431,7 +430,7 @@ ricker_rw_TMB_deprecated <- function(data, tv.par=c('a','b','both'), silent = FA
   
   #todo add alpha, beta and sigma parameter esitimates
   structure(list(
-    alpha    = tmb_obj$report()$alpha,
+    logalpha    = tmb_obj$report()$logalpha,
     beta     = tmb_obj$report()$beta,
     Smax     = tmb_obj$report()$Smax,
     sig      = tmb_obj$report()$sigobs,
@@ -488,8 +487,7 @@ ricker_rw_TMB_deprecated <- function(data, tv.par=c('a','b','both'), silent = FA
 #' @param tv.par Which parameters should vary? Either productivity (intercept, a), capacity (slope, b) or both parameters
 #' @param silent Logical Silent or optimization details? default is FALSE
 #' @param control output from TMBcontrol() function, to be passed to nlminb()
-#' @param ini_param Optional. A list with initial parameter guesses. The list should contain: alphao (a number),
-#' logbeta (a number), logsigobs (a number), logsiga (a number), and alpha ( a vector with the same length as the data). 
+#' @param ini_param Optional. A list with initial parameter guesses. 
 #' @param tmb_map optional, mapping list indicating if parameters should be estimated of fixed. 
 #' Default is all parameters are estimated
 #' @param priors_flag Integer, 1 priors are included in estimation model, 0 priors are not included.
@@ -497,7 +495,7 @@ ricker_rw_TMB_deprecated <- function(data, tv.par=c('a','b','both'), silent = FA
 #' @param stan_flag Integer, flag indicating wether or not TMB code will be used with TMBstan - Jacobian
 #' adjustment implemented. Default is 0, jacobian adjustment not included.
 #' @param sig_p_sd sd for half normal prior on sigma parameter. default is 1.
-#' @param siga_p_sd sd for half normal prior on sigma for alpha random walk parameter. default is 1.
+#' @param siga_p_sd sd for half normal prior on sigma for logalpha random walk parameter. default is 1.
 #' @param sigb_p_sd sd for half normal prior on sigma for beta random walk parameter. default is 1.
 #' @param logb_p_mean mean for prior on log b, default is -12.
 #' @param logb_p_sd sd for prior on log b, default is 3.
@@ -509,7 +507,7 @@ ricker_rw_TMB_deprecated <- function(data, tv.par=c('a','b','both'), silent = FA
 #' @param deltaEDF size of delta step used to calculate Thorson 2024 EDF
 #' 
 #' @details Priors: Weakly informative priors are included for the main parameterst of the model:
-#' alpha ~ gamma(3,1)
+#' logalpha ~ N(1.5,2.5)
 #' logbeta ~ N(-12,3)
 #' sigobs ~ gamma(2,1/3)
 #' siga ~ gamma(2,1/3) 
@@ -517,10 +515,10 @@ ricker_rw_TMB_deprecated <- function(data, tv.par=c('a','b','both'), silent = FA
 #' 
 #' 
 #' @returns a list containing several model outputs:
-#' * alpha - MLE estimates for the alpha parameter vector
+#' * logalpha - MLE estimates for the logalpha parameter vector
 #' * beta - MLE estimates for the beta parameter 
 #' * sig - MLE estimates for the observation error standard deviation     
-#' * siga - MLE estimates for the process error (variation in alpha) standard deviation
+#' * siga - MLE estimates for the process error (variation in logalpha) standard deviation
 #' * sigb - MLE estimates for the process error (variation in beta) standard deviation   
 #' * AICc - AICc values, given by 2*nll + 2*npar +(2*npar*(npar+1)/(nrow(data)-npar-1)), excluding prior components
 #' * BIC - BIC values, excluding prior components
@@ -696,8 +694,7 @@ ricker_rw_TMB <- function(data, tv.par=c('a','b','both'), silent = FALSE,
     BIC_allparam  <- 2*nll + npar_all*log(nrow(data)) 
   }
   
-  
-  #todo add alpha, beta and sigma parameter esitimates
+
   structure(list(
     logalpha    = tmb_obj$report()$logalpha_t,
     beta     = tmb_obj$report()$beta_t,
@@ -750,20 +747,20 @@ ricker_rw_TMB <- function(data, tv.par=c('a','b','both'), silent = FALSE,
 
 
 
-#' Ricker hidden markov model with regime shiftts for alpha and beta. 
+#' Ricker hidden markov model with regime shiftts for logalpha and beta. 
 #'
 #' @param data A list or data frame containing Spawners (S) and log(Recruits/Spawners) (logRS) time series. 
 #' @param tv.par Which parameters should vary? Either productivity (intercept, a), capacity (slope, b) or both parameters
 #' @param k_regime Number of regimes to be considered
-#' @param alpha_limits vector containing two values: upper and lower limit for alpha parameters. default is c(0,20)
-#' @param beta_limits vector containing two values: upper and lower limit for alpha parameters. default is c(1e-10,.1)
+#' @param logalpha_limits vector containing two values: upper and lower limit for logalpha parameters. default is c(0,20)
+#' @param beta_limits vector containing two values: upper and lower limit for beta parameters. default is c(1e-10,.1)
 #' @param initDist Initial probability of being in each state, default is equal probabilities assigned to all regimes.
 #' @param silent Logical Silent or optimization details? default is FALSE
 #' @param control output from TMBcontrol() function, to be passed to nlminb()
 #' @param ini_param Optional. A list with initial parameter guesses. The list should contain: lalpha (vector of length k_regime),
 #' lbeta (vector of length k_regime), logsigma, pi1_tran (vector of length k_regime-1), 
 #' and qij_tran (matrix with nrow=k_regime, and ncol=k_regime-1). Keep in mind that the main
-#' parameters (alpha and beta) are transformed with a logistic function to account for the custom upper and lower values.   
+#' parameters (logalpha and beta) are transformed with a logistic function to account for the custom upper and lower values.   
 #' @param priors_flag Integer, 1 priors are included in estimation model, 0 priors are not included.
 #'  See details for priors documentation. See details for priors documentation.
 #' @param stan_flag Integer, flag indicating wether or not TMB code will be used with TMBstan - Jacobian
@@ -777,14 +774,14 @@ ricker_rw_TMB <- function(data, tv.par=c('a','b','both'), silent = FALSE,
 #' The code for this model was a contribution by Xiaozhuo Tang. 
 #' 
 #' Priors: Weakly informative priors are included for the main parameterst of the model:
-#' alpha ~ gamma(3,1)
+#' logalpha ~ N(1.5,2.5)
 #' logbeta ~ N(-12,3)
 #' sigobs ~ gamma(2,1/3)
 #' qi ~ gamma(2,1/3) 
 #' sigb ~ gamma(2,1/3)  
 #' 
 #' @returns a list containing several model outputs:
-#' * alpha - MLE estimates for the alpha parameter vector
+#' * logalpha - MLE estimates for the logalpha parameter vector
 #' * beta - MLE estimates for the beta parameter 
 #' * sig  - MLE estimates for the observation error sigma     
 #' * pi  - MLE estimates for the initial state probabilities vector of length k_regime
@@ -814,7 +811,7 @@ ricker_rw_TMB <- function(data, tv.par=c('a','b','both'), silent = FALSE,
 ricker_hmm_TMB <- function(data, 
                            tv.par = c('a','b','both'), 
                            k_regime = 2, 
-                           alpha_limits = c(0.01,20), 
+                           logalpha_limits = c(0.01,20), 
                            beta_limits=c(1e-10,.1), 
                            initDist=NULL, 
                            silent = FALSE, 
@@ -849,17 +846,17 @@ ricker_hmm_TMB <- function(data,
   
   tmb_data<-list(yt=data$logRS,
     st=data$S, 
-    alpha_u= alpha_limits[2],
-    alpha_l=alpha_limits[1],
-    beta_u=beta_limits[2],
-    beta_l=beta_limits[1],
-    initDist=initDist,
-    alpha_dirichlet=dirichlet_prior,
-    priors_flag=priors_flag,
-    stan_flag=stan_flag,
-    sig_p_sd=sig_p_sd,
-    logb_p_mean=logb_p_mean,
-    logb_p_sd=logb_p_sd  
+    logalpha_u = logalpha_limits[2],
+    logalpha_l = logalpha_limits[1],
+    beta_u = beta_limits[2],
+    beta_l = beta_limits[1],
+    initDist = initDist,
+    alpha_dirichlet = dirichlet_prior,
+    priors_flag = priors_flag,
+    stan_flag = stan_flag,
+    sig_p_sd = sig_p_sd,
+    logb_p_mean = logb_p_mean,
+    logb_p_sd = logb_p_sd  
   )
 
   if(is.null(ini_param)){
@@ -871,8 +868,8 @@ ricker_hmm_TMB <- function(data,
   if(tv.par == "a"){
     if(is.null(ini_param)){
       tmb_params <- list(        
-          lalpha = rep(find_linit(alpha_limits[2],
-                                  alpha_limits[1],
+          lalpha = rep(find_linit(logalpha_limits[2],
+                                  logalpha_limits[1],
                                   max(initlm$coefficients[[1]],.5)),
                    k_regime),
           lbeta = find_linit(beta_limits[2],beta_limits[1],-bguess),
@@ -894,7 +891,7 @@ ricker_hmm_TMB <- function(data,
   
     if(is.null(ini_param)){      
       tmb_params <- list(        
-          lalpha = find_linit(alpha_limits[2],alpha_limits[1],max(initlm$coefficients[[1]],.5)),
+          lalpha = find_linit(logalpha_limits[2],logalpha_limits[1],max(initlm$coefficients[[1]],.5)),
           lbeta = rep(find_linit(beta_limits[2],beta_limits[1],-bguess),k_regime),
           logsigma = log(.6),
           qij_tran = matrix(0.5,nrow=k_regime,ncol=k_regime-1)          
@@ -912,7 +909,7 @@ ricker_hmm_TMB <- function(data,
   }else if(tv.par=="both"){
     if(is.null(ini_param)){
       tmb_params <- list(        
-        lalpha = rep(find_linit(alpha_limits[2],alpha_limits[1],max(initlm$coefficients[[1]],.5)),
+        lalpha = rep(find_linit(logalpha_limits[2],logalpha_limits[1],max(initlm$coefficients[[1]],.5)),
           k_regime),
         lbeta = rep(find_linit(beta_limits[2],beta_limits[1],-bguess),k_regime),
         logsigma = log(.6),
@@ -946,7 +943,7 @@ ricker_hmm_TMB <- function(data,
   BIC  <- 2*nll + npar*log(nrow(data))
 
   structure(list(
-    alpha    = tmb_obj$report()$alpha,
+    logalpha    = tmb_obj$report()$logalpha,
     beta     = tmb_obj$report()$beta,
     sigma      = tmb_obj$report()$sigma,
     qij      = tmb_obj$report()$qij,
@@ -977,7 +974,7 @@ ricker_hmm_TMB <- function(data,
 
 
 
-#' Ricker model with time-varying alpha estimated with Kalman Filter
+#' Ricker model with time-varying logalpha estimated with Kalman Filter
 #'
 #' @param data A list or data frame containing Spawners (S) and log(Recruits/Spawners) (logRS) time series. 
 #' 
@@ -1050,7 +1047,7 @@ ricker_kf_TMB <- function(data,  silent = FALSE, control = TMBcontrol(),  tmb_ma
 
   
   structure(list(
-    alpha    = tmb_obj$report()$smoothemeana,
+    logalpha    = tmb_obj$report()$smoothemeana,
     beta     = -tmb_obj$report()$b,
     sigobs    = tmb_obj$report()$sige,
     siga      = tmb_obj$report()$sigw,

@@ -33,8 +33,7 @@ ricker_rw_TMB(
 
 \item{control}{output from TMBcontrol() function, to be passed to nlminb()}
 
-\item{ini_param}{Optional. A list with initial parameter guesses. The list should contain: alphao (a number),
-logbeta (a number), logsigobs (a number), logsiga (a number), and alpha ( a vector with the same length as the data).}
+\item{ini_param}{Optional. A list with initial parameter guesses.}
 
 \item{tmb_map}{optional, mapping list indicating if parameters should be estimated of fixed.
 Default is all parameters are estimated}
@@ -47,7 +46,7 @@ adjustment implemented. Default is 0, jacobian adjustment not included.}
 
 \item{sig_p_sd}{sd for half normal prior on sigma parameter. default is 1.}
 
-\item{siga_p_sd}{sd for half normal prior on sigma for alpha random walk parameter. default is 1.}
+\item{siga_p_sd}{sd for half normal prior on sigma for logalpha random walk parameter. default is 1.}
 
 \item{sigb_p_sd}{sd for half normal prior on sigma for beta random walk parameter. default is 1.}
 
@@ -66,10 +65,10 @@ adjustment implemented. Default is 0, jacobian adjustment not included.}
 \value{
 a list containing several model outputs:
 \itemize{
-\item alpha - MLE estimates for the alpha parameter vector
+\item logalpha - MLE estimates for the logalpha parameter vector
 \item beta - MLE estimates for the beta parameter
 \item sig - MLE estimates for the observation error standard deviation
-\item siga - MLE estimates for the process error (variation in alpha) standard deviation
+\item siga - MLE estimates for the process error (variation in logalpha) standard deviation
 \item sigb - MLE estimates for the process error (variation in beta) standard deviation
 \item AICc - AICc values, given by 2\emph{nll + 2}npar +(2\emph{npar}(npar+1)/(nrow(data)-npar-1)), excluding prior components
 \item BIC - BIC values, excluding prior components
@@ -90,7 +89,7 @@ Ricker model with random walk in a, b or both parameters with TMB
 }
 \details{
 Priors: Weakly informative priors are included for the main parameterst of the model:
-alpha ~ gamma(3,1)
+logalpha ~ N(1.5,2.5)
 logbeta ~ N(-12,3)
 sigobs ~ gamma(2,1/3)
 siga ~ gamma(2,1/3)

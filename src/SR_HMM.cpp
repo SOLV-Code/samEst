@@ -74,14 +74,14 @@ Type ddirmultinom (vector<Type> obs, vector<Type> p, Type phi, int do_log) {
 
 
 template<class Type>
-vector<Type> segment_1(vector<Type> yt, vector<Type> st, matrix<Type> qij,vector<Type> pi1,vector<Type> alpha,vector<Type> beta,Type sigma,int t){
+vector<Type> segment_1(vector<Type> yt, vector<Type> st, matrix<Type> qij,vector<Type> pi1,vector<Type> logalpha,vector<Type> beta,Type sigma,int t){
   
   int k_regime = beta.size();
   Type small = pow(10,-300);
   vector<Type> sr = log(pi1);
   
   for(int j = 0;j < k_regime;++j){
-    Type f_now = alpha(j) - beta(j)*st(0);
+    Type f_now = logalpha(j) - beta(j)*st(0);
     sr(j) += dnorm(yt(0), f_now, sigma,true);
   }
   
@@ -99,7 +99,7 @@ vector<Type> segment_1(vector<Type> yt, vector<Type> st, matrix<Type> qij,vector
     sr = sr_new;
  
     for(int j = 0;j < k_regime;++j){
-      Type f_now = alpha(j) - beta(j)*st(i);
+      Type f_now = logalpha(j) - beta(j)*st(i);
       sr(j) += dnorm(yt(i), f_now, sigma,true);
     }
   }
@@ -109,14 +109,14 @@ vector<Type> segment_1(vector<Type> yt, vector<Type> st, matrix<Type> qij,vector
 
 template<class Type>
 Type segment_2(vector<Type> yt, vector<Type> st, matrix<Type> qij,vector<Type>
-pi1,vector<Type> alpha,vector<Type> beta,Type sigma,int rt,int t){
+pi1,vector<Type> logalpha,vector<Type> beta,Type sigma,int rt,int t){
   
   int k_regime = beta.size();
   int n = yt.size();
   vector<Type> sr = qij.row(rt);
   
   for(int j = 0;j < k_regime;++j){
-    Type f_now = alpha(j) - beta(j)*st(t+1);
+    Type f_now = logalpha(j) - beta(j)*st(t+1);
     sr(j) += dnorm(yt(t+1), f_now, sigma,true);
   }
  
@@ -131,7 +131,7 @@ pi1,vector<Type> alpha,vector<Type> beta,Type sigma,int rt,int t){
     }
     sr = sr_new;
     for(int j = 0;j < k_regime;++j){
-      Type f_now = alpha(j) - beta(j)*st(i);
+      Type f_now = logalpha(j) - beta(j)*st(i);
       sr(j) += dnorm(yt(i), f_now, sigma,true);
     }
   }
@@ -150,8 +150,8 @@ Type objective_function<Type>::operator() ()
   DATA_VECTOR(yt);
   DATA_UPDATE(yt);
   DATA_VECTOR(st);
-  DATA_SCALAR(alpha_u); //upper bound for a
-  DATA_SCALAR(alpha_l); //lower bound for a
+  DATA_SCALAR(logalpha_u); //upper bound for a
+  DATA_SCALAR(logalpha_l); //lower bound for a
   DATA_SCALAR(beta_u);  //upper bound for b
   DATA_SCALAR(beta_l);  //upper bound for b
   //DATA_SCALAR(sigma_u); //lower bound for sigma
@@ -177,16 +177,16 @@ Type objective_function<Type>::operator() ()
   int k_regime = lbeta.size();
   
   vector<Type> beta = (beta_u-beta_l)/(1+exp(-lbeta))+beta_l;// when lbeta is negative infinity, beta=beta_l; when lbeta is positive infinity, beta=beta_u
-  vector<Type> alpha(k_regime), Smsy(k_regime), umsy(k_regime), Smax(k_regime);
+  vector<Type> logalpha(k_regime), Smsy(k_regime), umsy(k_regime), Smax(k_regime);
 
 
   
-  alpha(0) = (alpha_u-alpha_l)/(1+exp(-lalpha(0)))+alpha_l;
+  logalpha(0) = (logalpha_u-logalpha_l)/(1+exp(-lalpha(0)))+logalpha_l;
   
   for(int i = 1;i < k_regime;++i){
-    alpha(i) = alpha(i-1) + (alpha_u-alpha(i-1))/(1+exp(-lalpha(i)));
+    logalpha(i) = logalpha(i-1) + (logalpha_u-logalpha(i-1))/(1+exp(-lalpha(i)));
 
-  } // alpha(1) from alpha(0) to alpha_u
+  } // logalpha(1) from logalpha(0) to logalpha_u
 
   //Type sigma = sigma_u/(1+exp(-lsigma));
   Type sigma = exp(logsigma);
@@ -212,7 +212,7 @@ Type objective_function<Type>::operator() ()
     }
   } 
   int n = yt.size();
-  vector<Type> sr = segment_1(yt, st, qij,pi1,alpha,beta,sigma,n-1);
+  vector<Type> sr = segment_1(yt, st, qij,pi1,logalpha,beta,sigma,n-1);
   Type nll = sr(0);
   
   for(int j = 1;j < k_regime;++j){
@@ -225,19 +225,19 @@ Type objective_function<Type>::operator() ()
 // predict r_t ///////////////////////////////////
   matrix<Type> r_pred(k_regime,n);
   for(int i = 0;i < n-1;++i){
-    sr = segment_1(yt, st, qij,pi1,alpha,beta,sigma,i);
+    sr = segment_1(yt, st, qij,pi1,logalpha,beta,sigma,i);
     for(int j = 0;j < k_regime;++j){
-      Type tempt = sr(j) + segment_2(yt, st, qij,pi1,alpha,beta,sigma,j,i) + nll;
+      Type tempt = sr(j) + segment_2(yt, st, qij,pi1,logalpha,beta,sigma,j,i) + nll;
       r_pred(j,i) = exp(tempt);
     }
   }
-  sr = segment_1(yt, st, qij,pi1,alpha,beta,sigma,n-1);
+  sr = segment_1(yt, st, qij,pi1,logalpha,beta,sigma,n-1);
   for(int j = 0;j < k_regime;++j){
     Type tempt = sr(j) + nll;
     r_pred(j,n-1) = exp(tempt);
    
-    Smsy(j) = (1 - LambertW(exp(1-alpha(j))) ) / beta(j);
-    umsy(j) = (1 - LambertW(exp(1-alpha(j))) ); 
+    Smsy(j) = (1 - LambertW(exp(1-logalpha(j))) ) / beta(j);
+    umsy(j) = (1 - LambertW(exp(1-logalpha(j))) ); 
     Smax(j)= Type(1.0)/beta(j);
   }
  
@@ -258,11 +258,9 @@ Type objective_function<Type>::operator() ()
     for(int j = 0;j < k_regime;++j){
       pi_prior(j) = Type(1.0);
       Type logbeta = log(beta(j));
-      //pnll -= dnorm(alpha(j),Type(0.0),Type(2.5),true);
-      pnll -=dnorm(alpha(j),Type(1.5),Type(2.5),true);
-      //pnll -= dgamma(alpha(j),Type(3.0),Type(1.5),true);
-      //pnll -=dnorm(alpha(j),Type(2.5),Type(3.0),true)- log(pnorm(Type(-2.0), Type(2.5),Type(3.0)));
-      
+     
+      pnll -=dnorm(logalpha(j),Type(1.5),Type(2.5),true);
+     
       pnll -= dnorm(logbeta,logb_p_mean,logb_p_sd,true);
     
 
@@ -281,7 +279,7 @@ Type objective_function<Type>::operator() ()
   Type ans= nll + pnll;
 
 REPORT(beta);
-REPORT(alpha);
+REPORT(logalpha);
 REPORT(sigma);
 REPORT(qij);
 REPORT(umsy);
@@ -295,7 +293,7 @@ REPORT(pnll);
  
 
 
-ADREPORT(alpha);
+ADREPORT(logalpha);
 ADREPORT(beta);
 ADREPORT(sigma);
 ADREPORT(Smax);

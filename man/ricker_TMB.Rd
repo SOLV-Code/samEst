@@ -47,7 +47,7 @@ adjustment implemented. Default is 0, jacobian adjustment not included.}
 \value{
 a list containing several model outputs:
 \itemize{
-\item alpha - MLE estimates for the alpha parameter vector
+\item logalpha - MLE estimates for the alpha parameter vector
 \item beta - MLE estimates for the beta parameter
 \item sigobs - MLE estimates for the observation error sigma
 \item AICc - AICc values, given by 2\emph{nll + 2}npar +(2\emph{npar}(npar+1)/(nrow(data)-npar-1)), excluding prior components
@@ -69,7 +69,7 @@ Simple Ricker model estimated with TMB
 }
 \details{
 Priors: Weakly informative priors are included for the main parameterst of the model:
-alpha ~ gamma(3,1)
+logalpha ~ N(1.5,2.5)
 logbeta ~ N(-12,3)
 sigobs ~ gamma(2,1/3)
 }

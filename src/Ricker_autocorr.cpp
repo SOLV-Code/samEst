@@ -75,7 +75,7 @@ Type objective_function<Type>::operator() ()
   DATA_SCALAR(x_oos); //spawners in next year
 
 
-  PARAMETER(alpha);
+  PARAMETER(logalpha);
   PARAMETER(logbeta);
   PARAMETER(logsigobs);
   PARAMETER(rho);
@@ -100,19 +100,18 @@ Type objective_function<Type>::operator() ()
   Type pnll = Type(0.0);
 
   if(priors_flag == 1){
-    //pnll -=dnorm(alpha,Type(0.0),Type(2.5),true);
-    pnll -=dnorm(alpha,Type(1.5),Type(2.5),true);
-    //pnll -=dgamma(alpha,Type(3.0),Type(1.5),true);
+    
+    pnll -=dnorm(logalpha,Type(1.5),Type(2.5),true);
+    
     pnll -= dnorm(logbeta,logb_p_mean,logb_p_sd,true);
-    //ans -= dnorm(logsigobs,Type(0.0),Type(2.0),true);
-    //pnll -= dgamma(sigobs,Type(2.0),Type(1.0)/Type(3.0),true);
+    
     pnll -= dnorm(sigobs,Type(0.0),sig_p_sd,true) - log(pnorm(Type(0.0), Type(0.0),sig_p_sd));
     if(stan_flag) pnll -= logsigobs;
   }
   
   vector<Type> pred_logRS(timeSteps), pred_logR(timeSteps), residuals(timeSteps) ;
  
-  pred_logRS(0) = alpha - beta * obs_S(0) ;
+  pred_logRS(0) = logalpha - beta * obs_S(0) ;
   pred_logR(0) = pred_logRS(0) + log(obs_S(0));
   residuals(0) = obs_logRS(0) - pred_logRS(0);
     
@@ -120,26 +119,25 @@ Type objective_function<Type>::operator() ()
 
   for(int i=1;i<timeSteps;i++){
     if(!isNA(obs_logRS(i))){
-      //pred_logRS(i) = alpha - beta * obs_S(i) + residuals(i-1) * rhoo ;
-      pred_logRS(i) = alpha - beta * obs_S(i) ;
+      
+      pred_logRS(i) = logalpha - beta * obs_S(i) ;
       pred_logR(i) = pred_logRS(i) + log(obs_S(i));
       residuals(i) = obs_logRS(i) - pred_logRS(i);     
       nll+=-dnorm(obs_logRS(i),pred_logRS(i) + residuals(i-1) * rhoo ,sigAR,true);      
     } 
   }
   
-  //Type umsy     = Type(.5) * alpha - Type(0.07) * (alpha * alpha);
-  //Type Smsy     = alpha/beta * (Type(0.5) -Type(0.07) * alpha);
+  
 
-  Type umsy = (Type(1) - LambertW(exp(1-alpha)));
-  Type Smsy = (Type(1) - LambertW(exp(1-alpha))) / beta;
+  Type umsy = (Type(1) - LambertW(exp(1-logalpha)));
+  Type Smsy = (Type(1) - LambertW(exp(1-logalpha))) / beta;
   
   Type ans = nll + pnll;
 
-  Type pred_oos = alpha - beta * x_oos+ residuals(timeSteps-1) * rhoo;
+  Type pred_oos = logalpha - beta * x_oos+ residuals(timeSteps-1) * rhoo;
   Type log_lik_oos = dnorm(y_oos,pred_oos,sigAR,true);
 
-  REPORT(alpha)
+  REPORT(logalpha)
   REPORT(beta)
   REPORT(rhoo)
   REPORT(pred_logRS)
@@ -153,7 +151,7 @@ Type objective_function<Type>::operator() ()
   REPORT(pnll);  
   REPORT(log_lik_oos);
  
-  ADREPORT(alpha);
+  ADREPORT(logalpha);
   ADREPORT(beta);
   REPORT(rhoo);
   ADREPORT(sigobs);

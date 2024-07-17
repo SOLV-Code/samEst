@@ -61,14 +61,14 @@ Type objective_function<Type>::operator() ()
 
   
   
-  PARAMETER(alpha);
+  PARAMETER(logalpha);
   PARAMETER(logbeta);
   PARAMETER(logsigobs);
   
   int timeSteps=obs_logRS.size();
 
   //priors - based on evaluation done with the prior predictive check
-  //Type ans= Type(0);
+  
   Type nll= Type(0.0);
   Type pnll = Type(0.0);
   
@@ -79,10 +79,10 @@ Type objective_function<Type>::operator() ()
 
   if(priors_flag == 1){
     
-    pnll -=dnorm(alpha,Type(1.5),Type(2.5),true);
-    //pnll -=dgamma(alpha,Type(3.0),Type(1.5),true);
+    pnll -=dnorm(logalpha,Type(1.5),Type(2.5),true);
+    
     pnll -= dnorm(logbeta,logb_p_mean,logb_p_sd,true);
-    //pnll -= dgamma(sigobs,Type(2.0),Type(1.0)/Type(3.0),true);
+    
     
     pnll -= dnorm(sigobs,Type(0.0),sig_p_sd,true) - log(pnorm(Type(0.0), Type(0.0),sig_p_sd));
     if(stan_flag) pnll -= logsigobs; //Jacobian for half normal prior
@@ -93,7 +93,7 @@ Type objective_function<Type>::operator() ()
    
   for(int i=0;i<timeSteps;i++){
     if(!isNA(obs_logRS(i))){
-      pred_logRS(i) = alpha - beta * obs_S(i) ; 
+      pred_logRS(i) = logalpha - beta * obs_S(i) ; 
       pred_logR(i) = pred_logRS(i) + log(obs_S(i));
       residuals(i) = obs_logRS(i) - pred_logRS(i);
       ll(i) = dnorm(obs_logRS(i),pred_logRS(i),sigobs,true);
@@ -103,11 +103,11 @@ Type objective_function<Type>::operator() ()
   
   }
   
-  Type umsy = (Type(1) - LambertW(exp(1-alpha)));
-  Type Smsy = (Type(1) - LambertW(exp(1-alpha))) / beta;
+  Type umsy = (Type(1) - LambertW(exp(1-logalpha)));
+  Type Smsy = (Type(1) - LambertW(exp(1-logalpha))) / beta;
   Type ans= nll + pnll;
 
-  Type pred_oos = alpha - beta * x_oos;
+  Type pred_oos = logalpha - beta * x_oos;
   Type log_lik_oos = dnorm(y_oos,pred_oos,sigobs,true);
 
 
@@ -122,7 +122,7 @@ Type objective_function<Type>::operator() ()
   REPORT(pred_logR)
   REPORT(pred_logRS)
   REPORT(residuals)
-  REPORT(alpha)  
+  REPORT(logalpha)  
   REPORT(beta)
   REPORT(sigobs)
   REPORT(Smax)
@@ -133,7 +133,7 @@ Type objective_function<Type>::operator() ()
   REPORT(pnll); 
   REPORT(log_lik_oos); 
 
-  ADREPORT(alpha);
+  ADREPORT(logalpha);
   ADREPORT(beta);
   ADREPORT(sigobs);
   ADREPORT(umsy);
