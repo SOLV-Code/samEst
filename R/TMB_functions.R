@@ -503,9 +503,10 @@ ricker_rw_TMB_deprecated <- function(data, tv.par=c('a','b','both'), silent = FA
 #' @param logb_p_sd sd for prior on log b, default is 3.
 #' @param logb_p_mean mean for prior on log b, default is -12.
 #' @param logb_p_sd sd for prior on log b, default is 3.
-#' @param AICc_type "conditional" (Thorson 2024) or "marginal"
+#' @param AICc_type "conditional" or "marginal"
 #' @param newton_stp logical. use newton step to improve estimates and gradients
-#' @param useEDF lofical use EDf algorithm describef in Thorson 2024
+#' @param useEDF logical use EDf algorithm describef in Thorson 2024
+#' @param deltaEDF size of delta step used to calculate Thorson 2024 EDF
 #' 
 #' @details Priors: Weakly informative priors are included for the main parameterst of the model:
 #' alpha ~ gamma(3,1)
@@ -1136,10 +1137,7 @@ get_convergence_diagnostics <- function(sd_report) {
 #'
 #' @useDynLib Ricker_simple
 #' @useDynLib Ricker_autocorr
-#' @useDynLib Ricker_tva
 #' @useDynLib SR_HMM
-#' @useDynLib Ricker_tvlogb
-#' @useDynLib Ricker_tva_tvb
 #' @useDynLib Ricker_tv_all
 #' @useDynLib SR_HMM_a
 #' @useDynLib SR_HMM_b

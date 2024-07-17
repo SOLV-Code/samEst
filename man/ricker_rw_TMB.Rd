@@ -55,11 +55,13 @@ adjustment implemented. Default is 0, jacobian adjustment not included.}
 
 \item{logb_p_sd}{sd for prior on log b, default is 3.}
 
-\item{AICc_type}{"conditional" (Thorson 2024) or "marginal"}
+\item{AICc_type}{"conditional" or "marginal"}
+
+\item{deltaEDF}{size of delta step used to calculate Thorson 2024 EDF}
 
 \item{newton_stp}{logical. use newton step to improve estimates and gradients}
 
-\item{useEDF}{logical use EDF algorithm describef in Thorson 2024}
+\item{useEDF}{logical use EDf algorithm describef in Thorson 2024}
 }
 \value{
 a list containing several model outputs:
