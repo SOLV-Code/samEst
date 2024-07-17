@@ -165,7 +165,7 @@ ricker_TMB <- function(data,  silent = FALSE, control = TMBcontrol(),
 
 
 
-#' Ricker model with random walk in a, b or both parameters with TMB
+#' deprecated version based on no centered model Ricker model with random walk in a, b or both parameters with TMB
 #'
 #' @param data A list or data frame containing Spawners (S) and log(Recruits/Spawners) (logRS) time series. 
 #' @param tv.par Which parameters should vary? Either productivity (intercept, a), capacity (slope, b) or both parameters
@@ -218,13 +218,13 @@ ricker_TMB <- function(data,  silent = FALSE, control = TMBcontrol(),
 #' * class - name of cpp model
 #' 
 #' 
-#' @export
+#'
 #' @examples 
 #' data(harck)
 #' ricker_rwa_TMB(data=harck)
 #' 
 #' 
-ricker_rw_TMB <- function(data, tv.par=c('a','b','both'), silent = FALSE, 
+ricker_rw_TMB_deprecated <- function(data, tv.par=c('a','b','both'), silent = FALSE, 
   control = TMBcontrol(), ini_param=NULL, tmb_map = list(), priors_flag=1, stan_flag=0,
   sig_p_sd=1, siga_p_sd=1, sigb_p_sd=.3, logb_p_mean=-12, logb_p_sd=3,
   AICc_type=c("conditional", "marginal")[1], deltaEDF=0.0001,newton_stp=TRUE,
@@ -450,7 +450,7 @@ ricker_rw_TMB <- function(data, tv.par=c('a','b','both'), silent = FALSE,
     tmb_random = tmb_random,
     tmb_obj    = tmb_obj,
     EDF= ifelse(AICc_type== "conditional",
-                       myEDF,
+                       condnpar,
                        NA),
     grad_i= if(AICc_type== "conditional"){myEDFo$grad_i}else{NA},
     AICc       = AICc,
@@ -541,7 +541,7 @@ ricker_rw_TMB <- function(data, tv.par=c('a','b','both'), silent = FALSE,
 #' ricker_rwa_TMB(data=harck)
 #' 
 #' 
-ricker_rw_TMB_centered <- function(data, tv.par=c('a','b','both'), silent = FALSE, 
+ricker_rw_TMB <- function(data, tv.par=c('a','b','both'), silent = FALSE, 
   control = TMBcontrol(), ini_param=NULL, tmb_map = list(), priors_flag=1, 
   stan_flag=0, sig_p_sd=1, siga_p_sd=1, sigb_p_sd=.3, logb_p_mean=-12, logb_p_sd=3,
   AICc_type=c("conditional", "marginal")[1], deltaEDF=0.0001, newton_stp=TRUE,
@@ -717,7 +717,7 @@ ricker_rw_TMB_centered <- function(data, tv.par=c('a','b','both'), silent = FALS
     tmb_random = tmb_random,
     tmb_obj    = tmb_obj,
     EDF= ifelse(AICc_type== "conditional",
-                       myEDF,
+                       condnpar,
                        NA),
     grad_i= if(AICc_type== "conditional"){myEDFo$grad_i}else{NA},
     AICc       = AICc,
