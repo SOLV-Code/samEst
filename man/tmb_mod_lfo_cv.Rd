@@ -8,7 +8,7 @@ tmb_mod_lfo_cv(
   data,
   model = c("static", "staticAC", "rw_a", "rw_b", "rw_both", "HMM", "HMM_a", "HMM_b"),
   L = 10,
-  siglfo = c("obs", "total"),
+  siglfo = c("obs", "total")[1],
   dirichlet_prior = NULL,
   priors_flag = 1,
   sig_p_sd = 1,
@@ -25,9 +25,9 @@ tmb_mod_lfo_cv(
 
 \item{L}{starting point for LFO-CV (minimum value is 10)}
 
-\item{siglfo}{string. Incating whether full variance should be used for lfo of models with random walks in parameters
+\item{siglfo}{string. Indicating whether full variance should be used for lfo of models with random walks in parameters
 "obs" incates that only observation variance is considered for lfo calculations, "total" indicates that sum of
-process and observation variances are used. Option valud only for 'alpha' tv par.}
+process and observation variances are used. Option valid only for 'logalpha' tv par.}
 
 \item{dirichlet_prior}{Prior for transition probability matrix in HMM models
 k_regime x k_regime matrix. If NULL prior is set to matrix(1,nrow=k_regime,ncol=k_regime).}

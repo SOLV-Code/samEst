@@ -10,9 +10,9 @@
 #' @param model string. Which parameters are time-varying? Options are c('static','rw_a','rw_b',
 #' 'rw_both', 'HMM', 'HMM_a', 'HMM_b')
 #' @param L starting point for LFO-CV (minimum value is 10)
-#' @param siglfo string. Incating whether full variance should be used for lfo of models with random walks in parameters
+#' @param siglfo string. Indicating whether full variance should be used for lfo of models with random walks in parameters
 #' "obs" incates that only observation variance is considered for lfo calculations, "total" indicates that sum of 
-#' process and observation variances are used. Option valud only for 'alpha' tv par. 
+#' process and observation variances are used. Option valid only for 'logalpha' tv par. 
 #'@param dirichlet_prior Prior for transition probability matrix in HMM models
 #' k_regime x k_regime matrix. If NULL prior is set to matrix(1,nrow=k_regime,ncol=k_regime). 
 #' @param priors_flag Integer, 1 priors are included in estimation model, 0 priors are not included.
@@ -31,7 +31,7 @@
 #' tmb_mod_lfo_cv(data=harck, model=c('static'))
 #' 
 tmb_mod_lfo_cv=function(data, model=c('static','staticAC','rw_a','rw_b','rw_both', 'HMM', 'HMM_a','HMM_b'), 
-                        L=10, siglfo=c("obs","total"),dirichlet_prior=NULL,  priors_flag=1, sig_p_sd=1, 
+                        L=10, siglfo=c("obs","total")[1],dirichlet_prior=NULL,  priors_flag=1, sig_p_sd=1, 
                         priorlogb=c("default","maxobsS"),logb_p_mean=-12,logb_p_sd=3 ){
   #df = full data frame
   #ac = autocorrelation, if ac=T then implement AR-1
@@ -78,7 +78,7 @@ tmb_mod_lfo_cv=function(data, model=c('static','staticAC','rw_a','rw_b','rw_both
       fail_conv[i-(L-1)] <- ifelse(is.null(fit_past_tmb$fail_conv),0,fit_past_tmb$fail_conv)
 
       if(fail_conv[i-(L-1)]==0){
-        rs_pred_1b=fit_past_tmb$alpha-fit_past_tmb$beta*df_oos$S[i + 1]
+        rs_pred_1b=fit_past_tmb$logalpha-fit_past_tmb$beta*df_oos$S[i + 1]
         exact_elpds_1b[i+1] <- log(dnorm(df_oos$logRS[i+1],mean=rs_pred_1b,sd=fit_past_tmb$sig))
       }else{
         exact_elpds_1b[i+1] <- NA
@@ -121,7 +121,7 @@ tmb_mod_lfo_cv=function(data, model=c('static','staticAC','rw_a','rw_b','rw_both
       fail_conv[i-(L-1)] <- ifelse(is.null(fit_past_tmb$fail_conv),0,fit_past_tmb$fail_conv)
 
       if(fail_conv[i-(L-1)]==0){
-        rs_pred_1b<-fit_past_tmb$alpha-fit_past_tmb$beta*df_oos$S[i + 1] + fit_past_tmb$residuals[i] * fit_past_tmb$rho
+        rs_pred_1b<-fit_past_tmb$logalpha-fit_past_tmb$beta*df_oos$S[i + 1] + fit_past_tmb$residuals[i] * fit_past_tmb$rho
         exact_elpds_1b[i+1] <- log(dnorm(df_oos$logRS[i+1],mean=rs_pred_1b,sd=fit_past_tmb$sigar))
       }else{
         exact_elpds_1b[i+1] <- NA
@@ -165,9 +165,9 @@ tmb_mod_lfo_cv=function(data, model=c('static','staticAC','rw_a','rw_b','rw_both
       
 
       if(fail_conv[i-(L-1)]==0){ 
-        rs_pred_1b=fit_past_tv_a_tmb$alpha[i]-fit_past_tv_a_tmb$beta*df_oos$S[i + 1]
-        rs_pred_3b=mean(fit_past_tv_a_tmb$alpha[(i-2):i])-fit_past_tv_a_tmb$beta*df_oos$S[i + 1]
-        rs_pred_5b=mean(fit_past_tv_a_tmb$alpha[(i-4):i])-fit_past_tv_a_tmb$beta*df_oos$S[i + 1]
+        rs_pred_1b=fit_past_tv_a_tmb$logalpha[i]-fit_past_tv_a_tmb$beta[i]*df_oos$S[i + 1]
+        rs_pred_3b=mean(fit_past_tv_a_tmb$logalpha[(i-2):i])-fit_past_tv_a_tmb$beta[i]*df_oos$S[i + 1]
+        rs_pred_5b=mean(fit_past_tv_a_tmb$logalpha[(i-4):i])-fit_past_tv_a_tmb$beta[i]*df_oos$S[i + 1]
         
         if(siglfo=="obs"){
           exact_elpds_1b[i+1] <- log(dnorm(df_oos$logRS[i+1],mean=rs_pred_1b,sd=fit_past_tv_a_tmb$sig))
@@ -230,9 +230,9 @@ tmb_mod_lfo_cv=function(data, model=c('static','staticAC','rw_a','rw_b','rw_both
       
       
       if(fail_conv[i-(L-1)]==0){ 
-        rs_pred_1b=fit_past_tv_b_tmb$alpha-fit_past_tv_b_tmb$beta[i]*df_oos$S[i + 1]
-        rs_pred_3b=fit_past_tv_b_tmb$alpha-mean(fit_past_tv_b_tmb$beta[(i-2):i])*df_oos$S[i + 1]
-        rs_pred_5b=fit_past_tv_b_tmb$alpha-mean(fit_past_tv_b_tmb$beta[(i-4):i])*df_oos$S[i + 1]
+        rs_pred_1b=fit_past_tv_b_tmb$logalpha[i]-fit_past_tv_b_tmb$beta[i]*df_oos$S[i + 1]
+        rs_pred_3b=fit_past_tv_b_tmb$logalpha[i]-mean(fit_past_tv_b_tmb$beta[(i-2):i])*df_oos$S[i + 1]
+        rs_pred_5b=fit_past_tv_b_tmb$logalpha[i]-mean(fit_past_tv_b_tmb$beta[(i-4):i])*df_oos$S[i + 1]
         
         if(siglfo=="obs"){
           exact_elpds_1b[i+1] <- log(dnorm(df_oos$logRS[i+1],mean=rs_pred_1b,sd=fit_past_tv_b_tmb$sig))
@@ -297,9 +297,9 @@ tmb_mod_lfo_cv=function(data, model=c('static','staticAC','rw_a','rw_b','rw_both
       fail_conv[i-(L-1)] <- ifelse(is.null(fit_past_tv_ab_tmb$fail_conv),0,fit_past_tv_ab_tmb$fail_conv)
     
       if(fail_conv[i-(L-1)]==0){ 
-        rs_pred_1b=fit_past_tv_ab_tmb$alpha[i]-fit_past_tv_ab_tmb$beta[i]*df_oos$S[i + 1]
-        rs_pred_3b=mean(fit_past_tv_ab_tmb$alpha[(i-2):i])-mean(fit_past_tv_ab_tmb$beta[(i-2):i])*df_oos$S[i + 1]
-        rs_pred_5b=mean(fit_past_tv_ab_tmb$alpha[(i-4):i])-mean(fit_past_tv_ab_tmb$beta[(i-4):i])*df_oos$S[i + 1]
+        rs_pred_1b=fit_past_tv_ab_tmb$logalpha[i]-fit_past_tv_ab_tmb$beta[i]*df_oos$S[i + 1]
+        rs_pred_3b=mean(fit_past_tv_ab_tmb$logalpha[(i-2):i])-mean(fit_past_tv_ab_tmb$beta[(i-2):i])*df_oos$S[i + 1]
+        rs_pred_5b=mean(fit_past_tv_ab_tmb$logalpha[(i-4):i])-mean(fit_past_tv_ab_tmb$beta[(i-4):i])*df_oos$S[i + 1]
         
         exact_elpds_1b[i+1] <- log(dnorm(df_oos$logRS[i],mean=rs_pred_1b,sd=exp(fit_past_tv_ab_tmb$sig)))
         exact_elpds_3b[i+1] <- log(dnorm(df_oos$logRS[i],mean=rs_pred_3b,sd=exp(fit_past_tv_ab_tmb$sig)))
@@ -355,13 +355,13 @@ tmb_mod_lfo_cv=function(data, model=c('static','staticAC','rw_a','rw_b','rw_both
       fail_conv[i-(L-1)] <- ifelse(is.null(fit_past_hmm_tmb$fail_conv),0,fit_past_hmm_tmb$fail_conv)
       
       if(fail_conv[i-(L-1)]==0){
-        alpha <- fit_past_hmm_tmb$alpha[fit_past_hmm_tmb$regime]
+        logalpha <- fit_past_hmm_tmb$logalpha[fit_past_hmm_tmb$regime]
         beta <- fit_past_hmm_tmb$beta[fit_past_hmm_tmb$regime]
         sigma <- fit_past_hmm_tmb$sigma
       
-        rs_pred_1k=alpha[i]-beta[i]*df_oos$S[i + 1]
-        rs_pred_3k=mean(alpha[(i-2):i])-mean(beta[(i-2):i])*df_oos$S[i + 1]
-        rs_pred_5k=mean(alpha[(i-4):i])-mean(beta[(i-4):i])*df_oos$S[i + 1]
+        rs_pred_1k=logalpha[i]-beta[i]*df_oos$S[i + 1]
+        rs_pred_3k=mean(logalpha[(i-2):i])-mean(beta[(i-2):i])*df_oos$S[i + 1]
+        rs_pred_5k=mean(logalpha[(i-4):i])-mean(beta[(i-4):i])*df_oos$S[i + 1]
       
       
         exact_elpds_1k[i+1] <- log(dnorm(df_oos$logRS[i+1],mean=rs_pred_1k,sd=sigma))
@@ -419,13 +419,13 @@ tmb_mod_lfo_cv=function(data, model=c('static','staticAC','rw_a','rw_b','rw_both
       fail_conv[i-(L-1)] <- ifelse(is.null(fit_past_hmm_tmb$fail_conv),0,fit_past_hmm_tmb$fail_conv)
       
       if(fail_conv[i-(L-1)]==0){
-        alpha <- fit_past_hmm_tmb$alpha[fit_past_hmm_tmb$regime]
+        logalpha <- fit_past_hmm_tmb$logalpha[fit_past_hmm_tmb$regime]
         beta <- fit_past_hmm_tmb$beta
         sigma <- fit_past_hmm_tmb$sigma
       
-        rs_pred_1k=alpha[i]-beta*df_oos$S[i + 1]
-        rs_pred_3k=mean(alpha[(i-2):i])-mean(beta)*df_oos$S[i + 1]
-        rs_pred_5k=mean(alpha[(i-4):i])-mean(beta)*df_oos$S[i + 1]
+        rs_pred_1k=logalpha[i]-beta*df_oos$S[i + 1]
+        rs_pred_3k=mean(logalpha[(i-2):i])-mean(beta)*df_oos$S[i + 1]
+        rs_pred_5k=mean(logalpha[(i-4):i])-mean(beta)*df_oos$S[i + 1]
       
         exact_elpds_1k[i+1] <- log(dnorm(df_oos$logRS[i+1],mean=rs_pred_1k,sd=sigma))
         exact_elpds_3k[i+1] <- log(dnorm(df_oos$logRS[i+1],mean=rs_pred_3k,sd=sigma))
@@ -483,13 +483,13 @@ tmb_mod_lfo_cv=function(data, model=c('static','staticAC','rw_a','rw_b','rw_both
       fail_conv[i-(L-1)] <- ifelse(is.null(fit_past_hmm_tmb$fail_conv),0,fit_past_hmm_tmb$fail_conv)
       
       if(fail_conv[i-(L-1)]==0){
-        alpha <- fit_past_hmm_tmb$alpha
+        logalpha <- fit_past_hmm_tmb$logalpha
         beta <- fit_past_hmm_tmb$beta[fit_past_hmm_tmb$regime]
         sigma <- fit_past_hmm_tmb$sigma
       
-        rs_pred_1k<-alpha-beta[i]*df_oos$S[i + 1]
-        rs_pred_3k=mean(alpha)-mean(beta[(i-2):i])*df_oos$S[i + 1]
-        rs_pred_5k=mean(alpha)-mean(beta[(i-4):i])*df_oos$S[i + 1]
+        rs_pred_1k<-logalpha-beta[i]*df_oos$S[i + 1]
+        rs_pred_3k=mean(logalpha)-mean(beta[(i-2):i])*df_oos$S[i + 1]
+        rs_pred_5k=mean(logalpha)-mean(beta[(i-4):i])*df_oos$S[i + 1]
         
         exact_elpds_1k[i+1] <- log(dnorm(df_oos$logRS[i+1],mean=rs_pred_1k,sd=sigma))
         exact_elpds_3k[i+1] <- log(dnorm(df_oos$logRS[i+1],mean=rs_pred_3k,sd=sigma))
