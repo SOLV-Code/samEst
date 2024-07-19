@@ -63,15 +63,10 @@ ricker_stan <- function(data,  ac=FALSE, smax_priors=NULL,mod=NULL,full_posterio
   #                      data = datm,
   #                      control = control, warmup = warmup, chains = chains, iter = iter)
   #
-  if(ac==FALSE){
-    mc <- rstan::extract(fit,pars=c('log_a','b','S_max','U_msy','S_msy','sigma'),
-                         inc_warmup=FALSE, permuted=FALSE)
-  }
-  if(ac==TRUE){
-    mc <- rstan::extract(fit,pars=c('log_a','b','S_max','U_msy','S_msy','sigma','rho'),
-                         inc_warmup=FALSE, permuted=FALSE)
-  }
-    
+  mc <- rstan::extract(fit,pars=c('log_a','b','S_max','S_msy','U_msy','sigma','mu','epsilon'),permuted=T)
+  mc2=as.data.frame(do.call(cbind,mc))
+  colnames(mc2)=c('log_a','b','S_max','S_msy','U_msy','sigma',paste('mu[',seq(1:datm$N),']',sep=''),paste('epsilon[',seq(1:datm$N),']',sep=''))
+ 
   aa <- rstan::summary(fit)
   if(full_posterior==FALSE){
      if(ac==F){
@@ -93,9 +88,9 @@ ricker_stan <- function(data,  ac=FALSE, smax_priors=NULL,mod=NULL,full_posterio
     }
     
   }else{
-    ans<- list(fit=fit,summary=aa,samples=mc)
+    ans<- list(fit=fit,summary=aa$summary,samples=mc2)
   }
-  if(any(aa$rhat)>=1.05){print='Warning, some R_hat values are over the threshold of 1.05 - check parameter summary'}
+  if(any(aa$summary[,10]>=1.05)){print='Warning, some R_hat values are over the threshold of 1.05 - check parameter summary'}
   
   return(ans)
 }
@@ -168,58 +163,52 @@ ricker_rw_stan <- function(data, par=c('a','b','both'),smax_priors=NULL,full_pos
     
     
   }
-  if(par=='a'){
-    mc <- rstan::extract(fit,pars=c('log_a','b','S_max','U_msy','S_msy','sigma','sigma_a'),
-                         inc_warmup=FALSE, permuted=FALSE)
-  }
-  if(par=='b'){
-    mc <- rstan::extract(fit,pars=c('log_a','b','S_max','U_msy','S_msy','sigma','sigma_b'),
-                         inc_warmup=FALSE, permuted=FALSE)
-  }
-  if(par=='both'){
-    mc <- rstan::extract(fit,pars=c('log_a','b','S_max','U_msy','S_msy','sigma','sigma_a','sigma_b'),
-                         inc_warmup=FALSE, permuted=FALSE)
-  }
+
   
   aa <- rstan::summary(fit)
   if(full_posterior==FALSE){
     if(par=='a'){
-      ans<-list(alpha=c(median=aa$summary["log_a","50%"],med.cv=aa$summary["log_a","sd"]/aa$summary["log_a","50%"],est2.5=aa$summary["log_a","2.5%"],est97.5=aa$summary["log_a","97.5%"]),
+      ans<-list(alpha=data.frame(median=aa$summary[paste('log_a[',seq(1:datm$L),']',sep=''),"50%"],med.cv=aa$summary[paste('log_a[',seq(1:datm$L),']',sep=''),"sd"]/aa$summary[paste('log_a[',seq(1:datm$L),']',sep=''),"50%"],est2.5=aa$summary[paste('log_a[',seq(1:datm$L),']',sep=''),"2.5%"],est97.5=aa$summary[paste('log_a[',seq(1:datm$L),']',sep=''),"97.5%"]),
                 beta=c(median=aa$summary["b","50%"],med.cv=aa$summary["b","sd"]/aa$summary["b","50%"],est2.5=aa$summary["b","2.5%"],est97.5=aa$summary["b","97.5%"]),
                 Smax=c(median=aa$summary["S_max","50%"],med.cv=aa$summary["S_max","sd"]/aa$summary["S_max","50%"],est2.5=aa$summary["S_max","2.5%"],est97.5=aa$summary["S_max","97.5%"]),
-                Smsy=c(median=aa$summary["S_msy","50%"],med.cv=aa$summary["S_msy","sd"]/aa$summary["S_msy","50%"],est2.5=aa$summary["S_msy","2.5%"],est97.5=aa$summary["S_msy","97.5%"]),
-                Umsy=c(median=aa$summary["U_msy","50%"],med.cv=aa$summary["U_msy","sd"]/aa$summary["U_msy","50%"],est2.5=aa$summary["U_msy","2.5%"],est97.5=aa$summary["U_msy","97.5%"]),
+                Smsy=data.frame(median=aa$summary[paste('S_msy[',seq(1:datm$L),']',sep=''),"50%"],med.cv=aa$summary[paste('S_msy[',seq(1:datm$L),']',sep=''),"sd"]/aa$summary[paste('S_msy[',seq(1:datm$L),']',sep=''),"50%"],est2.5=aa$summary[paste('S_msy[',seq(1:datm$L),']',sep=''),"2.5%"],est97.5=aa$summary[paste('S_msy[',seq(1:datm$L),']',sep=''),"97.5%"]),
+                Umsy=data.frame(median=aa$summary[paste('U_msy[',seq(1:datm$L),']',sep=''),"50%"],med.cv=aa$summary[paste('U_msy[',seq(1:datm$L),']',sep=''),"sd"]/aa$summary[paste('U_msy[',seq(1:datm$L),']',sep=''),"50%"],est2.5=aa$summary[paste('U_msy[',seq(1:datm$L),']',sep=''),"2.5%"],est97.5=aa$summary[paste('U_msy[',seq(1:datm$L),']',sep=''),"97.5%"]),
                 sigma=c(median=aa$summary["sigma","50%"],med.cv=aa$summary["sigma","sd"]/aa$summary["sigma","50%"],est2.5=aa$summary["sigma","2.5%"],est97.5=aa$summary["sigma","97.5%"]),
                 sigma_a=c(median=aa$summary["sigma_a","50%"],med.cv=aa$summary["sigma_a","sd"]/aa$summary["sigma_a","50%"],est2.5=aa$summary["sigma_a","2.5%"],est97.5=aa$summary["sigma_a","97.5%"]))
     
     }
     if(par=='b'){
       ans<-list(alpha=c(median=aa$summary["log_a","50%"],med.cv=aa$summary["log_a","sd"]/aa$summary["log_a","50%"],est2.5=aa$summary["log_a","2.5%"],est97.5=aa$summary["log_a","97.5%"]),
-                beta=c(median=aa$summary["b","50%"],med.cv=aa$summary["b","sd"]/aa$summary["b","50%"],est2.5=aa$summary["b","2.5%"],est97.5=aa$summary["b","97.5%"]),
-                Smax=c(median=aa$summary["S_max","50%"],med.cv=aa$summary["S_max","sd"]/aa$summary["S_max","50%"],est2.5=aa$summary["S_max","2.5%"],est97.5=aa$summary["S_max","97.5%"]),
-                Smsy=c(median=aa$summary["S_msy","50%"],med.cv=aa$summary["S_msy","sd"]/aa$summary["S_msy","50%"],est2.5=aa$summary["S_msy","2.5%"],est97.5=aa$summary["S_msy","97.5%"]),
+                beta=data.frame(median=aa$summary[paste('beta[',seq(1:datm$L),']',sep=''),"50%"],med.cv=aa$summary[paste('beta[',seq(1:datm$L),']',sep=''),"sd"]/aa$summary[paste('beta[',seq(1:datm$L),']',sep=''),"50%"],est2.5=aa$summary[paste('beta[',seq(1:datm$L),']',sep=''),"2.5%"],est97.5=aa$summary[paste('beta[',seq(1:datm$L),']',sep=''),"97.5%"]),
+                Smax=data.frame(median=aa$summary[paste('S_max[',seq(1:datm$L),']',sep=''),"50%"],med.cv=aa$summary[paste('S_max[',seq(1:datm$L),']',sep=''),"sd"]/aa$summary[paste('S_max[',seq(1:datm$L),']',sep=''),"50%"],est2.5=aa$summary[paste('S_max[',seq(1:datm$L),']',sep=''),"2.5%"],est97.5=aa$summary[paste('S_max[',seq(1:datm$L),']',sep=''),"97.5%"]),
+                Smsy=data.frame(median=aa$summary[paste('S_msy[',seq(1:datm$L),']',sep=''),"50%"],med.cv=aa$summary[paste('S_msy[',seq(1:datm$L),']',sep=''),"sd"]/aa$summary[paste('S_msy[',seq(1:datm$L),']',sep=''),"50%"],est2.5=aa$summary[paste('S_msy[',seq(1:datm$L),']',sep=''),"2.5%"],est97.5=aa$summary[paste('S_msy[',seq(1:datm$L),']',sep=''),"97.5%"]),
                 Umsy=c(median=aa$summary["U_msy","50%"],med.cv=aa$summary["U_msy","sd"]/aa$summary["U_msy","50%"],est2.5=aa$summary["U_msy","2.5%"],est97.5=aa$summary["U_msy","97.5%"]),
                 sigma=c(median=aa$summary["sigma","50%"],med.cv=aa$summary["sigma","sd"]/aa$summary["sigma","50%"],est2.5=aa$summary["sigma","2.5%"],est97.5=aa$summary["sigma","97.5%"]),
                 sigma_b=c(median=aa$summary["sigma_b","50%"],med.cv=aa$summary["sigma_b","sd"]/aa$summary["sigma_b","50%"],est2.5=aa$summary["sigma_b","2.5%"],est97.5=aa$summary["sigma_b","97.5%"]))
       
     }
     if(par=='both'){
-      ans<-list(alpha=c(median=aa$summary["log_a","50%"],med.cv=aa$summary["log_a","sd"]/aa$summary["log_a","50%"],est2.5=aa$summary["log_a","2.5%"],est97.5=aa$summary["log_a","97.5%"]),
-                beta=c(median=aa$summary["b","50%"],med.cv=aa$summary["b","sd"]/aa$summary["b","50%"],est2.5=aa$summary["b","2.5%"],est97.5=aa$summary["b","97.5%"]),
-                Smax=c(median=aa$summary["S_max","50%"],med.cv=aa$summary["S_max","sd"]/aa$summary["S_max","50%"],est2.5=aa$summary["S_max","2.5%"],est97.5=aa$summary["S_max","97.5%"]),
-                Smsy=c(median=aa$summary["S_msy","50%"],med.cv=aa$summary["S_msy","sd"]/aa$summary["S_msy","50%"],est2.5=aa$summary["S_msy","2.5%"],est97.5=aa$summary["S_msy","97.5%"]),
-                Umsy=c(median=aa$summary["U_msy","50%"],med.cv=aa$summary["U_msy","sd"]/aa$summary["U_msy","50%"],est2.5=aa$summary["U_msy","2.5%"],est97.5=aa$summary["U_msy","97.5%"]),
+      ans<-list(alpha=data.frame(median=aa$summary[paste('log_a[',seq(1:datm$L),']',sep=''),"50%"],med.cv=aa$summary[paste('log_a[',seq(1:datm$L),']',sep=''),"sd"]/aa$summary[paste('log_a[',seq(1:datm$L),']',sep=''),"50%"],est2.5=aa$summary[paste('log_a[',seq(1:datm$L),']',sep=''),"2.5%"],est97.5=aa$summary[paste('log_a[',seq(1:datm$L),']',sep=''),"97.5%"]),
+                beta=data.frame(median=aa$summary[paste('beta[',seq(1:datm$L),']',sep=''),"50%"],med.cv=aa$summary[paste('beta[',seq(1:datm$L),']',sep=''),"sd"]/aa$summary[paste('beta[',seq(1:datm$L),']',sep=''),"50%"],est2.5=aa$summary[paste('beta[',seq(1:datm$L),']',sep=''),"2.5%"],est97.5=aa$summary[paste('beta[',seq(1:datm$L),']',sep=''),"97.5%"]),
+                Smax=data.frame(median=aa$summary[paste('S_max[',seq(1:datm$L),']',sep=''),"50%"],med.cv=aa$summary[paste('S_max[',seq(1:datm$L),']',sep=''),"sd"]/aa$summary[paste('S_max[',seq(1:datm$L),']',sep=''),"50%"],est2.5=aa$summary[paste('S_max[',seq(1:datm$L),']',sep=''),"2.5%"],est97.5=aa$summary[paste('S_max[',seq(1:datm$L),']',sep=''),"97.5%"]),
+                Smsy=data.frame(median=aa$summary[paste('S_msy[',seq(1:datm$L),']',sep=''),"50%"],med.cv=aa$summary[paste('S_msy[',seq(1:datm$L),']',sep=''),"sd"]/aa$summary[paste('S_msy[',seq(1:datm$L),']',sep=''),"50%"],est2.5=aa$summary[paste('S_msy[',seq(1:datm$L),']',sep=''),"2.5%"],est97.5=aa$summary[paste('S_msy[',seq(1:datm$L),']',sep=''),"97.5%"]),
+                Umsy=data.frame(median=aa$summary[paste('U_msy[',seq(1:datm$L),']',sep=''),"50%"],med.cv=aa$summary[paste('U_msy[',seq(1:datm$L),']',sep=''),"sd"]/aa$summary[paste('U_msy[',seq(1:datm$L),']',sep=''),"50%"],est2.5=aa$summary[paste('U_msy[',seq(1:datm$L),']',sep=''),"2.5%"],est97.5=aa$summary[paste('U_msy[',seq(1:datm$L),']',sep=''),"97.5%"]),
                 sigma=c(median=aa$summary["sigma","50%"],med.cv=aa$summary["sigma","sd"]/aa$summary["sigma","50%"],est2.5=aa$summary["sigma","2.5%"],est97.5=aa$summary["sigma","97.5%"]),
                 sigma_a=c(median=aa$summary["sigma_a","50%"],med.cv=aa$summary["sigma_a","sd"]/aa$summary["sigma_a","50%"],est2.5=aa$summary["sigma_a","2.5%"],est97.5=aa$summary["sigma_a","97.5%"]),
                 sigma_b=c(median=aa$summary["sigma_b","50%"],med.cv=aa$summary["sigma_b","sd"]/aa$summary["sigma_b","50%"],est2.5=aa$summary["sigma_b","2.5%"],est97.5=aa$summary["sigma_b","97.5%"]))
       
     }
     
-    
   }else{
-    ans<- list(fit=fit,summary=aa,samples=mc)
+    if(par=='a'){
+      mc <- rstan::extract(fit,pars=c('log_a','b','S_max','S_msy','U_msy','sigma','sigma_a'),permuted=T)
+      mc2=as.data.frame(do.call(cbind,mc))
+      colnames(mc2)=c(paste('log_a[',seq(1:datm$L),']',sep=''),'b','S_max','S_msy','U_msy','sigma','sigma_a')
+    }
+   
+    ans<- list(fit=fit,summary=aa,samples=mc2)
   }
-  if(any(aa$rhat)>=1.05){print='Warning, some R_hat values are over the threshold of 1.05 - check parameter summary'}
+  if(any(aa$summary[,10]>=1.05)){print='Warning, some R_hat values are over the threshold of 1.05 - check parameter summary'}
   
   return(ans)
 
@@ -266,8 +255,7 @@ ricker_rw_stan <- function(data, par=c('a','b','both'),smax_priors=NULL,full_pos
 #' ricker_hmm_stan(data=harck)
 #' 
 ricker_hmm_stan <- function(data, par=c('a','b','both'), k_regime=2, smax_priors=NULL, dirichlet_stasis_prior=2, full_posterior=FALSE,
-  control = stancontrol(), warmup=300,  chains = 6, iter = 1000, mod=NULL,
-  lambertW=FALSE,...) {
+  control = stancontrol(), warmup=300,  chains = 6, iter = 1000, mod=NULL,...) {
   #par='both'
   
   if(is.null(mod)){
@@ -313,7 +301,7 @@ ricker_hmm_stan <- function(data, par=c('a','b','both'), k_regime=2, smax_priors
 
   aa <- rstan::summary(fit)
   parts <-stan_regime_rps(m=fit,par=par)
-  
+  if(full_posterior==FALSE){
   ans<-list(
    alpha_regime=ifelse(rep(par=="a"|par=="both",nrow(data)),parts$log_a_t,NA),
    alpha_wgt=ifelse(rep(par=="a"|par=="both",nrow(data)),parts$log_a_wt,NA),
@@ -324,26 +312,21 @@ ricker_hmm_stan <- function(data, par=c('a','b','both'), k_regime=2, smax_priors
    Smax=ifelse(par=="b"|par=="both",list(aa$summary[grep("S_max\\[",row.names(aa$summary)),"50%"]),aa$summary["S_max","50%"])[[1]],
    Smsy_regime=parts$S_msy_t,
    Smsy_wgt=parts$S_msy_wt,
-   umsy_regime=ifelse(rep(par=="a"|par=="both",nrow(data)),parts$U_msy_t,NA),
-   umsy_wgt=ifelse(rep(par=="a"|par=="both",nrow(data)),parts$U_msy_wt,NA),
+   Umsy_regime=ifelse(rep(par=="a"|par=="both",nrow(data)),parts$U_msy_t,NA),
+   Umsy_wgt=ifelse(rep(par=="a"|par=="both",nrow(data)),parts$U_msy_wt,NA),
    Smsy=aa$summary[grep("S_msy\\[",row.names(aa$summary)),"50%"],
    umsy=ifelse(par=="a"|par=="both",list(aa$summary[grep("U_msy\\[",row.names(aa$summary)),"50%"]),aa$summary["U_msy","50%"])[[1]],
    sigobs=aa$summary["sigma","50%"],
    pi=aa$summary[grep("pi1",row.names(aa$summary)),"50%"],
    A=aa$summary[grep("A",row.names(aa$summary)),"50%"],
    probregime =matrix(aa$summary[grep("gamma\\[",row.names(aa$summary)),"50%"],ncol=k_regime, byrow=T),
-   regime = aa$summary[grep("^zstar",row.names(aa$summary)),"50%"],
-   stanfit=fit, 
-   mcmcsummary=aa$summary,
-   c_mcmcsummary=aa$c_summary, 
-   samples=mc ) 
+   regime = aa$summary[grep("^zstar",row.names(aa$summary)),"50%"]) 
 
-  #extract time-series of parameters
+  }else{
+    ans<- list(fit=fit,summary=aa,samples=mc)
+  }
+  if(any(aa$rhat)>=1.05){print='Warning, some R_hat values are over the threshold of 1.05 - check parameter summary'}
 
-
-    
-
-   return(ans)
 
 }
 
