@@ -93,9 +93,9 @@ ricker_stan <- function(data,  ac=FALSE, smax_priors=NULL,mod=NULL,full_posterio
     }
     
   }else{
-  ans<- list(summary=aa,samples=mc)
+    ans<- list(fit=fit,summary=aa,samples=mc)
   }
-  if(any(aa$rh))
+  if(any(aa$rhat)>=1.05){print='Warning, some R_hat values are over the threshold of 1.05 - check parameter summary'}
   
   return(ans)
 }
@@ -140,7 +140,7 @@ ricker_stan <- function(data,  ac=FALSE, smax_priors=NULL,mod=NULL,full_posterio
 #' data(harck)
 #' ricker_rw_stan(data=harck)
 #' 
-ricker_rw_stan <- function(data, par=c('a','b','both'),smax_priors=NULL,  control = stancontrol(), mod=NULL,
+ricker_rw_stan <- function(data, par=c('a','b','both'),smax_priors=NULL,full_posterior=FALSE,control = stancontrol(), mod=NULL,
   warmup=300,  chains = 6, iter = 1000, lambertW=FALSE,...) {
 
   if(is.null(mod)==T){
@@ -172,16 +172,23 @@ ricker_rw_stan <- function(data, par=c('a','b','both'),smax_priors=NULL,  contro
                        inc_warmup=FALSE, permuted=FALSE)
   
   aa <- rstan::summary(fit)
+  if(full_posterior==FALSE){
+    if(ac==F){
+      ans<-list(alpha=c(median=aa$summary["log_a","50%"],med.cv=aa$summary["log_a","sd"]/aa$summary["log_a","50%"],est2.5=aa$summary["log_a","2.5%"],est97.5=aa$summary["log_a","97.5%"]),
+                beta=c(median=aa$summary["b","50%"],med.cv=aa$summary["b","sd"]/aa$summary["b","50%"],est2.5=aa$summary["b","2.5%"],est97.5=aa$summary["b","97.5%"]),
+                Smax=c(median=aa$summary["S_max","50%"],med.cv=aa$summary["S_max","sd"]/aa$summary["S_max","50%"],est2.5=aa$summary["S_max","2.5%"],est97.5=aa$summary["S_max","97.5%"]),
+                Smsy=c(median=aa$summary["S_msy","50%"],med.cv=aa$summary["S_msy","sd"]/aa$summary["S_msy","50%"],est2.5=aa$summary["S_msy","2.5%"],est97.5=aa$summary["S_msy","97.5%"]),
+                Umsy=c(median=aa$summary["U_msy","50%"],med.cv=aa$summary["U_msy","sd"]/aa$summary["U_msy","50%"],est2.5=aa$summary["U_msy","2.5%"],est97.5=aa$summary["U_msy","97.5%"]),
+                sigma=c(median=aa$summary["sigma","50%"],med.cv=aa$summary["sigma","sd"]/aa$summary["sigma","50%"],est2.5=aa$summary["sigma","2.5%"],est97.5=aa$summary["sigma","97.5%"]),
+                sigma_a=c(median=aa$summary["sigma","50%"],med.cv=aa$summary["sigma","sd"]/aa$summary["sigma","50%"],est2.5=aa$summary["sigma","2.5%"],est97.5=aa$summary["sigma","97.5%"]))
+    
+      }
+    
+  }else{
+    ans<- list(fit=fit,summary=aa,samples=mc)
+  }
+  if(any(aa$rhat)>=1.05){print='Warning, some R_hat values are over the threshold of 1.05 - check parameter summary'}
   
-  ans<-list(alpha=c(median=aa$summary["log_a","50%"],sd=aa$summary["log_a","sd"],est2.5=aa$summary["log_a","2.5%"],est97.5=aa$summary["log_a","97.5%"]),
-            beta=c(median=aa$summary["b","50%"],sd=aa$summary["b","sd"],est2.5=aa$summary["b","2.5%"],est97.5=aa$summary["b","97.5%"]),
-            Smax=c(median=aa$summary["S_max","50%"],sd=aa$summary["S_max","sd"],est2.5=aa$summary["S_max","2.5%"],est97.5=aa$summary["S_max","97.5%"]),
-            Smsy=c(median=aa$summary["S_msy","50%"],sd=aa$summary["S_msy","sd"],est2.5=aa$summary["S_msy","2.5%"],est97.5=aa$summary["S_msy","97.5%"]),
-            Umsy=c(median=aa$summary["U_msy","50%"],sd=aa$summary["U_msy","sd"],est2.5=aa$summary["U_msy","2.5%"],est97.5=aa$summary["U_msy","97.5%"]),
-            sigma=c(median=aa$summary["sigma","50%"],sd=aa$summary["sigma","sd"],est2.5=aa$summary["sigma","2.5%"],est97.5=aa$summary["sigma","97.5%"]),
-            summary=fit,
-            samples=mc) 
-
   return(ans)
 
 }
