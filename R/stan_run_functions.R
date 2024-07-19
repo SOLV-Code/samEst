@@ -32,44 +32,30 @@
 #' data(harck)
 #' rickerstan(data=harck)
 #' 
-ricker_stan <- function(data,  AC=FALSE, smax_priors=NULL, control = stancontrol(), mod=NULL, warmup=300, chains = 6, iter = 1000,...) {
+ricker_stan <- function(data,  ac=FALSE, smax_priors=NULL,mod=NULL,full_posterior=FALSE, control = stancontrol(), warmup=300, chains = 6, iter = 1000,...) {
  
-   sm=samEst::sr_mod(type='static',ac=AC,par='n')
+  if(is.null(mod)==T){
+    sm=samEst::sr_mod(type='static',ac=ac,par='n')
+  }else{sm=mod}
 
-  if(AC==TRUE){
+  if(is.null(smax_priors)==TRUE){
     datm = list(N=nrow(data),
                 L=max(data$by)-min(data$by)+1,
-                ii=seq_len(nrow(data)),
+                ii=data$by-min(data$by)+1,
                 R_S =data$logRS,
                 S=data$S,
                 pSmax_mean=max(data$S)/2,
                 pSmax_sig=max(data$S)/2)
-    
-    if(is.null(smax_priors)==FALSE){
+  }else{
       datm = list(N=nrow(data),
                   L=max(data$by)-min(data$by)+1,
-                  ii=seq_len(nrow(data)),
+                  ii=data$by-min(data$by)+1,
                   R_S =data$logRS,
                   S=data$S,
                   pSmax_mean=smax_priors[1],
                   pSmax_sig=smax_priors[2])
     }
-    
-  }else{
-    datm = list(N=nrow(data),
-                R_S =data$logRS,
-                S=data$S,
-                pSmax_mean=max(data$S)/2,
-                pSmax_sig=max(data$S)/2)
-    if(is.null(smax_priors)==FALSE){
-      datm = list(N=nrow(data),
-                  R_S =data$logRS,
-                  S=data$S,
-                  pSmax_mean=smax_priors[1],
-                  pSmax_sig=smax_priors[2])
-    }
-  }
-  
+
   fit<-rstan::sampling(sm, data=datm,
                       control = control, warmup = warmup, 
                       chains = chains, iter = iter,verbose=FALSE)
@@ -77,28 +63,41 @@ ricker_stan <- function(data,  AC=FALSE, smax_priors=NULL, control = stancontrol
   #                      data = datm,
   #                      control = control, warmup = warmup, chains = chains, iter = iter)
   #
-  if(AC==FALSE){
-    mc <- rstan::extract(fit,pars=c('log_a','S_max','U_msy','S_msy','sigma'),
+  if(ac==FALSE){
+    mc <- rstan::extract(fit,pars=c('log_a','b','S_max','U_msy','S_msy','sigma'),
                          inc_warmup=FALSE, permuted=FALSE)
   }
-  if(AC==TRUE){
-    mc <- rstan::extract(fit,pars=c('log_a','S_max','U_msy','S_msy','sigma','rho'),
+  if(ac==TRUE){
+    mc <- rstan::extract(fit,pars=c('log_a','b','S_max','U_msy','S_msy','sigma','rho'),
                          inc_warmup=FALSE, permuted=FALSE)
   }
     
   aa <- rstan::summary(fit)
-  
-  ans<-list(alpha=c(median=aa$summary["log_a","50%"],sd=aa$summary["log_a","sd"],est2.5=aa$summary["log_a","2.5%"],est97.5=aa$summary["log_a","97.5%"]),
-   beta=c(median=aa$summary["b","50%"],sd=aa$summary["b","sd"],est2.5=aa$summary["b","2.5%"],est97.5=aa$summary["b","97.5%"]),
-   Smax=c(median=aa$summary["S_max","50%"],sd=aa$summary["S_max","sd"],est2.5=aa$summary["S_max","2.5%"],est97.5=aa$summary["S_max","97.5%"]),
-   Smsy=c(median=aa$summary["S_msy","50%"],sd=aa$summary["S_msy","sd"],est2.5=aa$summary["S_msy","2.5%"],est97.5=aa$summary["S_msy","97.5%"]),
-   Umsy=c(median=aa$summary["U_msy","50%"],sd=aa$summary["U_msy","sd"],est2.5=aa$summary["U_msy","2.5%"],est97.5=aa$summary["U_msy","97.5%"]),
-   sigma=c(median=aa$summary["sigma","50%"],sd=aa$summary["sigma","sd"],est2.5=aa$summary["sigma","2.5%"],est97.5=aa$summary["sigma","97.5%"]),
-   summary=fit,
-   samples=mc) 
+  if(full_posterior==FALSE){
+     if(ac==F){
+       ans<-list(alpha=c(median=aa$summary["log_a","50%"],med.cv=aa$summary["log_a","sd"]/aa$summary["log_a","50%"],est2.5=aa$summary["log_a","2.5%"],est97.5=aa$summary["log_a","97.5%"]),
+                 beta=c(median=aa$summary["b","50%"],med.cv=aa$summary["b","sd"]/aa$summary["b","50%"],est2.5=aa$summary["b","2.5%"],est97.5=aa$summary["b","97.5%"]),
+                 Smax=c(median=aa$summary["S_max","50%"],med.cv=aa$summary["S_max","sd"]/aa$summary["S_max","50%"],est2.5=aa$summary["S_max","2.5%"],est97.5=aa$summary["S_max","97.5%"]),
+                 Smsy=c(median=aa$summary["S_msy","50%"],med.cv=aa$summary["S_msy","sd"]/aa$summary["S_msy","50%"],est2.5=aa$summary["S_msy","2.5%"],est97.5=aa$summary["S_msy","97.5%"]),
+                 Umsy=c(median=aa$summary["U_msy","50%"],med.cv=aa$summary["U_msy","sd"]/aa$summary["U_msy","50%"],est2.5=aa$summary["U_msy","2.5%"],est97.5=aa$summary["U_msy","97.5%"]),
+                 sigma=c(median=aa$summary["sigma","50%"],med.cv=aa$summary["sigma","sd"]/aa$summary["sigma","50%"],est2.5=aa$summary["sigma","2.5%"],est97.5=aa$summary["sigma","97.5%"]))
+     }
+    if(ac==T){
+      ans<-list(alpha=c(median=aa$summary["log_a","50%"],med.cv=aa$summary["log_a","sd"]/aa$summary["log_a","50%"],est2.5=aa$summary["log_a","2.5%"],est97.5=aa$summary["log_a","97.5%"]),
+                beta=c(median=aa$summary["b","50%"],med.cv=aa$summary["b","sd"]/aa$summary["b","50%"],est2.5=aa$summary["b","2.5%"],est97.5=aa$summary["b","97.5%"]),
+                Smax=c(median=aa$summary["S_max","50%"],med.cv=aa$summary["S_max","sd"]/aa$summary["S_max","50%"],est2.5=aa$summary["S_max","2.5%"],est97.5=aa$summary["S_max","97.5%"]),
+                Smsy=c(median=aa$summary["S_msy","50%"],med.cv=aa$summary["S_msy","sd"]/aa$summary["S_msy","50%"],est2.5=aa$summary["S_msy","2.5%"],est97.5=aa$summary["S_msy","97.5%"]),
+                Umsy=c(median=aa$summary["U_msy","50%"],med.cv=aa$summary["U_msy","sd"]/aa$summary["U_msy","50%"],est2.5=aa$summary["U_msy","2.5%"],est97.5=aa$summary["U_msy","97.5%"]),
+                sigma=c(median=aa$summary["sigma","50%"],med.cv=aa$summary["sigma","sd"]/aa$summary["sigma","50%"],est2.5=aa$summary["sigma","2.5%"],est97.5=aa$summary["sigma","97.5%"]),
+                sigma=c(median=aa$summary["rho","50%"],med.cv=aa$summary["rho","sd"]/aa$summary["rho","50%"],est2.5=aa$summary["rho","2.5%"],est97.5=aa$summary["rho","97.5%"]))
+    }
+    
+  }else{
+  ans<- list(summary=aa,samples=mc)
+  }
+  if(any(aa$rh))
   
   return(ans)
-
 }
 
 
@@ -143,33 +142,24 @@ ricker_stan <- function(data,  AC=FALSE, smax_priors=NULL, control = stancontrol
 #' 
 ricker_rw_stan <- function(data, par=c('a','b','both'),smax_priors=NULL,  control = stancontrol(), mod=NULL,
   warmup=300,  chains = 6, iter = 1000, lambertW=FALSE,...) {
-  #par='b'
 
-  if(is.null(mod)){
-   sm <- compile_code(type='rw',ac=FALSE,par=par,lambertW=lambertW)
-  }else{
-   sm <- mod
-  }
-  #if(is.null(sm_ext)){
-  #  sm <- sr_mod(type='rw',ac=FALSE,par=par,loglik=FALSE, modelcode=TRUE)
-  #}else{
-  #  sm <-sm_ext
-  #}
-
+  if(is.null(mod)==T){
+    sm=samEst::sr_mod(type='rw',par=par)
+  }else{sm=mod}
   
   fit <- rstan::sampling(sm, data = list(N=nrow(data),
                                     L=max(data$by)-min(data$by)+1,
-                                    ii=seq_along(data$logRS),
+                                    ii=data$by-min(data$by)+1,
                                     R_S =data$logRS,
                                     S=data$S,
                                     pSmax_mean=max(data$S)/2,
-                                    pSmax_sig=max(data$S)),
+                                    pSmax_sig=max(data$S)/2),
                         control = control, warmup = warmup, chains = chains, iter = iter,verbose=FALSE)
   if(is.null(smax_priors)==FALSE){
     
     fit <- rstan::sampling(sm, data = list(N=nrow(data),
                                            L=max(data$by)-min(data$by)+1,
-                                           ii=seq_along(data$logRS),
+                                           ii=data$by-min(data$by)+1,
                                            R_S =data$logRS,
                                            S=data$S,
                                            pSmax_mean=smax_priors[1],
@@ -178,27 +168,19 @@ ricker_rw_stan <- function(data, par=c('a','b','both'),smax_priors=NULL,  contro
     
     
   }
-  mc <- rstan::extract(fit, 
-                inc_warmup=FALSE, permuted=FALSE)
-    
-    
+  mc <- rstan::extract(fit,pars=c('log_a','b','S_max','U_msy','S_msy','sigma'),
+                       inc_warmup=FALSE, permuted=FALSE)
+  
   aa <- rstan::summary(fit)
   
-  ans <-list(alpha=aa$summary[grep("log_a",row.names(aa$summary)),"50%"],
-   beta=aa$summary[grep("^b",row.names(aa$summary)),"50%"],
-   Smax=aa$summary[grep("S_max",row.names(aa$summary)),"50%"],
-   sigobs=aa$summary["sigma","50%"],
-   siga=ifelse(par=="a"|par=="both",aa$summary["sigma_a","50%"],NA),
-   sigb=ifelse(par=="b"|par=="both",aa$summary["sigma_b","50%"],NA),
-   stanfit=fit, 
-   mcmcsummary=aa$summary,
-   c_mcmcsummary=aa$c_summary, 
-   samples=mc )
-
-  if(lambertW){
-    ans$Smsy=aa$summary["S_msy","50%"]
-    ans$umsy=aa$summary["U_msy","50%"]
-  }
+  ans<-list(alpha=c(median=aa$summary["log_a","50%"],sd=aa$summary["log_a","sd"],est2.5=aa$summary["log_a","2.5%"],est97.5=aa$summary["log_a","97.5%"]),
+            beta=c(median=aa$summary["b","50%"],sd=aa$summary["b","sd"],est2.5=aa$summary["b","2.5%"],est97.5=aa$summary["b","97.5%"]),
+            Smax=c(median=aa$summary["S_max","50%"],sd=aa$summary["S_max","sd"],est2.5=aa$summary["S_max","2.5%"],est97.5=aa$summary["S_max","97.5%"]),
+            Smsy=c(median=aa$summary["S_msy","50%"],sd=aa$summary["S_msy","sd"],est2.5=aa$summary["S_msy","2.5%"],est97.5=aa$summary["S_msy","97.5%"]),
+            Umsy=c(median=aa$summary["U_msy","50%"],sd=aa$summary["U_msy","sd"],est2.5=aa$summary["U_msy","2.5%"],est97.5=aa$summary["U_msy","97.5%"]),
+            sigma=c(median=aa$summary["sigma","50%"],sd=aa$summary["sigma","sd"],est2.5=aa$summary["sigma","2.5%"],est97.5=aa$summary["sigma","97.5%"]),
+            summary=fit,
+            samples=mc) 
 
   return(ans)
 
@@ -304,6 +286,12 @@ ricker_hmm_stan <- function(data, par=c('a','b','both'), k_regime=2, smax_priors
    alpha=ifelse(par=="a"|par=="both",list(aa$summary[grep("log_a\\[",row.names(aa$summary)),"50%"]),aa$summary["log_a","50%"])[[1]],
    beta=ifelse(par=="b"|par=="both",list(aa$summary[grep("b\\[",row.names(aa$summary)),"50%"]),aa$summary["b","50%"])[[1]],
    Smax=ifelse(par=="b"|par=="both",list(aa$summary[grep("S_max\\[",row.names(aa$summary)),"50%"]),aa$summary["S_max","50%"])[[1]],
+   Smsy_regime=parts$S_msy_t,
+   Smsy_wgt=parts$S_msy_wt,
+   umsy_regime=ifelse(rep(par=="a"|par=="both",nrow(data)),parts$U_msy_t,NA),
+   umsy_wgt=ifelse(rep(par=="a"|par=="both",nrow(data)),parts$U_msy_wt,NA),
+   Smsy=aa$summary[grep("S_msy\\[",row.names(aa$summary)),"50%"],
+   umsy=ifelse(par=="a"|par=="both",list(aa$summary[grep("U_msy\\[",row.names(aa$summary)),"50%"]),aa$summary["U_msy","50%"])[[1]],
    sigobs=aa$summary["sigma","50%"],
    pi=aa$summary[grep("pi1",row.names(aa$summary)),"50%"],
    A=aa$summary[grep("A",row.names(aa$summary)),"50%"],
@@ -317,17 +305,7 @@ ricker_hmm_stan <- function(data, par=c('a','b','both'), k_regime=2, smax_priors
   #extract time-series of parameters
 
 
-  if(lambertW){
     
-    
-    ans$Smsy_regime=parts$S_msy_t
-    ans$Smsy_wgt=parts$S_msy_wt
-    ans$umsy_regime=ifelse(rep(par=="a"|par=="both",nrow(data)),parts$U_msy_t,NA)
-    ans$umsy_wgt=ifelse(rep(par=="a"|par=="both",nrow(data)),parts$U_msy_wt,NA)
-    ans$Smsy=aa$summary[grep("S_msy\\[",row.names(aa$summary)),"50%"]
-    ans$umsy=ifelse(par=="a"|par=="both",list(aa$summary[grep("U_msy\\[",row.names(aa$summary)),"50%"]),aa$summary["U_msy","50%"])[[1]]
-   
-  }
 
    return(ans)
 
