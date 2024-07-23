@@ -90,8 +90,6 @@ ricker_stan <- function(data,  ac=FALSE, smax_priors=NULL,mod=NULL,full_posterio
   }else{
     ans<- list(fit=fit,summary=aa$summary,samples=mc2)
   }
-  if(any(aa$summary[,10]>=1.05)){print='Warning, some R_hat values are over the threshold of 1.05 - check parameter summary'}
-  
   return(ans)
 }
 
@@ -203,13 +201,21 @@ ricker_rw_stan <- function(data, par=c('a','b','both'),smax_priors=NULL,full_pos
     if(par=='a'){
       mc <- rstan::extract(fit,pars=c('log_a','b','S_max','S_msy','U_msy','sigma','sigma_a'),permuted=T)
       mc2=as.data.frame(do.call(cbind,mc))
-      colnames(mc2)=c(paste('log_a[',seq(1:datm$L),']',sep=''),'b','S_max','S_msy','U_msy','sigma','sigma_a')
+      colnames(mc2)=c(paste('log_a[',seq(1:datm$L),']',sep=''),'b','S_max',paste('S_msy[',seq(1:datm$L),']',sep=''),paste('U_msy[',seq(1:datm$L),']',sep=''),'sigma','sigma_a')
+    }
+    if(par=='b'){
+      mc <- rstan::extract(fit,pars=c('log_a','b','S_max','S_msy','U_msy','sigma','sigma_b'),permuted=T)
+      mc2=as.data.frame(do.call(cbind,mc))
+      colnames(mc2)=c('log_a',paste('b[',seq(1:datm$L),']',sep=''),paste('S_max[',seq(1:datm$L),']',sep=''),paste('S_msy[',seq(1:datm$L),']',sep=''),'U_msy','sigma','sigma_b')
+    }
+    if(par=='both'){
+      mc <- rstan::extract(fit,pars=c('log_a','b','S_max','S_msy','U_msy','sigma','sigma_a','sigma_b'),permuted=T)
+      mc2=as.data.frame(do.call(cbind,mc))
+      colnames(mc2)=c(paste('log_a[',seq(1:datm$L),']',sep=''),paste('b[',seq(1:datm$L),']',sep=''),paste('S_max[',seq(1:datm$L),']',sep=''),paste('S_msy[',seq(1:datm$L),']',sep=''),paste('U_msy[',seq(1:datm$L),']',sep=''),'sigma','sigma_a','sigma_b')
     }
    
     ans<- list(fit=fit,summary=aa,samples=mc2)
   }
-  if(any(aa$summary[,10]>=1.05)){print='Warning, some R_hat values are over the threshold of 1.05 - check parameter summary'}
-  
   return(ans)
 
 }
