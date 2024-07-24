@@ -640,7 +640,10 @@ prior_check<- function(data,type=c('static','rw'),AC=FALSE,par=c('a','b','both')
 #' @param data the data that were used for the model in 'fit'
 #' @export
 post_check<- function(fit,data,pdf=FALSE,path=NULL,filename=NULL){
-  yrep_RS=rstan::extract(fit$summary,pars='y_rep',permuted=FALSE)
+  if(is.null(fit$fit)==T){
+    print('Model fit must specify: full_posterior=TRUE')
+  }
+  yrep_RS=rstan::extract(fit$fit,pars='y_rep',permuted=FALSE)
   yrep_R=array(NA,dim=dim(yrep_RS))
   for(t in 1:6){
     yrep_R[,t,]=log10(exp(yrep_RS[,t,])*data$S)
@@ -678,7 +681,7 @@ post_check<- function(fit,data,pdf=FALSE,path=NULL,filename=NULL){
   axis(1, log10(ticksat), col="black", labels=NA,
        tcl=-0.2, lwd=0, lwd.ticks=1)
   
-  smaxs=rstan::extract(fit$summary,pars=c('prior_Smax','S_max'))
+  smaxs=rstan::extract(fit$fit,pars=c('prior_Smax','S_max'))
   hist(c(smaxs$prior_Smax/1e3),breaks=30,freq=T,xlim=c(0,max(c(smaxs[[1]]/1e3,smaxs[[2]]/1e3))),xlab='spawners (1000s)',col=adjustcolor('darkorange',alpha.f=0.5),border='white',main='')
   par(new=T)
   hist(c(smaxs$S_max/1e3),breaks=30,freq=T,xlim=c(0,max(c(smaxs[[1]]/1e3,smaxs[[2]]/1e3))),xlab='spawners (1000s)',col=adjustcolor('navy',alpha.f=0.5),border='white',main='',yaxt='n')
@@ -687,7 +690,7 @@ post_check<- function(fit,data,pdf=FALSE,path=NULL,filename=NULL){
   
   plot(c(data$R/1e3)~c(data$S/1e3),xlab='spawners (1000s)',ylab='recruits (1000s)',type='n',ylim=c(0,max(data$R/1e3)),xlim=c(0,max(data$S/1e3)*1.2),bty='l')
   sn=seq(0,max(data$S))
-  muR=exp(fit$alpha[1]-fit$beta[1]*sn)*sn
+  muR=exp(median(fit$samples[,grepl('log_a',colnames(fit$samples))])-median(fit$samples[,grepl('b',colnames(fit$samples))])*sn)*sn
   lines(c(muR/1e3)~c(sn/1e3))
   par(new=T)
   hist(c(smaxs$prior_Smax/1e3),breaks=30,freq=T,xlim=c(0,max(data$S/1e3)*1.2),ylim=c(0,1e3),xlab='',col=adjustcolor('darkorange',alpha.f=0.5),border='white',main='',xaxt='n',yaxt='n',ylab='')

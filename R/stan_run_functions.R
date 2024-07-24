@@ -45,7 +45,7 @@ ricker_stan <- function(data,  ac=FALSE, smax_priors=NULL,mod=NULL,full_posterio
                 R_S =data$logRS,
                 S=data$S,
                 pSmax_mean=max(data$S)/2,
-                pSmax_sig=max(data$S)/2)
+                pSmax_sig=max(data$S))
   }else{
       datm = list(N=nrow(data),
                   L=max(data$by)-min(data$by)+1,
