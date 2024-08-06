@@ -142,27 +142,31 @@ ricker_rw_stan <- function(data, par=c('a','b','both'),smax_priors=NULL,full_pos
     sm=samEst::sr_mod(type='rw',par=par)
   }else{sm=mod}
   
-  fit <- rstan::sampling(sm, data = list(N=nrow(data),
-                                    L=max(data$by)-min(data$by)+1,
-                                    ii=data$by-min(data$by)+1,
-                                    R_S =data$logRS,
-                                    S=data$S,
-                                    pSmax_mean=max(data$S)/2,
-                                    pSmax_sig=max(data$S)/2),
-                        control = control, warmup = warmup, chains = chains, iter = iter,verbose=FALSE)
+  if(is.null(smax_priors)==TRUE){
+    
+    datm <- list(N=nrow(data),
+                 L=max(data$by)-min(data$by)+1,
+                 ii=data$by-min(data$by)+1,
+                 R_S =data$logRS,
+                 S=data$S,
+                 pSmax_mean=max(data$S)/2,
+                 pSmax_sig=max(data$S)/2)
+  }
+  
   if(is.null(smax_priors)==FALSE){
     
-    fit <- rstan::sampling(sm, data = list(N=nrow(data),
-                                           L=max(data$by)-min(data$by)+1,
-                                           ii=data$by-min(data$by)+1,
-                                           R_S =data$logRS,
-                                           S=data$S,
-                                           pSmax_mean=smax_priors[1],
-                                           pSmax_sig=smax_priors[2]),
-                           control = control, warmup = warmup, chains = chains, iter = iter,verbose=FALSE)
-    
-    
+    datm <- list(N=nrow(data),
+         L=max(data$by)-min(data$by)+1,
+         ii=data$by-min(data$by)+1,
+         R_S =data$logRS,
+         S=data$S,
+         pSmax_mean=smax_priors[1],
+         pSmax_sig=smax_priors[2])
   }
+  
+  fit <- rstan::sampling(sm, data = datm,
+                         control = control, warmup = warmup, chains = chains, iter = iter,verbose=FALSE)
+  
 
   
   aa <- rstan::summary(fit)
@@ -219,7 +223,7 @@ ricker_rw_stan <- function(data, par=c('a','b','both'),smax_priors=NULL,full_pos
       colnames(mc2)=c(paste('log_a[',seq(1:datm$L),']',sep=''),paste('b[',seq(1:datm$L),']',sep=''),paste('S_max[',seq(1:datm$L),']',sep=''),paste('S_msy[',seq(1:datm$L),']',sep=''),paste('U_msy[',seq(1:datm$L),']',sep=''),'sigma','sigma_a','sigma_b')
     }
    
-    ans<- list(data=data,
+    ans<- list(data=datm,
                fit=fit,
                summary=aa,
                samples=mc2)
