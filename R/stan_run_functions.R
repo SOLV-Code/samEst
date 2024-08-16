@@ -70,7 +70,8 @@ ricker_stan <- function(data,  ac=FALSE, smax_priors=NULL,mod=NULL,full_posterio
   aa <- rstan::summary(fit)
   if(full_posterior==FALSE){
      if(ac==F){
-       ans<-list(alpha=c(median=aa$summary["log_a","50%"],med.cv=aa$summary["log_a","sd"]/aa$summary["log_a","50%"],est2.5=aa$summary["log_a","2.5%"],est97.5=aa$summary["log_a","97.5%"]),
+       ans<-list(data=data,
+                 alpha=c(median=aa$summary["log_a","50%"],med.cv=aa$summary["log_a","sd"]/aa$summary["log_a","50%"],est2.5=aa$summary["log_a","2.5%"],est97.5=aa$summary["log_a","97.5%"]),
                  beta=c(median=aa$summary["b","50%"],med.cv=aa$summary["b","sd"]/aa$summary["b","50%"],est2.5=aa$summary["b","2.5%"],est97.5=aa$summary["b","97.5%"]),
                  Smax=c(median=aa$summary["S_max","50%"],med.cv=aa$summary["S_max","sd"]/aa$summary["S_max","50%"],est2.5=aa$summary["S_max","2.5%"],est97.5=aa$summary["S_max","97.5%"]),
                  Smsy=c(median=aa$summary["S_msy","50%"],med.cv=aa$summary["S_msy","sd"]/aa$summary["S_msy","50%"],est2.5=aa$summary["S_msy","2.5%"],est97.5=aa$summary["S_msy","97.5%"]),
@@ -78,7 +79,8 @@ ricker_stan <- function(data,  ac=FALSE, smax_priors=NULL,mod=NULL,full_posterio
                  sigma=c(median=aa$summary["sigma","50%"],med.cv=aa$summary["sigma","sd"]/aa$summary["sigma","50%"],est2.5=aa$summary["sigma","2.5%"],est97.5=aa$summary["sigma","97.5%"]))
      }
     if(ac==T){
-      ans<-list(alpha=c(median=aa$summary["log_a","50%"],med.cv=aa$summary["log_a","sd"]/aa$summary["log_a","50%"],est2.5=aa$summary["log_a","2.5%"],est97.5=aa$summary["log_a","97.5%"]),
+      ans<-list(data=data,
+                alpha=c(median=aa$summary["log_a","50%"],med.cv=aa$summary["log_a","sd"]/aa$summary["log_a","50%"],est2.5=aa$summary["log_a","2.5%"],est97.5=aa$summary["log_a","97.5%"]),
                 beta=c(median=aa$summary["b","50%"],med.cv=aa$summary["b","sd"]/aa$summary["b","50%"],est2.5=aa$summary["b","2.5%"],est97.5=aa$summary["b","97.5%"]),
                 Smax=c(median=aa$summary["S_max","50%"],med.cv=aa$summary["S_max","sd"]/aa$summary["S_max","50%"],est2.5=aa$summary["S_max","2.5%"],est97.5=aa$summary["S_max","97.5%"]),
                 Smsy=c(median=aa$summary["S_msy","50%"],med.cv=aa$summary["S_msy","sd"]/aa$summary["S_msy","50%"],est2.5=aa$summary["S_msy","2.5%"],est97.5=aa$summary["S_msy","97.5%"]),
@@ -88,7 +90,7 @@ ricker_stan <- function(data,  ac=FALSE, smax_priors=NULL,mod=NULL,full_posterio
     }
     
   }else{
-    ans<- list(fit=fit,summary=aa$summary,samples=mc2)
+    ans<- list(data=data,fit=fit,summary=aa$summary,samples=mc2)
   }
   return(ans)
 }
@@ -140,33 +142,38 @@ ricker_rw_stan <- function(data, par=c('a','b','both'),smax_priors=NULL,full_pos
     sm=samEst::sr_mod(type='rw',par=par)
   }else{sm=mod}
   
-  fit <- rstan::sampling(sm, data = list(N=nrow(data),
-                                    L=max(data$by)-min(data$by)+1,
-                                    ii=data$by-min(data$by)+1,
-                                    R_S =data$logRS,
-                                    S=data$S,
-                                    pSmax_mean=max(data$S)/2,
-                                    pSmax_sig=max(data$S)/2),
-                        control = control, warmup = warmup, chains = chains, iter = iter,verbose=FALSE)
+  if(is.null(smax_priors)==TRUE){
+    
+    datm <- list(N=nrow(data),
+                 L=max(data$by)-min(data$by)+1,
+                 ii=data$by-min(data$by)+1,
+                 R_S =data$logRS,
+                 S=data$S,
+                 pSmax_mean=max(data$S)/2,
+                 pSmax_sig=max(data$S)/2)
+  }
+  
   if(is.null(smax_priors)==FALSE){
     
-    fit <- rstan::sampling(sm, data = list(N=nrow(data),
-                                           L=max(data$by)-min(data$by)+1,
-                                           ii=data$by-min(data$by)+1,
-                                           R_S =data$logRS,
-                                           S=data$S,
-                                           pSmax_mean=smax_priors[1],
-                                           pSmax_sig=smax_priors[2]),
-                           control = control, warmup = warmup, chains = chains, iter = iter,verbose=FALSE)
-    
-    
+    datm <- list(N=nrow(data),
+         L=max(data$by)-min(data$by)+1,
+         ii=data$by-min(data$by)+1,
+         R_S =data$logRS,
+         S=data$S,
+         pSmax_mean=smax_priors[1],
+         pSmax_sig=smax_priors[2])
   }
+  
+  fit <- rstan::sampling(sm, data = datm,
+                         control = control, warmup = warmup, chains = chains, iter = iter,verbose=FALSE)
+  
 
   
   aa <- rstan::summary(fit)
   if(full_posterior==FALSE){
     if(par=='a'){
-      ans<-list(alpha=data.frame(median=aa$summary[paste('log_a[',seq(1:datm$L),']',sep=''),"50%"],med.cv=aa$summary[paste('log_a[',seq(1:datm$L),']',sep=''),"sd"]/aa$summary[paste('log_a[',seq(1:datm$L),']',sep=''),"50%"],est2.5=aa$summary[paste('log_a[',seq(1:datm$L),']',sep=''),"2.5%"],est97.5=aa$summary[paste('log_a[',seq(1:datm$L),']',sep=''),"97.5%"]),
+      ans<-list(data=data,
+                alpha=data.frame(median=aa$summary[paste('log_a[',seq(1:datm$L),']',sep=''),"50%"],med.cv=aa$summary[paste('log_a[',seq(1:datm$L),']',sep=''),"sd"]/aa$summary[paste('log_a[',seq(1:datm$L),']',sep=''),"50%"],est2.5=aa$summary[paste('log_a[',seq(1:datm$L),']',sep=''),"2.5%"],est97.5=aa$summary[paste('log_a[',seq(1:datm$L),']',sep=''),"97.5%"]),
                 beta=c(median=aa$summary["b","50%"],med.cv=aa$summary["b","sd"]/aa$summary["b","50%"],est2.5=aa$summary["b","2.5%"],est97.5=aa$summary["b","97.5%"]),
                 Smax=c(median=aa$summary["S_max","50%"],med.cv=aa$summary["S_max","sd"]/aa$summary["S_max","50%"],est2.5=aa$summary["S_max","2.5%"],est97.5=aa$summary["S_max","97.5%"]),
                 Smsy=data.frame(median=aa$summary[paste('S_msy[',seq(1:datm$L),']',sep=''),"50%"],med.cv=aa$summary[paste('S_msy[',seq(1:datm$L),']',sep=''),"sd"]/aa$summary[paste('S_msy[',seq(1:datm$L),']',sep=''),"50%"],est2.5=aa$summary[paste('S_msy[',seq(1:datm$L),']',sep=''),"2.5%"],est97.5=aa$summary[paste('S_msy[',seq(1:datm$L),']',sep=''),"97.5%"]),
@@ -176,7 +183,8 @@ ricker_rw_stan <- function(data, par=c('a','b','both'),smax_priors=NULL,full_pos
     
     }
     if(par=='b'){
-      ans<-list(alpha=c(median=aa$summary["log_a","50%"],med.cv=aa$summary["log_a","sd"]/aa$summary["log_a","50%"],est2.5=aa$summary["log_a","2.5%"],est97.5=aa$summary["log_a","97.5%"]),
+      ans<-list(data=data,
+                alpha=c(median=aa$summary["log_a","50%"],med.cv=aa$summary["log_a","sd"]/aa$summary["log_a","50%"],est2.5=aa$summary["log_a","2.5%"],est97.5=aa$summary["log_a","97.5%"]),
                 beta=data.frame(median=aa$summary[paste('beta[',seq(1:datm$L),']',sep=''),"50%"],med.cv=aa$summary[paste('beta[',seq(1:datm$L),']',sep=''),"sd"]/aa$summary[paste('beta[',seq(1:datm$L),']',sep=''),"50%"],est2.5=aa$summary[paste('beta[',seq(1:datm$L),']',sep=''),"2.5%"],est97.5=aa$summary[paste('beta[',seq(1:datm$L),']',sep=''),"97.5%"]),
                 Smax=data.frame(median=aa$summary[paste('S_max[',seq(1:datm$L),']',sep=''),"50%"],med.cv=aa$summary[paste('S_max[',seq(1:datm$L),']',sep=''),"sd"]/aa$summary[paste('S_max[',seq(1:datm$L),']',sep=''),"50%"],est2.5=aa$summary[paste('S_max[',seq(1:datm$L),']',sep=''),"2.5%"],est97.5=aa$summary[paste('S_max[',seq(1:datm$L),']',sep=''),"97.5%"]),
                 Smsy=data.frame(median=aa$summary[paste('S_msy[',seq(1:datm$L),']',sep=''),"50%"],med.cv=aa$summary[paste('S_msy[',seq(1:datm$L),']',sep=''),"sd"]/aa$summary[paste('S_msy[',seq(1:datm$L),']',sep=''),"50%"],est2.5=aa$summary[paste('S_msy[',seq(1:datm$L),']',sep=''),"2.5%"],est97.5=aa$summary[paste('S_msy[',seq(1:datm$L),']',sep=''),"97.5%"]),
@@ -186,7 +194,8 @@ ricker_rw_stan <- function(data, par=c('a','b','both'),smax_priors=NULL,full_pos
       
     }
     if(par=='both'){
-      ans<-list(alpha=data.frame(median=aa$summary[paste('log_a[',seq(1:datm$L),']',sep=''),"50%"],med.cv=aa$summary[paste('log_a[',seq(1:datm$L),']',sep=''),"sd"]/aa$summary[paste('log_a[',seq(1:datm$L),']',sep=''),"50%"],est2.5=aa$summary[paste('log_a[',seq(1:datm$L),']',sep=''),"2.5%"],est97.5=aa$summary[paste('log_a[',seq(1:datm$L),']',sep=''),"97.5%"]),
+      ans<-list(data=data,
+                alpha=data.frame(median=aa$summary[paste('log_a[',seq(1:datm$L),']',sep=''),"50%"],med.cv=aa$summary[paste('log_a[',seq(1:datm$L),']',sep=''),"sd"]/aa$summary[paste('log_a[',seq(1:datm$L),']',sep=''),"50%"],est2.5=aa$summary[paste('log_a[',seq(1:datm$L),']',sep=''),"2.5%"],est97.5=aa$summary[paste('log_a[',seq(1:datm$L),']',sep=''),"97.5%"]),
                 beta=data.frame(median=aa$summary[paste('beta[',seq(1:datm$L),']',sep=''),"50%"],med.cv=aa$summary[paste('beta[',seq(1:datm$L),']',sep=''),"sd"]/aa$summary[paste('beta[',seq(1:datm$L),']',sep=''),"50%"],est2.5=aa$summary[paste('beta[',seq(1:datm$L),']',sep=''),"2.5%"],est97.5=aa$summary[paste('beta[',seq(1:datm$L),']',sep=''),"97.5%"]),
                 Smax=data.frame(median=aa$summary[paste('S_max[',seq(1:datm$L),']',sep=''),"50%"],med.cv=aa$summary[paste('S_max[',seq(1:datm$L),']',sep=''),"sd"]/aa$summary[paste('S_max[',seq(1:datm$L),']',sep=''),"50%"],est2.5=aa$summary[paste('S_max[',seq(1:datm$L),']',sep=''),"2.5%"],est97.5=aa$summary[paste('S_max[',seq(1:datm$L),']',sep=''),"97.5%"]),
                 Smsy=data.frame(median=aa$summary[paste('S_msy[',seq(1:datm$L),']',sep=''),"50%"],med.cv=aa$summary[paste('S_msy[',seq(1:datm$L),']',sep=''),"sd"]/aa$summary[paste('S_msy[',seq(1:datm$L),']',sep=''),"50%"],est2.5=aa$summary[paste('S_msy[',seq(1:datm$L),']',sep=''),"2.5%"],est97.5=aa$summary[paste('S_msy[',seq(1:datm$L),']',sep=''),"97.5%"]),
@@ -214,7 +223,10 @@ ricker_rw_stan <- function(data, par=c('a','b','both'),smax_priors=NULL,full_pos
       colnames(mc2)=c(paste('log_a[',seq(1:datm$L),']',sep=''),paste('b[',seq(1:datm$L),']',sep=''),paste('S_max[',seq(1:datm$L),']',sep=''),paste('S_msy[',seq(1:datm$L),']',sep=''),paste('U_msy[',seq(1:datm$L),']',sep=''),'sigma','sigma_a','sigma_b')
     }
    
-    ans<- list(fit=fit,summary=aa,samples=mc2)
+    ans<- list(data=datm,
+               fit=fit,
+               summary=aa,
+               samples=mc2)
   }
   return(ans)
 
