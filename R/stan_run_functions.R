@@ -32,7 +32,7 @@
 #' data(harck)
 #' rickerstan(data=harck)
 #' 
-ricker_stan <- function(data,  ac=FALSE, smax_priors=NULL,mod=NULL,full_posterior=FALSE, control = stancontrol(), warmup=300, chains = 6, iter = 1000,...) {
+ricker_stan <- function(data,  ac=FALSE, smax_priors=NULL,mod=NULL,full_posterior=FALSE, control = stancontrol(adapt_delta=0.99), warmup=300, chains = 6, iter = 1000,...) {
  
   if(is.null(mod)==T){
     sm=samEst::sr_mod(type='static',ac=ac,par='n')
@@ -63,10 +63,15 @@ ricker_stan <- function(data,  ac=FALSE, smax_priors=NULL,mod=NULL,full_posterio
   #                      data = datm,
   #                      control = control, warmup = warmup, chains = chains, iter = iter)
   #
-  mc <- rstan::extract(fit,pars=c('log_a','b','S_max','S_msy','U_msy','sigma','mu','epsilon'),permuted=T)
+  if(ac==F){ mc <- rstan::extract(fit,pars=c('log_a','b','S_max','S_msy','U_msy','sigma','mu','epsilon'),permuted=T) 
   mc2=as.data.frame(do.call(cbind,mc))
   colnames(mc2)=c('log_a','b','S_max','S_msy','U_msy','sigma',paste('mu[',seq(1:datm$N),']',sep=''),paste('epsilon[',seq(1:datm$N),']',sep=''))
- 
+  } 
+  if(ac==T){ mc <- rstan::extract(fit,pars=c('log_a','b','S_max','S_msy','U_msy','sigma','mu','epsilon','rho'),permuted=T)
+  mc2=as.data.frame(do.call(cbind,mc))
+  colnames(mc2)=c('log_a','b','S_max','S_msy','U_msy','sigma',paste('mu[',seq(1:datm$N),']',sep=''),paste('epsilon[',seq(1:datm$N),']',sep=''),'rho')
+  } 
+  
   aa <- rstan::summary(fit)
   if(full_posterior==FALSE){
      if(ac==F){
@@ -86,7 +91,7 @@ ricker_stan <- function(data,  ac=FALSE, smax_priors=NULL,mod=NULL,full_posterio
                 Smsy=c(median=aa$summary["S_msy","50%"],med.cv=aa$summary["S_msy","sd"]/aa$summary["S_msy","50%"],est2.5=aa$summary["S_msy","2.5%"],est97.5=aa$summary["S_msy","97.5%"]),
                 Umsy=c(median=aa$summary["U_msy","50%"],med.cv=aa$summary["U_msy","sd"]/aa$summary["U_msy","50%"],est2.5=aa$summary["U_msy","2.5%"],est97.5=aa$summary["U_msy","97.5%"]),
                 sigma=c(median=aa$summary["sigma","50%"],med.cv=aa$summary["sigma","sd"]/aa$summary["sigma","50%"],est2.5=aa$summary["sigma","2.5%"],est97.5=aa$summary["sigma","97.5%"]),
-                sigma=c(median=aa$summary["rho","50%"],med.cv=aa$summary["rho","sd"]/aa$summary["rho","50%"],est2.5=aa$summary["rho","2.5%"],est97.5=aa$summary["rho","97.5%"]))
+                rho=c(median=aa$summary["rho","50%"],med.cv=aa$summary["rho","sd"]/aa$summary["rho","50%"],est2.5=aa$summary["rho","2.5%"],est97.5=aa$summary["rho","97.5%"]))
     }
     
   }else{
@@ -136,7 +141,7 @@ ricker_stan <- function(data,  ac=FALSE, smax_priors=NULL,mod=NULL,full_posterio
 #' ricker_rw_stan(data=harck)
 #' 
 ricker_rw_stan <- function(data, par=c('a','b','both'),smax_priors=NULL,full_posterior=FALSE,control = stancontrol(), mod=NULL,
-  warmup=300,  chains = 6, iter = 1000, lambertW=FALSE,...) {
+  warmup=300,  chains = 6, iter = 1000,...) {
 
   if(is.null(mod)==T){
     sm=samEst::sr_mod(type='rw',par=par)
@@ -225,7 +230,7 @@ ricker_rw_stan <- function(data, par=c('a','b','both'),smax_priors=NULL,full_pos
    
     ans<- list(data=datm,
                fit=fit,
-               summary=aa,
+               summary=aa$summary,
                samples=mc2)
   }
   return(ans)
@@ -365,8 +370,8 @@ ricker_hmm_stan <- function(data, par=c('a','b','both'), k_regime=2, smax_priors
 #'   [rstan::sampling].
 #'
 #' @export
-stancontrol <- function(adapt_delta = 0.99,  ...) {
-  list(adapt_delta = 0.99, ...)
+stancontrol <- function(adapt_delta = 0.999,  ...) {
+  list(adapt_delta = 0.999, ...)
 }
 
 
