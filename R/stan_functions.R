@@ -743,13 +743,13 @@ parameters {
 }
 transformed parameters {
   simplex[K] pi1; // initial state probabilities
- array[K] vector[N] logalpha;
+  array[K] vector[N] logalpha;
   real b; //
 
   b=exp(log_b);
 
 { // Forward algorithm log p(z_t = j | y_{1:t})
-  real accumulator1[K];
+  array[K] real accumulator1;
 
   logalpha[1] = log(pi1) + normal_lpdf(R_S[1] |log_a - b*S[1], sigma);
 
@@ -914,7 +914,7 @@ for(i in 1:K){pi1[i]=1/K};
 b=exp(log_b);
  
 { // Forward algorithm log p(z_t = j | y_{1:t})
-real accumulator1[K];
+array[K] real accumulator1;
 
 logalpha[1] = log(pi1) + normal_lpdf(R_S[1] |log_a - b*S[1], sigma);
 for (t in 2:N) {
@@ -2295,7 +2295,7 @@ real b; //
 b=exp(log_b);
 
 { // Forward algorithm log p(z_t = j | y_{1:t})
-real accumulator1[K];
+array[K] real accumulator1;
 
 logalpha[1] = log(pi1) + normal_lpdf(R_S[1] |log_a - b*S[1], sigma);
 
@@ -2442,7 +2442,7 @@ real b; //
 b=exp(log_b);
  
 { // Forward algorithm log p(z_t = j | y_{1:t})
-real accumulator1[K];
+array[K] real accumulator1;
 
 logalpha[1] = log(pi1) + normal_lpdf(R_S[1] |log_a - b*S[1], sigma);
 for (t in 2:N) {
