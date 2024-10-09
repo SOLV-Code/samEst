@@ -743,7 +743,7 @@ parameters {
 }
 transformed parameters {
   simplex[K] pi1; // initial state probabilities
-  vector[K] logalpha[N];
+ array[K] vector[N] logalpha;
   real b; //
 
   b=exp(log_b);
@@ -906,7 +906,7 @@ real<lower=0> sigma; // observation standard deviations
 
 transformed parameters {
 simplex[K] pi1; // initial state probabilities
-vector[K] logalpha[N];
+array[K] vector[N] logalpha;
 real b; //
 
 for(i in 1:K){pi1[i]=1/K};
@@ -1057,7 +1057,7 @@ real<lower=0> sigma; // observation standard deviations
 transformed parameters {
 simplex[K] pi1; // initial state probabilities
 
-vector[K] logalpha[N];
+array[K] vector[N] logalpha;
 ordered[K] b;
 
   pi1=rep_vector(1.0/K,K);
@@ -1221,7 +1221,7 @@ real<lower=0> sigma; // observation standard deviations
 
 transformed parameters {
 simplex[K] pi1; // initial state probabilities
-vector[K] logalpha[N];
+array[K] vector[N] logalpha;
 vector[K] b;
 
 for(i in 1:K){pi1[i]=1/K};
@@ -1376,7 +1376,7 @@ logbeta_pr=log(1/pSmax_mean)-0.5*logbeta_pr_sig*logbeta_pr_sig; //convert smax p
     
     transformed parameters {
 	 simplex[K] pi1; // initial state probabilities
-      vector[K] logalpha[N];
+array[K] vector[N] logalpha;
       vector[K] b; //
         
 	  pi1=rep_vector(1.0/K,K);
@@ -1541,7 +1541,7 @@ real<lower=0> sigma; // observation standard deviations
 }
 
 transformed parameters {
-vector[K] logalpha[N];
+array[K] vector[N] logalpha;
 vector[K] b; //
 simplex[K] pi1; // initial state probabilities
 
