@@ -779,7 +779,7 @@ model{
   target += log_sum_exp(logalpha[N]);
 }
 generated quantities {
-  int<lower=1, upper=K> zstar[N];
+  array[N] int<lower=1, upper=K> zstar;
   real logp_zstar;
   array[K] vector[N] alpha;
   array[K] vector[N] logbeta;
@@ -941,7 +941,7 @@ A[k,] ~ dirichlet(alpha_dirichlet[k,]);
 target += log_sum_exp(logalpha[N]);
 }
 generated quantities{
-int<lower=1, upper=K> zstar[N];
+array[N] int<lower=1, upper=K> zstar;
 real logp_zstar;
 array[K] vector[N] alpha;
 array[K] vector[N] logbeta;
@@ -1094,7 +1094,7 @@ target += log_sum_exp(logalpha[N]);
 }
 generated quantities{
 
-int<lower=1, upper=K> zstar[N];
+array[N] int<lower=1, upper=K> zstar;
 real logp_zstar;
 array[K] vector[N] alpha;
 array[K] vector[N] logbeta;
@@ -1258,7 +1258,7 @@ A[k,] ~ dirichlet(alpha_dirichlet[k,]);
 target += log_sum_exp(logalpha[N]);
 }
 generated quantities {
-int<lower=1, upper=K> zstar[N];
+array[N] int<lower=1, upper=K> zstar;
 real logp_zstar;
 array[K] vector[N] alpha;
 array[K] vector[N] logbeta;
@@ -1415,7 +1415,7 @@ array[K] vector[N] logalpha;
 generated quantities {
 vector[N] y_rep;
 //HMM estimators
-int<lower=1, upper=K> zstar[N]; //most-likely regime state sequence
+array[N] int<lower=1, upper=K> zstar;
 real logp_zstar;
 array[K] vector[N] alpha; //forward state probabilities
 array[K] vector[N] logbeta;
@@ -1579,7 +1579,7 @@ A[k,] ~ dirichlet(alpha_dirichlet[k,]);
 target += log_sum_exp(logalpha[N]);
 }
 generated quantities {
-int<lower=1, upper=K> zstar[N];
+array[N] int<lower=1, upper=K> zstar;
 real logp_zstar;
 array[K] vector[N] alpha;
 array[K] vector[N] logbeta;
@@ -2328,7 +2328,7 @@ target += log_sum_exp(logalpha[N]);
 }
 generated quantities {
 vector[N] log_lik;
-int<lower=1, upper=K> zstar[N];
+array[N] int<lower=1, upper=K> zstar;
 real logp_zstar;
 array[K] vector[N] alpha;
 array[K] vector[N] logbeta;
@@ -2471,7 +2471,7 @@ A[k,] ~ dirichlet(alpha_dirichlet);
 target += log_sum_exp(logalpha[N]);
 }
 generated quantities{
-int<lower=1, upper=K> zstar[N];
+array[N] int<lower=1, upper=K> zstar;
 real logp_zstar;
 array[K] vector[N] alpha;
 array[K] vector[N] logbeta;
@@ -2623,7 +2623,7 @@ target += log_sum_exp(logalpha[N]);
 }
 generated quantities{
 vector[N] log_lik;
-int<lower=1, upper=K> zstar[N];
+array[N] int<lower=1, upper=K> zstar;
 real logp_zstar;
 array[K] vector[N] alpha;
 array[K] vector[N] logbeta;
@@ -2769,7 +2769,7 @@ A[k,] ~ dirichlet(alpha_dirichlet);
 target += log_sum_exp(logalpha[N]);
 }
 generated quantities {
-int<lower=1, upper=K> zstar[N];
+array[N] int<lower=1, upper=K> zstar;
 real logp_zstar;
 array[K] vector[N] alpha;
 array[K] vector[N] logbeta;
@@ -2926,7 +2926,7 @@ if(type=='hmm'&par=='both'){
 generated quantities {
 vector[N] log_lik;
 //HMM estimators
-int<lower=1, upper=K> zstar[N]; //most-likely regime state sequence
+array[N] int<lower=1, upper=K> zstar;
 real logp_zstar;
 array[K] vector[N] alpha; //forward state probabilities
 array[K] vector[N] logbeta;
@@ -3073,7 +3073,7 @@ A[k,] ~ dirichlet(alpha_dirichlet);
 target += log_sum_exp(logalpha[N]);
 }
 generated quantities {
-int<lower=1, upper=K> zstar[N];
+array[N] int<lower=1, upper=K> zstar;
 real logp_zstar;
 array[K] vector[N] alpha;
 array[K] vector[N] logbeta;
