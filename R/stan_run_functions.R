@@ -294,17 +294,17 @@ ricker_hmm_stan <- function(data, par=c('a','b','both'), k_regime=2, smax_priors
  
   dirichlet_prior<-matrix(c(dirichlet_stasis_prior,1,1,dirichlet_stasis_prior),nrow=k_regime,ncol=k_regime)
  
-  
+  if(is.null(smax_priors)==TRUE){
   fit <- rstan::sampling(sm, 
                         data = list(N=nrow(data),
-                                    R_S =data$logRS,
+                                    R_S=data$logRS,
                                     S=data$S,
                                     K=k_regime,
                                     alpha_dirichlet=dirichlet_prior,
                                     pSmax_mean=max(data$S)/2,
-                                    pSmax_sig=max(data$S))/2,
+                                    pSmax_sig=max(data$S)/2),
                         control = control, warmup = warmup, chains = chains, iter = iter,verbose=FALSE)
-  
+  }
   if(is.null(smax_priors)==FALSE){
     fit <- rstan::sampling(sm, 
                            data = list(N=nrow(data),

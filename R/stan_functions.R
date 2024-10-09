@@ -716,7 +716,6 @@ if(type=='hmm'&par=='a'){
 }
 data {
   int<lower=1> N;//number of annual samples (time-series length)
-  array[N] int ii;//index of years with data
   vector[N] R_S; //log(recruits per spawner)
   vector[N] S; //spawners in time T
   int<lower=1> K; //number of hidden regime states
@@ -876,7 +875,6 @@ return x / sum(x);
 }
 data {
  int<lower=1> N;//number of annual samples (time-series length)
- array[N] int ii;//index of years with data
  vector[N] R_S; //log(recruits per spawner)
  vector[N] S; //spawners in time T
   int<lower=1> K; //number of hidden regime states
@@ -1028,7 +1026,6 @@ return x / sum(x);
 }
 data {
  int<lower=1> N;//number of annual samples (time-series length)
-  array[N] int ii;//index of years with data
  vector[N] R_S; //log(recruits per spawner)
  vector[N] S; //spawners in time T
   int<lower=1> K; //number of hidden regime states
@@ -1191,7 +1188,6 @@ return x / sum(x);
 }
 data {
  int<lower=1> N;//number of annual samples (time-series length)
-   array[N] int ii;//index of years with data
   vector[N] R_S; //log(recruits per spawner)
   vector[N] S; //spawners in time T
   int<lower=1> K; //number of hidden regime states
@@ -1348,7 +1344,6 @@ if(type=='hmm'&par=='both'){
     }
     data {
       int<lower=1> N;//number of annual samples (time-series length)
-   array[N] int ii;//index of years with data
   vector[N] R_S; //log(recruits per spawner)
   vector[N] S; //spawners in time T
   int<lower=1> K; //number of hidden regime states
@@ -1512,7 +1507,6 @@ return x / sum(x);
 }
 data {
  int<lower=1> N;//number of annual samples (time-series length)
-  array[N] int ii;//index of years with data
   vector[N] R_S; //log(recruits per spawner)
   vector[N] S; //spawners in time T
   int<lower=1> K; //number of hidden regime states
