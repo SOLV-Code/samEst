@@ -750,7 +750,8 @@ transformed parameters {
 { // Forward algorithm log p(z_t = j | y_{1:t})
   array[K] real accumulator1;
 
-  logalpha[1] = log(pi1) + normal_lpdf(R_S[1] |log_a - b*S[1], sigma);
+  logalpha[1,1] = log(pi1[1]) + normal_lpdf(R_S[1] |log_a[1] - b*S[1], sigma);
+  logalpha[2,1] = log(pi1[2]) + normal_lpdf(R_S[1] |log_a[2] - b*S[1], sigma);
 
   for (t in 2:N) {
   for (j in 1:K) { // j = current (t)
