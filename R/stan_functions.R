@@ -733,7 +733,7 @@ logbeta_pr=log(1/pSmax_mean)-0.5*logbeta_pr_sig*logbeta_pr_sig; //convert smax p
 }
 parameters {
   // Discrete state model
-  simplex[K] A[K]; // transition probabilities
+  array[K] simplex[K] A; // transition probabilities
 
   // A[i][j] = p(z_t = j | z_{t-1} = i)
   // Continuous observation model
@@ -895,7 +895,7 @@ logbeta_pr=log(1/pSmax_mean)-0.5*logbeta_pr_sig*logbeta_pr_sig; //convert smax p
 }
 parameters {
 // Discrete state model
-simplex[K] A[K]; // transition probabilities
+array[K] simplex[K] A; // transition probabilities
 
 // A[i][j] = p(z_t = j | z_{t-1} = i)
 // Continuous observation model
@@ -1045,7 +1045,7 @@ logbeta_pr=log(1/pSmax_mean)-0.5*logbeta_pr_sig*logbeta_pr_sig; //convert smax p
 }
 parameters {
 // Discrete state model
-simplex[K] A[K]; // transition probabilities
+array[K] simplex[K] A; // transition probabilities
 
 // A[i][j] = p(z_t = j | z_{t-1} = i)
 // Continuous observation model
@@ -1210,7 +1210,7 @@ logbeta_pr=log(1/pSmax_mean)-0.5*logbeta_pr_sig*logbeta_pr_sig; //convert smax p
 }
 parameters {
 // Discrete state model
-simplex[K] A[K]; // transition probabilities
+array[K] simplex[K] A; // transition probabilities
 
 // A[i][j] = p(z_t = j | z_{t-1} = i)
 // Continuous observation model
@@ -1365,8 +1365,8 @@ logbeta_pr=log(1/pSmax_mean)-0.5*logbeta_pr_sig*logbeta_pr_sig; //convert smax p
 }
     parameters {
       // Discrete state model
-      simplex[K] A[K]; // transition probabilities
-      
+   array[K] simplex[K] A; // transition probabilities
+    
       // A[i][j] = p(z_t = j | z_{t-1} = i)
       // Continuous observation model
       ordered[K] log_a; // regime max. productivity
@@ -1531,7 +1531,7 @@ logbeta_pr=log(1/pSmax_mean)-0.5*logbeta_pr_sig*logbeta_pr_sig; //convert smax p
 }
 parameters {
 // Discrete state model
-simplex[K] A[K]; // transition probabilities
+array[K] simplex[K] A; // transition probabilities
 
 // A[i][j] = p(z_t = j | z_{t-1} = i)
 // Continuous observation model
