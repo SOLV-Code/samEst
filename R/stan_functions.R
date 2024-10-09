@@ -781,11 +781,11 @@ model{
 generated quantities {
   int<lower=1, upper=K> zstar[N];
   real logp_zstar;
-  vector[K] alpha[N];
-  vector[K] logbeta[N];
-  vector[K] loggamma[N];
-  vector[K] beta[N];
-  vector[K] gamma[N];
+  array[K] vector[N] alpha;
+  array[K] vector[N] logbeta;
+  array[K] vector[N] loggamma;
+  array[K] vector[N] beta;
+  array[K] vector[N] gamma;
   
   real S_max;
   vector[K] U_msy;
@@ -943,11 +943,11 @@ target += log_sum_exp(logalpha[N]);
 generated quantities{
 int<lower=1, upper=K> zstar[N];
 real logp_zstar;
-vector[K] alpha[N];
-vector[K] logbeta[N];
-vector[K] loggamma[N];
-vector[K] beta[N];
-vector[K] gamma[N];
+array[K] vector[N] alpha;
+array[K] vector[N] logbeta;
+array[K] vector[N] loggamma;
+array[K] vector[N] beta;
+array[K] vector[N] gamma;
 
 //out of sample log-likelihoods
 real log_lik_oos; //OOS log likelihood - non weighted
@@ -1096,11 +1096,11 @@ generated quantities{
 
 int<lower=1, upper=K> zstar[N];
 real logp_zstar;
-vector[K] alpha[N];
-vector[K] logbeta[N];
-vector[K] loggamma[N];
-vector[K] beta[N];
-vector[K] gamma[N];
+array[K] vector[N] alpha;
+array[K] vector[N] logbeta;
+array[K] vector[N] loggamma;
+array[K] vector[N] beta;
+array[K] vector[N] gamma;
 vector[N] y_rep;
 
 vector[K] S_max;
@@ -1260,11 +1260,11 @@ target += log_sum_exp(logalpha[N]);
 generated quantities {
 int<lower=1, upper=K> zstar[N];
 real logp_zstar;
-vector[K] alpha[N];
-vector[K] logbeta[N];
-vector[K] loggamma[N];
-vector[K] beta[N];
-vector[K] gamma[N];
+array[K] vector[N] alpha;
+array[K] vector[N] logbeta;
+array[K] vector[N] loggamma;
+array[K] vector[N] beta;
+array[K] vector[N] gamma;
 
 //out of sample log-likelihoods
 real log_lik_oos; //OOS log likelihood - non weighted
@@ -1417,11 +1417,11 @@ vector[N] y_rep;
 //HMM estimators
 int<lower=1, upper=K> zstar[N]; //most-likely regime state sequence
 real logp_zstar;
-vector[K] alpha[N]; //forward state probabilities
-vector[K] logbeta[N];
-vector[K] loggamma[N];
-vector[K] beta[N]; //backward state probabilities
-vector[K] gamma[N]; //forward-backward state probabilities
+array[K] vector[N] alpha; //forward state probabilities
+array[K] vector[N] logbeta;
+array[K] vector[N] loggamma;
+array[K] vector[N] beta; //backward state probabilities
+array[K] vector[N] gamma; //forward-backward state probabilities
 
 //reference points
 vector[K] S_max;
@@ -1581,11 +1581,11 @@ target += log_sum_exp(logalpha[N]);
 generated quantities {
 int<lower=1, upper=K> zstar[N];
 real logp_zstar;
-vector[K] alpha[N];
-vector[K] logbeta[N];
-vector[K] loggamma[N];
-vector[K] beta[N];
-vector[K] gamma[N];
+array[K] vector[N] alpha;
+array[K] vector[N] logbeta;
+array[K] vector[N] loggamma;
+array[K] vector[N] beta;
+array[K] vector[N] gamma;
 
 //out of sample log-likelihoods
 real log_lik_oos; //OOS log likelihood - non weighted
@@ -2330,11 +2330,11 @@ generated quantities {
 vector[N] log_lik;
 int<lower=1, upper=K> zstar[N];
 real logp_zstar;
-vector[K] alpha[N];
-vector[K] logbeta[N];
-vector[K] loggamma[N];
-vector[K] beta[N];
-vector[K] gamma[N];
+array[K] vector[N] alpha;
+array[K] vector[N] logbeta;
+array[K] vector[N] loggamma;
+array[K] vector[N] beta;
+array[K] vector[N] gamma;
 
 real S_max;
 
@@ -2473,11 +2473,11 @@ target += log_sum_exp(logalpha[N]);
 generated quantities{
 int<lower=1, upper=K> zstar[N];
 real logp_zstar;
-vector[K] alpha[N];
-vector[K] logbeta[N];
-vector[K] loggamma[N];
-vector[K] beta[N];
-vector[K] gamma[N];
+array[K] vector[N] alpha;
+array[K] vector[N] logbeta;
+array[K] vector[N] loggamma;
+array[K] vector[N] beta;
+array[K] vector[N] gamma;
 
 //out of sample log-likelihoods
 real log_lik_oos_1b; //OOS log likelihood - non weighted
@@ -2625,11 +2625,11 @@ generated quantities{
 vector[N] log_lik;
 int<lower=1, upper=K> zstar[N];
 real logp_zstar;
-vector[K] alpha[N];
-vector[K] logbeta[N];
-vector[K] loggamma[N];
-vector[K] beta[N];
-vector[K] gamma[N];
+array[K] vector[N] alpha;
+array[K] vector[N] logbeta;
+array[K] vector[N] loggamma;
+array[K] vector[N] beta;
+array[K] vector[N] gamma;
 
 vector[K] S_max;
 
@@ -2771,11 +2771,11 @@ target += log_sum_exp(logalpha[N]);
 generated quantities {
 int<lower=1, upper=K> zstar[N];
 real logp_zstar;
-vector[K] alpha[N];
-vector[K] logbeta[N];
-vector[K] loggamma[N];
-vector[K] beta[N];
-vector[K] gamma[N];
+array[K] vector[N] alpha;
+array[K] vector[N] logbeta;
+array[K] vector[N] loggamma;
+array[K] vector[N] beta;
+array[K] vector[N] gamma;
 
 //out of sample log-likelihoods
 real log_lik_oos_1b; //OOS log likelihood - non weighted
@@ -2928,11 +2928,11 @@ vector[N] log_lik;
 //HMM estimators
 int<lower=1, upper=K> zstar[N]; //most-likely regime state sequence
 real logp_zstar;
-vector[K] alpha[N]; //forward state probabilities
-vector[K] logbeta[N];
-vector[K] loggamma[N];
-vector[K] beta[N]; //backward state probabilities
-vector[K] gamma[N]; //forward-backward state probabilities
+array[K] vector[N] alpha; //forward state probabilities
+array[K] vector[N] logbeta;
+array[K] vector[N] loggamma;
+array[K] vector[N] beta; //backward state probabilities
+array[K] vector[N] gamma; //forward-backward state probabilities
 
 //reference points
 vector[K] S_max;
@@ -3075,11 +3075,11 @@ target += log_sum_exp(logalpha[N]);
 generated quantities {
 int<lower=1, upper=K> zstar[N];
 real logp_zstar;
-vector[K] alpha[N];
-vector[K] logbeta[N];
-vector[K] loggamma[N];
-vector[K] beta[N];
-vector[K] gamma[N];
+array[K] vector[N] alpha;
+array[K] vector[N] logbeta;
+array[K] vector[N] loggamma;
+array[K] vector[N] beta;
+array[K] vector[N] gamma;
 
 //out of sample log-likelihoods
 real log_lik_oos_1b; //OOS log likelihood - non weighted
