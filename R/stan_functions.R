@@ -800,7 +800,7 @@ generated quantities {
   } // Forward
   
   { // Backward algorithm log p(y_{t+1:T} | z_t = j)
-  real accumulator2[K];
+  array[K] real accumulator2;
   for (j in 1:K)
   logbeta[N, j] = 1;
   for (tforward in 0:(N-2)) {
@@ -828,8 +828,8 @@ generated quantities {
   } // Forward-backward
   
   { // Viterbi algorithm
-  int bpointer[N, K]; // backpointer to the most likely previous state on the most probable path
-  real delta[N, K]; // max prob for the sequence up to t
+  array[N,K] int bpointer; // backpointer to the most likely previous state on the most probable path // backpointer to the most likely previous state on the most probable path
+  array[N,K] real delta; // max prob for the sequence up to t
   // that ends with an emission from state k
   for (j in 1:K)
   delta[1, K] = normal_lpdf(R_S[1] | log_a[j] - b*S[1], sigma);
@@ -959,7 +959,7 @@ alpha[t] = softmax(logalpha[t]);
 } // Forward
 
 { // Backward algorithm log p(y_{t+1:T} | z_t = j)
-real accumulator2[K];
+array[K] real accumulator2;
 for (j in 1:K)
 logbeta[N, j] = 1;
 for (tforward in 0:(N-2)) {
@@ -986,8 +986,8 @@ gamma[t] = normalize(loggamma[t]);
 } // forward-backward
 
 { // Viterbi algorithm
-int bpointer[N, K]; // backpointer to the most likely previous state on the most probable path
-real delta[N, K]; // max prob for the sequence up to t
+array[N,K] int bpointer; // backpointer to the most likely previous state on the most probable path // backpointer to the most likely previous state on the most probable path
+array[N,K] real delta; // max prob for the sequence up to t
 // that ends with an emission from state k
 for (j in 1:K)
 delta[1, K] = normal_lpdf(R_S[1] | log_a[j] - b*S[1], sigma);
@@ -1065,7 +1065,7 @@ ordered[K] b;
 b=exp(log_b);
 
 { // Forward algorithm log p(z_t = j | y_{1:t})
-real accumulator[K];
+array[K] real accumulator;
 
 logalpha[1] = log(pi1) + normal_lpdf(R_S[1] |log_a - b*S[1], sigma);
 for (t in 2:N) {
@@ -1115,7 +1115,7 @@ alpha[t] = softmax(logalpha[t]);
 } // Forward
 
 { // Backward algorithm log p(y_{t+1:T} | z_t = j)
-real accumulator[K];
+array[K] real accumulator;
 for (j in 1:K)
 logbeta[N, j] = 1;
 for (tforward in 0:(N-2)) {
@@ -1143,8 +1143,8 @@ gamma[t] = normalize(loggamma[t]);
 } // forward-backward
 
 { // Viterbi algorithm
-int bpointer[N, K]; // backpointer to the most likely previous state on the most probable path
-real delta[N, K]; // max prob for the sequence up to t
+array[N,K] int bpointer; // backpointer to the most likely previous state on the most probable path // backpointer to the most likely previous state on the most probable path
+array[N,K] real delta; // max prob for the sequence up to t
 // that ends with an emission from state k
 for (j in 1:K)
 delta[1, K] = normal_lpdf(R_S[1] | log_a - b[j]*S[1], sigma);
@@ -1229,7 +1229,7 @@ for(i in 1:K){pi1[i]=1/K};
 b=exp(log_b);
  
 { // Forward algorithm log p(z_t = j | y_{1:t})
-real accumulator[K];
+array[K] real accumulator;
 
 logalpha[1] = log(pi1) + normal_lpdf(R_S[1] |log_a - b*S[1], sigma);
 for (t in 2:N) {
@@ -1274,7 +1274,7 @@ for (t in 1:N)
 alpha[t] = softmax(logalpha[t]);
 } // Forward
 { // Backward algorithm log p(y_{t+1:T} | z_t = j)
-real accumulator[K];
+array[K] real accumulator;
 for (j in 1:K)
 logbeta[N, j] = 1;
 for (tforward in 0:(N-2)) {
@@ -1304,8 +1304,8 @@ gamma[t] = normalize(loggamma[t]);
 
 
 { // Viterbi algorithm
-int bpointer[N, K]; // backpointer to the most likely previous state on the most probable path
-real delta[N, K]; // max prob for the sequence up to t
+array[N,K] int bpointer; // backpointer to the most likely previous state on the most probable path // backpointer to the most likely previous state on the most probable path
+array[N,K] real delta; // max prob for the sequence up to t
 // that ends with an emission from state k
 for (j in 1:K)
 delta[1, K] = normal_lpdf(R_S[1] | log_a - b[j]*S[1], sigma);
@@ -1384,7 +1384,7 @@ array[K] vector[N] logalpha;
         b=exp(log_b);
         
         { // Forward algorithm log p(z_t = j | y_{1:t})
-          real accumulator[K];
+          array[K] real accumulator;
           
           logalpha[1] = log(pi1) + normal_lpdf(R_S[1]|log_a - b*S[1], sigma);
           for (t in 2:N) {
@@ -1436,7 +1436,7 @@ alpha[t] = softmax(logalpha[t]);
 } // Forward
 
 { // Backward algorithm log p(y_{t+1:T} | z_t = j)
-real accumulator[K];
+array[K] real accumulator;
 for (j in 1:K)
 logbeta[N, j] = 1;
 for (tforward in 0:(N-2)) {
@@ -1465,8 +1465,8 @@ gamma[t] = normalize(loggamma[t]);
 } // forward-backward
 
 { // Viterbi algorithm
-int bpointer[N, K]; // backpointer to the most likely previous state on the most probable path
-real delta[N, K]; // max prob for the sequence up to t
+array[N,K] int bpointer; // backpointer to the most likely previous state on the most probable path // backpointer to the most likely previous state on the most probable path
+array[N,K] real delta; // max prob for the sequence up to t
 // that ends with an emission from state k
 for (j in 1:K)
 delta[1, K] = normal_lpdf(R_S[1] | log_a[j] - b[j]*S[1], sigma);
@@ -1551,7 +1551,7 @@ pi1=rep_vector(1.0/K,K);
 
  
 { // Forward algorithm log p(z_t = j | y_{1:t})
-real accumulator[K];
+array[K] real accumulator;
 
 logalpha[1] = log(pi1) + normal_lpdf(R_S[1] |log_a - b*S[1], sigma);
 for (t in 2:N) {
@@ -1596,7 +1596,7 @@ for (t in 1:N)
 alpha[t] = softmax(logalpha[t]);
 } // Forward
 { // Backward algorithm log p(y_{t+1:T} | z_t = j)
-real accumulator[K];
+array[K] real accumulator;
 for (j in 1:K)
 logbeta[N, j] = 1;
 for (tforward in 0:(N-2)) {
@@ -1623,8 +1623,8 @@ gamma[t] = normalize(loggamma[t]);
 } // forward-backward
 
 { // Viterbi algorithm
-int bpointer[N, K]; // backpointer to the most likely previous state on the most probable path
-real delta[N, K]; // max prob for the sequence up to t
+array[N,K] int bpointer; // backpointer to the most likely previous state on the most probable path // backpointer to the most likely previous state on the most probable path
+array[N,K] real delta; // max prob for the sequence up to t
 // that ends with an emission from state k
 for (j in 1:K)
 delta[1, K] = normal_lpdf(R_S[1] | log_a[j] - b[j]*S[1], sigma);
@@ -2344,7 +2344,7 @@ alpha[t] = softmax(logalpha[t]);
 } // Forward
 
 { // Backward algorithm log p(y_{t+1:T} | z_t = j)
-real accumulator2[K];
+array[K] real accumulator2;
 for (j in 1:K)
 logbeta[N, j] = 1;
 for (tforward in 0:(N-2)) {
@@ -2372,8 +2372,8 @@ gamma[t] = normalize(loggamma[t]);
 } // Forward-backward
 
 { // Viterbi algorithm
-int bpointer[N, K]; // backpointer to the most likely previous state on the most probable path
-real delta[N, K]; // max prob for the sequence up to t
+array[N,K] int bpointer; // backpointer to the most likely previous state on the most probable path // backpointer to the most likely previous state on the most probable path
+array[N,K] real delta; // max prob for the sequence up to t
 // that ends with an emission from state k
 for (j in 1:K)
 delta[1, K] = normal_lpdf(R_S[1] | log_a[j] - b*S[1], sigma);
@@ -2495,7 +2495,7 @@ alpha[t] = softmax(logalpha[t]);
 } // Forward
 
 { // Backward algorithm log p(y_{t+1:T} | z_t = j)
-real accumulator2[K];
+array[K] real accumulator2;
 for (j in 1:K)
 logbeta[N, j] = 1;
 for (tforward in 0:(N-2)) {
@@ -2522,8 +2522,8 @@ gamma[t] = normalize(loggamma[t]);
 } // forward-backward
 
 { // Viterbi algorithm
-int bpointer[N, K]; // backpointer to the most likely previous state on the most probable path
-real delta[N, K]; // max prob for the sequence up to t
+array[N,K] int bpointer; // backpointer to the most likely previous state on the most probable path
+array[N,K] real delta; // max prob for the sequence up to t
 // that ends with an emission from state k
 for (j in 1:K)
 delta[1, K] = normal_lpdf(R_S[1] | log_a[j] - b*S[1], sigma);
@@ -2593,7 +2593,7 @@ ordered[K] b;
 b=exp(log_b);
 
 { // Forward algorithm log p(z_t = j | y_{1:t})
-real accumulator[K];
+array[K] real accumulator;
 
 logalpha[1] = log(pi1) + normal_lpdf(R_S[1] |log_a - b*S[1], sigma);
 for (t in 2:N) {
@@ -2639,7 +2639,7 @@ alpha[t] = softmax(logalpha[t]);
 } // Forward
 
 { // Backward algorithm log p(y_{t+1:T} | z_t = j)
-real accumulator[K];
+array[K] real accumulator;
 for (j in 1:K)
 logbeta[N, j] = 1;
 for (tforward in 0:(N-2)) {
@@ -2667,8 +2667,8 @@ gamma[t] = normalize(loggamma[t]);
 } // forward-backward
 
 { // Viterbi algorithm
-int bpointer[N, K]; // backpointer to the most likely previous state on the most probable path
-real delta[N, K]; // max prob for the sequence up to t
+array[N,K] int bpointer; // backpointer to the most likely previous state on the most probable path // backpointer to the most likely previous state on the most probable path
+array[N,K] real delta; // max prob for the sequence up to t
 // that ends with an emission from state k
 for (j in 1:K)
 delta[1, K] = normal_lpdf(R_S[1] | log_a - b[j]*S[1], sigma);
@@ -2739,7 +2739,7 @@ vector[K] b;
 b=exp(log_b);
  
 { // Forward algorithm log p(z_t = j | y_{1:t})
-real accumulator[K];
+array[K] real accumulator;
 
 logalpha[1] = log(pi1) + normal_lpdf(R_S[1] |log_a - b*S[1], sigma);
 for (t in 2:N) {
@@ -2792,7 +2792,7 @@ for (t in 1:N)
 alpha[t] = softmax(logalpha[t]);
 } // Forward
 { // Backward algorithm log p(y_{t+1:T} | z_t = j)
-real accumulator[K];
+array[K] real accumulator;
 for (j in 1:K)
 logbeta[N, j] = 1;
 for (tforward in 0:(N-2)) {
@@ -2822,8 +2822,8 @@ gamma[t] = normalize(loggamma[t]);
 
 
 { // Viterbi algorithm
-int bpointer[N, K]; // backpointer to the most likely previous state on the most probable path
-real delta[N, K]; // max prob for the sequence up to t
+array[N,K] int bpointer; // backpointer to the most likely previous state on the most probable path // backpointer to the most likely previous state on the most probable path
+array[N,K] real delta; // max prob for the sequence up to t
 // that ends with an emission from state k
 for (j in 1:K)
 delta[1, K] = normal_lpdf(R_S[1] | log_a - b[j]*S[1], sigma);
@@ -2894,7 +2894,7 @@ if(type=='hmm'&par=='both'){
         b=exp(log_b);
         
         { // Forward algorithm log p(z_t = j | y_{1:t})
-          real accumulator[K];
+          array[K] real accumulator;
           
           logalpha[1] = log(pi1) + normal_lpdf(R_S[1]|log_a - b*S[1], sigma);
           for (t in 2:N) {
@@ -2943,7 +2943,7 @@ alpha[t] = softmax(logalpha[t]);
 } // Forward
 
 { // Backward algorithm log p(y_{t+1:T} | z_t = j)
-real accumulator[K];
+array[K] real accumulator;
 for (j in 1:K)
 logbeta[N, j] = 1;
 for (tforward in 0:(N-2)) {
@@ -2972,8 +2972,8 @@ gamma[t] = normalize(loggamma[t]);
 } // forward-backward
 
 { // Viterbi algorithm
-int bpointer[N, K]; // backpointer to the most likely previous state on the most probable path
-real delta[N, K]; // max prob for the sequence up to t
+array[N,K] int bpointer; // backpointer to the most likely previous state on the most probable path // backpointer to the most likely previous state on the most probable path
+array[N,K] real delta; // max prob for the sequence up to t
 // that ends with an emission from state k
 for (j in 1:K)
 delta[1, K] = normal_lpdf(R_S[1] | log_a[j] - b[j]*S[1], sigma);
@@ -3043,7 +3043,7 @@ vector[K] b; //
 b=exp(log_b);
  
 { // Forward algorithm log p(z_t = j | y_{1:t})
-real accumulator[K];
+array[K] real accumulator;
 
 logalpha[1] = log(pi1) + normal_lpdf(R_S[1] |log_a - b*S[1], sigma);
 for (t in 2:N) {
@@ -3099,7 +3099,7 @@ for (t in 1:N)
 alpha[t] = softmax(logalpha[t]);
 } // Forward
 { // Backward algorithm log p(y_{t+1:T} | z_t = j)
-real accumulator[K];
+array[K] real accumulator;
 for (j in 1:K)
 logbeta[N, j] = 1;
 for (tforward in 0:(N-2)) {
@@ -3126,8 +3126,8 @@ gamma[t] = normalize(loggamma[t]);
 } // forward-backward
 
 { // Viterbi algorithm
-int bpointer[N, K]; // backpointer to the most likely previous state on the most probable path
-real delta[N, K]; // max prob for the sequence up to t
+array[N,K] int bpointer; // backpointer to the most likely previous state on the most probable path // backpointer to the most likely previous state on the most probable path
+array[N,K] real delta; // max prob for the sequence up to t
 // that ends with an emission from state k
 for (j in 1:K)
 delta[1, K] = normal_lpdf(R_S[1] | log_a[j] - b[j]*S[1], sigma);
