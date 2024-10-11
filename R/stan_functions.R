@@ -298,8 +298,6 @@ transformed parameters{
   real b = 1.0/Smax;
   vector[L] log_a; //a in each year (on log scale)
   
-  b=exp(log_b);
-  
   log_a[1] = log_a0; //initial value
   for(t in 2:L){
     log_a[t] = log_a[t-1] + a_dev[t-1]*sigma_a; //random walk of log_a
