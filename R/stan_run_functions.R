@@ -45,7 +45,7 @@ ricker_stan <- function(data,  ac=FALSE, smax_priors=NULL,mod=NULL,full_posterio
                 R_S =data$logRS,
                 S=data$S,
                 pSmax_mean=max(data$S)/2,
-                pSmax_sig=max(data$S))
+                pSmax_sig=max(data$S)/2)
   }else{
       datm = list(N=nrow(data),
                   L=max(data$by)-min(data$by)+1,
@@ -303,7 +303,7 @@ ricker_hmm_stan <- function(data, par=c('a','b','both'), k_regime=2, smax_priors
                                     alpha_dirichlet=dirichlet_prior,
                                     pSmax_mean=max(data$S)/2,
                                     pSmax_sig=max(data$S)/2),
-                        control = control, warmup = warmup, chains = chains, iter = iter,verbose=FALSE)
+                        control = control, warmup = warmup, chains = 1, iter = iter,verbose=T)
   }
   if(is.null(smax_priors)==FALSE){
     fit <- rstan::sampling(sm, 
