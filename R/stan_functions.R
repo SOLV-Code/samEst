@@ -27,15 +27,15 @@ sr_mod<- function(type=c('static','rw','hmm'),ac=FALSE,par=c('n','a','b','both')
   real pSmax_sig; //prior variance for Smax
 }
 transformed data{
-real logbeta_pr;
-real logbeta_pr_sig;
+real smax_pr;
+real smax_pr_sig;
 
-logbeta_pr_sig=sqrt(log(1+((1/pSmax_sig)*(1/pSmax_sig))/((1/pSmax_mean)*(1/pSmax_mean)))); //this converts sigma on the untransformed scale to a log scale
-logbeta_pr=log(1/pSmax_mean)-0.5*logbeta_pr_sig*logbeta_pr_sig; //convert smax prior to per capita slope - transform to log scale with bias correction
+smax_pr_sig=sqrt(log(1+((pSmax_sig)*(pSmax_sig))/((pSmax_mean)*(pSmax_mean)))); //this converts sigma on the untransformed scale to a log scale
+smax_pr=log(pSmax_mean)-0.5*smax_pr_sig*smax_pr_sig; //convert smax prior to per capita slope - transform to log scale with bias correction
 }
 parameters {
   real log_a;// initial productivity (on log scale)
-  real<upper = 0> log_b; // rate capacity - fixed in this
+  real<lower = 0> Smax; // rate capacity - fixed in this
     
 //variance components  
   real<lower = 0> sigma;
@@ -44,16 +44,15 @@ parameters {
 transformed parameters{
   vector[N] mu;
   vector[N] epsilon; //residuals
-  real b;
+  real b = 1.0/Smax;
     
-  b = exp(log_b); //prevents b (density dependence) from being negative (ie. positive)
   mu = log_a - b*S; //expectation through time
   epsilon = R_S - mu; //residual productivity series
 }
 model{
   //priors
   log_a ~ normal(1.5,2.5); //intrinsic productivity - wide prior
-  log_b ~ normal(logbeta_pr,logbeta_pr_sig); //per capita capacity parameter - informed by spawner counts
+  Smax ~ lognormal(smax_pr,smax_pr_sig); //per capita capacity parameter - informed by spawner counts
   
   //variance terms
   sigma ~ normal(0.5,1); //half normal on variance (lower limit of zero)
@@ -61,16 +60,14 @@ model{
    R_S ~ normal(mu, sigma);
 }
 generated quantities{
- real S_max;
- real U_msy;
- real S_msy;
- real prior_Smax=1/lognormal_rng(logbeta_pr,logbeta_pr_sig);
+ real Umsy;
+ real Smsy;
+ real prior_Smax=lognormal_rng(smax_pr,smax_pr_sig);
  
  vector[N] y_rep;
  
-S_max = 1/b;
-U_msy = 1-lambert_w0(exp(1-log_a));
-S_msy = (1-lambert_w0(exp(1-log_a)))/b;
+Umsy = 1-lambert_w0(exp(1-log_a));
+Smsy = (1-lambert_w0(exp(1-log_a)))/b;
 for(n in 1:N) y_rep[n]=normal_rng(mu[n],sigma);
 }
     "
@@ -85,15 +82,15 @@ for(n in 1:N) y_rep[n]=normal_rng(mu[n],sigma);
      real pSmax_sig; //prior variance for Smax
 }
 transformed data{
-real logbeta_pr;
-real logbeta_pr_sig;
+real smax_pr;
+real smax_pr_sig;
 
-logbeta_pr_sig=sqrt(log(1+((1/pSmax_sig)*(1/pSmax_sig))/((1/pSmax_mean)*(1/pSmax_mean)))); //this converts sigma on the untransformed scale to a log scale
-logbeta_pr=log(1/pSmax_mean)-0.5*logbeta_pr_sig*logbeta_pr_sig; //convert smax prior to per capita slope - transform to log scale with bias correction
+smax_pr_sig=sqrt(log(1+((pSmax_sig)*(pSmax_sig))/((pSmax_mean)*(pSmax_mean)))); //this converts sigma on the untransformed scale to a log scale
+smax_pr=log(pSmax_mean)-0.5*smax_pr_sig*smax_pr_sig; //convert smax prior to per capita slope - transform to log scale with bias correction
 }
     parameters {
       real log_a;// initial productivity (on log scale)
-      real<upper = 0> log_b; // rate capacity - fixed in this
+      real<lower = 0> Smax; //
     
      //variance components  
       real<lower = 0> sigma;
@@ -102,15 +99,14 @@ logbeta_pr=log(1/pSmax_mean)-0.5*logbeta_pr_sig*logbeta_pr_sig; //convert smax p
     transformed parameters{
     vector[N] mu;
     vector[N] epsilon; //residuals
-    real b;
+    real b = 1.0/Smax;
     
-    b = exp(log_b); //prevents b (density dependence) from being negative (ie. positive)
     mu = log_a - b*S; //expectation through time
     epsilon = R_S - mu; //residual productivity series
     }
     model{
       log_a ~ normal(1.5,2.5); //intrinsic productivity - wide prior
-      log_b ~ normal(logbeta_pr,logbeta_pr_sig); //per capita capacity parameter - informed by spawner counts
+      Smax ~ lognormal(smax_pr,smax_pr_sig); //informative prior based on max S
  
       //variance terms
       
@@ -138,15 +134,15 @@ logbeta_pr=log(1/pSmax_mean)-0.5*logbeta_pr_sig*logbeta_pr_sig; //convert smax p
   real pSmax_sig; //prior variance for Smax
 }
 transformed data{
-real logbeta_pr;
-real logbeta_pr_sig;
+real smax_pr;
+real smax_pr_sig;
 
-logbeta_pr_sig=sqrt(log(1+((1/pSmax_sig)*(1/pSmax_sig))/((1/pSmax_mean)*(1/pSmax_mean)))); //this converts sigma on the untransformed scale to a log scale
-logbeta_pr=log(1/pSmax_mean)-0.5*logbeta_pr_sig*logbeta_pr_sig; //convert smax prior to per capita slope - transform to log scale with bias correction
+smax_pr_sig=sqrt(log(1+((pSmax_sig)*(pSmax_sig))/((pSmax_mean)*(pSmax_mean)))); //this converts sigma on the untransformed scale to a log scale
+smax_pr=log(pSmax_mean)-0.5*smax_pr_sig*smax_pr_sig; //convert smax prior to per capita slope - transform to log scale with bias correction
 }
 parameters{
   real log_a;// initial productivity (on log scale)
-  real<upper = 0> log_b; // rate capacity - fixed in this
+  real<lower = 0> Smax; //
 
   //variance components  
   real<lower = 0> sigma;
@@ -154,12 +150,12 @@ parameters{
 
 }
 transformed parameters{
-  real b;
+  real b = 1.0/Smax;
   vector[N] mu;
   vector[N] epsilon; //residuals
   real sigma_AR;
   
-  b = exp(log_b);
+  
   mu = log_a-b*S;
 
   epsilon[1] = R_S[1] - mu[1];
@@ -172,7 +168,7 @@ transformed parameters{
 model{
   //priors
   log_a ~ normal(1.5,2.5); //intrinsic productivity - wide prior
-  log_b ~ normal(logbeta_pr,logbeta_pr_sig); //per capita capacity parameter - wide prior
+  Smax ~ lognormal(smax_pr,smax_pr_sig); //informative prior based on max S- wide prior
       
   //variance terms
   sigma ~ normal(0,1); //half normal on variance (lower limit of zero)
@@ -186,17 +182,16 @@ model{
   
 }
 generated quantities{
-  real S_max;
-  real U_msy;
-  real S_msy;
-  real prior_Smax=1/lognormal_rng(logbeta_pr,logbeta_pr_sig);
+  real Umsy;
+  real Smsy;
+  real prior_Smax=lognormal_rng(smax_pr,smax_pr_sig);
 
   vector[N] y_rep;
   for(n in 1:N) y_rep[n]=normal_rng(mu[n],sigma);
   
-  S_max = 1/b;
-  U_msy = 1-lambert_w0(exp(1-log_a));
-  S_msy = (1-lambert_w0(exp(1-log_a)))/b;
+
+ Umsy = 1-lambert_w0(exp(1-log_a));
+ Smsy = (1-lambert_w0(exp(1-log_a)))/b;
 }
     
 "
@@ -214,15 +209,15 @@ if(lfo==TRUE){
   real pSmax_sig; //prior variance for Smax
 }
 transformed data{
-real logbeta_pr;
-real logbeta_pr_sig;
+real smax_pr;
+real smax_pr_sig;
 
-logbeta_pr_sig=sqrt(log(1+((1/pSmax_sig)*(1/pSmax_sig))/((1/pSmax_mean)*(1/pSmax_mean)))); //this converts sigma on the untransformed scale to a log scale
-logbeta_pr=log(1/pSmax_mean)-0.5*logbeta_pr_sig*logbeta_pr_sig; //convert smax prior to per capita slope - transform to log scale with bias correction
+smax_pr_sig=sqrt(log(1+((pSmax_sig)*(pSmax_sig))/((pSmax_mean)*(pSmax_mean)))); //this converts sigma on the untransformed scale to a log scale
+smax_pr=log(pSmax_mean)-0.5*smax_pr_sig*smax_pr_sig; //convert smax prior to per capita slope - transform to log scale with bias correction
 }
 parameters{
   real log_a;// initial productivity (on log scale)
-  real<upper=0> log_b; // rate capacity - fixed in this
+  real<lower=0> Smax;
 
  //variance components  
   real<lower = 0> sigma;
@@ -230,12 +225,11 @@ parameters{
 
 }
 transformed parameters{
-real b;
+real b = 1.0/Smax;
 vector[N] mu;
 vector[N] epsilon; //residuals
 real sigma_AR;
 
-b = exp(log_b);
 mu = log_a-b*S;
 
 epsilon[1] = R_S[1] - mu[1];
@@ -249,7 +243,7 @@ sigma_AR = sigma*sqrt(1-rho^2);
 model{
   //priors
   log_a ~ normal(1.5,2.5); //intrinsic productivity - wide prior
-  log_b ~ normal(logbeta_pr,logbeta_pr_sig); //per capita capacity parameter - informative
+  Smax ~ lognormal(smax_pr,smax_pr_sig); //informative prior based on max S- informative
        
   //variance terms
   sigma ~ normal(0,1); //half normal on variance (lower limit of zero)
@@ -282,15 +276,15 @@ if(type=='rw'&par=='a'){
   real pSmax_sig; //prior variance for Smax
 }
 transformed data{
-real logbeta_pr;
-real logbeta_pr_sig;
+real smax_pr;
+real smax_pr_sig;
 
-logbeta_pr_sig=sqrt(log(1+((1/pSmax_sig)*(1/pSmax_sig))/((1/pSmax_mean)*(1/pSmax_mean)))); //this converts sigma on the untransformed scale to a log scale
-logbeta_pr=log(1/pSmax_mean)-0.5*logbeta_pr_sig*logbeta_pr_sig; //convert smax prior to per capita slope - transform to log scale with bias correction
+smax_pr_sig=sqrt(log(1+((pSmax_sig)*(pSmax_sig))/((pSmax_mean)*(pSmax_mean)))); //this converts sigma on the untransformed scale to a log scale
+smax_pr=log(pSmax_mean)-0.5*smax_pr_sig*smax_pr_sig; //convert smax prior to per capita slope - transform to log scale with bias correction
 }
 parameters{
   real log_a0;// initial productivity (on log scale)
-  real<upper = 0> log_b; // rate capacity - fixed in this
+  real<lower = 0> Smax; //
 
  //variance components  
   real<lower = 0> sigma;
@@ -301,10 +295,8 @@ parameters{
   
 }
 transformed parameters{
-  real b;
+  real b = 1.0/Smax;
   vector[L] log_a; //a in each year (on log scale)
-  
-  b=exp(log_b);
   
   log_a[1] = log_a0; //initial value
   for(t in 2:L){
@@ -315,7 +307,7 @@ transformed parameters{
 model{
   //priors
   log_a0 ~ normal(1.5,2.5); //initial productivity - wide prior
-  log_b ~ normal(logbeta_pr,logbeta_pr_sig); //per capita capacity parameter - informative
+  Smax ~ lognormal(smax_pr,smax_pr_sig); //informative prior based on max S- informative
    a_dev ~ std_normal(); //standardized (z-scales) deviances
   
   //variance terms
@@ -327,19 +319,19 @@ model{
   
 }
  generated quantities{
-     real S_max;
-     vector[L] U_msy;
-     vector[L] S_msy;
-     real prior_Smax=1/lognormal_rng(logbeta_pr,logbeta_pr_sig);
+     vector[L] Umsy;
+     vector[L] Smsy;
+     real prior_Smax=lognormal_rng(smax_pr,smax_pr_sig);
 
     vector[N] y_rep;
-    for(n in 1:N) y_rep[n]=normal_rng(log_a[ii[n]] - b*S[n],sigma);
+    for(n in 1:N){    y_rep[n]=normal_rng(log_a[ii[n]] - b*S[n],sigma);
+}
    
-    S_max = 1/b;
-    U_msy = 1-lambert_w0(exp(1-log_a));
-    S_msy = (1-lambert_w0(exp(1-log_a)))/b;
+    for(l in 1:L){
+    Umsy[l] = 1-lambert_w0(exp(1-log_a[l]));
+    Smsy[l] = (1-lambert_w0(exp(1-log_a[l])))/b;
     }
-
+}
 "
   }
 if(lfo==TRUE){
@@ -355,15 +347,15 @@ if(lfo==TRUE){
   real pSmax_sig; //prior variance for Smax
 }
 transformed data{
-real logbeta_pr;
-real logbeta_pr_sig;
+real smax_pr;
+real smax_pr_sig;
 
-logbeta_pr_sig=sqrt(log(1+((1/pSmax_sig)*(1/pSmax_sig))/((1/pSmax_mean)*(1/pSmax_mean)))); //this converts sigma on the untransformed scale to a log scale
-logbeta_pr=log(1/pSmax_mean)-0.5*logbeta_pr_sig*logbeta_pr_sig; //convert smax prior to per capita slope - transform to log scale with bias correction
+smax_pr_sig=sqrt(log(1+((pSmax_sig)*(pSmax_sig))/((pSmax_mean)*(pSmax_mean)))); //this converts sigma on the untransformed scale to a log scale
+smax_pr=log(pSmax_mean)-0.5*smax_pr_sig*smax_pr_sig; //convert smax prior to per capita slope - transform to log scale with bias correction
 }
 parameters{
   real log_a0;// initial productivity (on log scale)
-  real<upper = 0> log_b; // rate capacity - fixed in this
+  real<lower = 0> Smax; //
 
  //variance components  
   real<lower = 0> sigma;
@@ -374,7 +366,7 @@ parameters{
   
 }
 transformed parameters{
-  real b;
+  real b = 1.0/Smax;
   vector[L] log_a; //a in each year (on log scale)
   
   b=exp(log_b);
@@ -387,7 +379,7 @@ transformed parameters{
 model{
   //priors
   log_a0 ~ normal(1.5,2.5); //initial productivity - wide prior
-  log_b ~ normal(logbeta_pr,logbeta_pr_sig); //per capita capacity parameter - informative
+  Smax ~ lognormal(smax_pr,smax_pr_sig); //informative prior based on max S- informative
     a_dev ~ std_normal(); //standardized (z-scales) deviances
   
   //variance terms
@@ -417,15 +409,15 @@ if(type=='rw'&par=='b'){
   real pSmax_sig; //prior variance for Smax
 }
 transformed data{
-real logbeta_pr;
-real logbeta_pr_sig;
+real smax_pr;
+real smax_pr_sig;
 
-logbeta_pr_sig=sqrt(log(1+((1/pSmax_sig)*(1/pSmax_sig))/((1/pSmax_mean)*(1/pSmax_mean)))); //this converts sigma on the untransformed scale to a log scale
-logbeta_pr=log(1/pSmax_mean)-0.5*logbeta_pr_sig*logbeta_pr_sig; //convert smax prior to per capita slope - transform to log scale with bias correction
+smax_pr_sig=sqrt(log(1+((pSmax_sig)*(pSmax_sig))/((pSmax_mean)*(pSmax_mean)))); //this converts sigma on the untransformed scale to a log scale
+smax_pr=log(pSmax_mean)-0.5*smax_pr_sig*smax_pr_sig; //convert smax prior to per capita slope - transform to log scale with bias correction
 }
 parameters {
   real log_a;// initial productivity (on log scale) - fixed in this
-  real<upper = 0> b0; // rate capacity - fixed in this
+  real<lower = 0> Smax0;
 
  //variance components  
   real<lower = 0> sigma;
@@ -437,42 +429,40 @@ parameters {
 }
 
 transformed parameters{
-  vector[L] log_b; //b in each year
-  vector[L] b; //b in each year
+  vector<lower=0>[L] Smax; //b in each year
+  vector<lower=0>[L] b; //b in each year
   
-  log_b[1] = b0;
+  
+  Smax[1] = Smax0;
   for(t in 2:L){
-    log_b[t] = log_b[t-1] + b_dev[t-1]*sigma_b;
+    Smax[t] = Smax[t-1] + b_dev[t-1]*sigma_b;
   } 
-  b=exp(log_b);
+  b=1.0./Smax;
 }  
 
 model{
   //priors
   log_a ~ normal(1.5,2.5); //productivity
-  b0 ~  normal(logbeta_pr,logbeta_pr_sig); //per capita capacity parameter - informative
+  Smax ~  lognormal(smax_pr,smax_pr_sig); //per capita capacity parameter - informative
   
   //variance terms
   sigma ~ normal(0,1); //half normal on variance (lower limit of zero)
-  sigma_b ~ normal(0,logbeta_pr_sig); //half normal on variance (lower limit of zero)
-  
+  sigma_b ~ normal(0,smax_pr_sig); //half normal on variance (lower limit of zero)
    
   b_dev ~ std_normal();
  for(n in 1:N) R_S[n] ~ normal(log_a-b[ii[n]]*S[n], sigma);
 }
 generated quantities{
-     vector[L] S_max;
-     real U_msy;
-     vector[L] S_msy;
-     real prior_Smax=1/lognormal_rng(logbeta_pr,logbeta_pr_sig);
+     real Umsy;
+     vector[L] Smsy;
+     real prior_Smax=lognormal_rng(smax_pr,smax_pr_sig);
      
     vector[N] y_rep;
     for(n in 1:N) y_rep[n]=normal_rng(log_a - b[ii[n]]*S[n],sigma);
      
-    for(l in 1:L){ S_max[l] = 1/b[l];
-                   S_msy[l] = (1-lambert_w0(exp(1-log_a)))/b[l];
+    for(l in 1:L){Smsy[l] = (1-lambert_w0(exp(1-log_a)))/b[l];
     }
-    U_msy = 1-lambert_w0(exp(1-log_a));
+   Umsy = 1-lambert_w0(exp(1-log_a));
 }
  
 "
@@ -490,15 +480,15 @@ if(lfo==TRUE){
   real pSmax_sig; //prior variance for Smax
 }
 transformed data{
-real logbeta_pr;
-real logbeta_pr_sig;
+real smax_pr;
+real smax_pr_sig;
 
-logbeta_pr_sig=sqrt(log(1+((1/pSmax_sig)*(1/pSmax_sig))/((1/pSmax_mean)*(1/pSmax_mean)))); //this converts sigma on the untransformed scale to a log scale
-logbeta_pr=log(1/pSmax_mean)-0.5*logbeta_pr_sig*logbeta_pr_sig; //convert smax prior to per capita slope - transform to log scale with bias correction
+smax_pr_sig=sqrt(log(1+((pSmax_sig)*(pSmax_sig))/((pSmax_mean)*(pSmax_mean)))); //this converts sigma on the untransformed scale to a log scale
+smax_pr=log(pSmax_mean)-0.5*smax_pr_sig*smax_pr_sig; //convert smax prior to per capita slope - transform to log scale with bias correction
 }
 parameters {
   real log_a;// initial productivity (on log scale) - fixed in this
-  real<upper = 0> b0; // rate capacity - fixed in this
+  real<lower = 0> Smax0; //
 
  //variance components  
   real<lower = 0> sigma;
@@ -510,24 +500,24 @@ parameters {
 }
 
 transformed parameters{
-  vector[L] log_b; //b in each year
-  vector[L] b; //b in each year
+  vector<lower=0>[L] Smax; //b in each year
+  vector<lower=0>[L] b; //b in each year
   
-  log_b[1] = b0;
+  Smax[1] = Smax0;
   for(t in 2:L){
-    log_b[t] = log_b[t-1] + b_dev[t-1]*sigma_b;
+    Smax[t] = Smax[t-1] + b_dev[t-1]*sigma_b;
   } 
-  b=exp(log_b);
+  b=1.0./Smax;
 }  
 
 model{
   //priors
   log_a ~ normal(1.5,2.5); //productivity
-  b0 ~ normal(logbeta_pr,logbeta_pr_sig); //initial capacity
+  Smax0 ~ normal(smax_pr,smax_pr_sig); //initial capacity
   
   //variance terms
   sigma ~ normal(0,1); //half normal on variance (lower limit of zero)
-  sigma_b ~ normal(0,logbeta_pr_sig); //half normal on variance (lower limit of zero)
+  sigma_b ~ normal(0,smax_pr_sig); //half normal on variance (lower limit of zero)
   
   b_dev ~ std_normal();
   
@@ -554,16 +544,16 @@ if(type=='rw'&par=='both'){
   real pSmax_sig; //prior variance for Smax
 }
 transformed data{
-real logbeta_pr;
-real logbeta_pr_sig;
+real smax_pr;
+real smax_pr_sig;
 
-logbeta_pr_sig=sqrt(log(1+((1/pSmax_sig)*(1/pSmax_sig))/((1/pSmax_mean)*(1/pSmax_mean)))); //this converts sigma on the untransformed scale to a log scale
-logbeta_pr=log(1/pSmax_mean)-0.5*logbeta_pr_sig*logbeta_pr_sig; //convert smax prior to per capita slope - transform to log scale with bias correction
+smax_pr_sig=sqrt(log(1+((pSmax_sig)*(pSmax_sig))/((pSmax_mean)*(pSmax_mean)))); //this converts sigma on the untransformed scale to a log scale
+smax_pr=log(pSmax_mean)-0.5*smax_pr_sig*smax_pr_sig; //convert smax prior to per capita slope - transform to log scale with bias correction
 }
 parameters{
   real log_a0;// initial productivity (on log scale) - fixed in this
-  real<upper=0> log_b0; // rate capacity - fixed in this
-
+   real<lower = 0> Smax0; //
+   
  //variance components  
   real<lower = 0> sigma;
   real<lower = 0> sigma_a;
@@ -575,28 +565,29 @@ parameters{
 }
 
 transformed parameters{
-  vector[L] log_a; //a in each year (log scale)
-  vector[L] log_b; //b in each year (log scale)
-  vector[L] b; //b in each year
-  
+  vector<lower=0>[L] Smax; //b in each year
+  vector<lower=0>[L] b; //b in each year
+   vector[L] log_a; //a in each year (log scale)
+ 
+ 
   log_a[1] = log_a0;
-  log_b[1] = log_b0;
+  Smax[1] = Smax0;
   for(t in 2:L){
     log_a[t] = log_a[t-1] + a_dev[t-1]*sigma_a;
-    log_b[t] = log_b[t-1] + b_dev[t-1]*sigma_b;
+    Smax[t] = Smax[t-1] + b_dev[t-1]*sigma_b;
   } 
-  b=exp(log_b);
+   b=1.0./Smax;
 }  
 
 model{
   //priors
   log_a0 ~ normal(1.5,2.5); //initial productivity
-  log_b0 ~ normal(logbeta_pr,logbeta_pr_sig); //initial capacity
+  Smax0 ~ normal(smax_pr,smax_pr_sig); //initial capacity
   
   //variance terms
   sigma ~ normal(0,1); //half normal on variance (lower limit of zero)
   sigma_a ~ normal(0,1); //half normal on variance (lower limit of zero)
-  sigma_b ~ normal(0,logbeta_pr_sig); //half normal on variance (lower limit of zero)
+  sigma_b ~ normal(0,smax_pr_sig); //half normal on variance (lower limit of zero)
   
   
   a_dev ~ std_normal();
@@ -605,17 +596,16 @@ model{
   for(n in 1:N) R_S[n] ~ normal(log_a[ii[n]]-b[ii[n]]*S[n], sigma);
 }
  generated quantities{
-     vector[L] S_max;
-     vector[L] U_msy;
-     vector[L] S_msy;
+     vector[L] Umsy;
+     vector[L] Smsy;
      vector[N] y_rep;
-     real prior_Smax=1/lognormal_rng(logbeta_pr,logbeta_pr_sig);
+     real prior_Smax=lognormal_rng(smax_pr,smax_pr_sig);
      
     for(n in 1:N) y_rep[n]=normal_rng(log_a[ii[n]] - b[ii[n]]*S[n],sigma);
 
-   for(l in 1:L){ S_max[l] = 1/b[l];
-    U_msy[l] = 1-lambert_w0(exp(1-log_a[l]));
-    S_msy[l] = (1-lambert_w0(exp(1-log_a[l])))/b[l];
+   for(l in 1:L){
+    Umsy[l] = 1-lambert_w0(exp(1-log_a[l]));
+    Smsy[l] = (1-lambert_w0(exp(1-log_a[l])))/b[l];
    }
 }
 
@@ -634,16 +624,16 @@ if(lfo==TRUE){
   real pSmax_sig; //prior variance for Smax
 }
 transformed data{
-real logbeta_pr;
-real logbeta_pr_sig;
+real smax_pr;
+real smax_pr_sig;
 
-logbeta_pr_sig=sqrt(log(1+((1/pSmax_sig)*(1/pSmax_sig))/((1/pSmax_mean)*(1/pSmax_mean)))); //this converts sigma on the untransformed scale to a log scale
-logbeta_pr=log(1/pSmax_mean)-0.5*logbeta_pr_sig*logbeta_pr_sig; //convert smax prior to per capita slope - transform to log scale with bias correction
+smax_pr_sig=sqrt(log(1+((pSmax_sig)*(pSmax_sig))/((pSmax_mean)*(pSmax_mean)))); //this converts sigma on the untransformed scale to a log scale
+smax_pr=log(pSmax_mean)-0.5*smax_pr_sig*smax_pr_sig; //convert smax prior to per capita slope - transform to log scale with bias correction
 }
 parameters {
   real log_a0;// initial productivity (on log scale) - fixed in this
-  real<upper=0> log_b0; // rate capacity - fixed in this
-
+  real<lower = 0> Smax0; //
+   
  //variance components  
   real<lower = 0> sigma;
   real<lower = 0> sigma_a;
@@ -655,28 +645,29 @@ parameters {
 }
 
 transformed parameters{
-  vector[L] log_a; //a in each year (log scale)
-  vector<upper = 0>[L] log_b; //b in each year (log scale)
-  vector[L] b; //b in each year
-  
+  vector<lower=0>[L] Smax; //b in each year
+  vector<lower=0>[L] b; //b in each year
+   vector[L] log_a; //a in each year (log scale)
+ 
+ 
   log_a[1] = log_a0;
-  log_b[1] = log_b0;
+  Smax[1] = Smax0;
   for(t in 2:L){
     log_a[t] = log_a[t-1] + a_dev[t-1]*sigma_a;
-    log_b[t] = log_b[t-1] + b_dev[t-1]*sigma_b;
+    Smax[t] = Smax[t-1] + b_dev[t-1]*sigma_b;
   } 
-  b=exp(log_b);
+   b=1.0./Smax;
 }  
 
 model{
   //priors
   log_a0 ~ normal(1.5,2.5); //initial productivity
-  log_b0 ~ normal(logbeta_pr,logbeta_pr_sig); //initial capacity
+  Smax0 ~ normal(smax_pr,smax_pr_sig); //initial capacity
   
   //variance terms
   sigma ~ normal(0,1); //half normal on variance (lower limit of zero)
   sigma_a ~ normal(0,1); //half normal on variance (lower limit of zero)
-  sigma_b ~ normal(0,logbeta_pr_sig); //half normal on variance (lower limit of zero)
+  sigma_b ~ normal(0,smax_pr_sig); //half normal on variance (lower limit of zero)
 
    
   a_dev ~ std_normal();
@@ -724,41 +715,38 @@ data {
   real pSmax_sig; //prior variance for Smax
 }
 transformed data{
-real logbeta_pr;
-real logbeta_pr_sig;
+real smax_pr;
+real smax_pr_sig;
 
-logbeta_pr_sig=sqrt(log(1+((1/pSmax_sig)*(1/pSmax_sig))/((1/pSmax_mean)*(1/pSmax_mean)))); //this converts sigma on the untransformed scale to a log scale
-logbeta_pr=log(1/pSmax_mean)-0.5*logbeta_pr_sig*logbeta_pr_sig; //convert smax prior to per capita slope - transform to log scale with bias correction
+smax_pr_sig=sqrt(log(1+((pSmax_sig)*(pSmax_sig))/((pSmax_mean)*(pSmax_mean)))); //this converts sigma on the untransformed scale to a log scale
+smax_pr=log(pSmax_mean)-0.5*smax_pr_sig*smax_pr_sig; //convert smax prior to per capita slope - transform to log scale with bias correction
 }
 parameters {
   // Discrete state model
-  array[K] simplex[K] A; // transition probabilities
+  simplex[K] A[K]; // transition probabilities
+ simplex[K] pi1; // initial state probabilities
 
   // A[i][j] = p(z_t = j | z_{t-1} = i)
   // Continuous observation model
   ordered[K] log_a; // max. productivity
-  real log_b; // rate capacity - fixed in this
+  real<lower=0> b; // rate capacity - fixed in this
   real<lower=0> sigma; // observation standard deviations
 }
-transformed parameters {
-  simplex[K] pi1; // initial state probabilities
-  array[K] vector[N] logalpha;
-  real b; //
 
-  b=exp(log_b);
+transformed parameters {
+  vector[K] logalpha[N];
 
 { // Forward algorithm log p(z_t = j | y_{1:t})
-  array[K] real accumulator1;
+  real accumulator1[K];
 
-  logalpha[1,1] = log(pi1[1]) + normal_lpdf(R_S[1] |log_a[1] - b*S[1], sigma);
-  logalpha[2,1] = log(pi1[2]) + normal_lpdf(R_S[1] |log_a[2] - b*S[1], sigma);
+  for(k in 1:K) logalpha[1,k] = log(pi1[k]) + normal_lpdf(R_S[1] |log_a[k] - b*S[1], sigma);
 
   for (t in 2:N) {
   for (j in 1:K) { // j = current (t)
-  for (i in 1:K) { // i = previous (t-1)
-  // Murphy (2012) p. 609 eq. 17.48
-  // belief state + transition prob + local evidence at t
-  accumulator1[i] = logalpha[t-1, i] + log(A[i, j]) + normal_lpdf(R_S[t] |log_a[j] - b*S[t], sigma);
+	for (i in 1:K) { // i = previous (t-1)
+		// Murphy (2012) p. 609 eq. 17.48
+			// belief state + transition prob + local evidence at t
+    accumulator1[i] = logalpha[t-1, i] + log(A[i, j]) + normal_lpdf(R_S[t] |log_a[j] - b*S[t], sigma);
   }
   logalpha[t, j] = log_sum_exp(accumulator1);
   }
@@ -766,12 +754,13 @@ transformed parameters {
   } // Forward
 }
 model{
-
-  log_a ~ normal(1.5,2.5);
-  log_b ~ normal(logbeta_pr,logbeta_pr_sig);
+  for(k in 1:K) log_a[k] ~ normal(1.5,2.5);
+ 
+  Smax ~ lognormal(smax_pr,smax_pr_sig); //capacity
+  
+  sigma ~ normal(0.5,1); //half normal on variance (lower limit of zero)
   pi1~ dirichlet(rep_vector(1,K));
-  sigma ~ normal(0,1); //half normal on variance (lower limit of zero)
-    
+
   for(k in 1:K){
   A[k,] ~ dirichlet(alpha_dirichlet[k,]);
   }
@@ -779,20 +768,18 @@ model{
   target += log_sum_exp(logalpha[N]);
 }
 generated quantities {
-  array[N] int<lower=1, upper=K> zstar;
+  vector[N] log_lik;
+  int<lower=1, upper=K> zstar[N];
   real logp_zstar;
-  array[K] vector[N] alpha;
-  array[K] vector[N] logbeta;
-  array[K] vector[N] loggamma;
-  array[K] vector[N] beta;
-  array[K] vector[N] gamma;
+  vector[K] alpha[N];
+  vector[K] logbeta[N];
+  vector[K] loggamma[N];
+  vector[K] beta[N];
+  vector[K] gamma[N];
   
-  real S_max;
-  vector[K] U_msy;
-  vector[K] S_msy;
   vector[N] y_rep;
-  
-  real prior_Smax=1/lognormal_rng(logbeta_pr,logbeta_pr_sig);
+  vector[K] Umsy;
+  vector[K] Smsy;
   
   { // Forward algortihm
   for (t in 1:N)
@@ -800,7 +787,7 @@ generated quantities {
   } // Forward
   
   { // Backward algorithm log p(y_{t+1:T} | z_t = j)
-  array[K] real accumulator2;
+  real accumulator2[K];
   for (j in 1:K)
   logbeta[N, j] = 1;
   for (tforward in 0:(N-2)) {
@@ -810,6 +797,7 @@ generated quantities {
   for (i in 1:K) { // i = next (t)
   // Murphy (2012) Eq. 17.58
   // backwards t + transition prob + local evidence at t
+
   accumulator2[i] = logbeta[t, i] + log(A[j, i]) + normal_lpdf(R_S[t] | log_a[i] - b*S[t], sigma);
   }
   logbeta[t-1, j] = log_sum_exp(accumulator2);
@@ -828,8 +816,8 @@ generated quantities {
   } // Forward-backward
   
   { // Viterbi algorithm
-  array[N,K] int bpointer; // backpointer to the most likely previous state on the most probable path // backpointer to the most likely previous state on the most probable path
-  array[N,K] real delta; // max prob for the sequence up to t
+  int bpointer[N, K]; // backpointer to the most likely previous state on the most probable path
+  real delta[N, K]; // max prob for the sequence up to t
   // that ends with an emission from state k
   for (j in 1:K)
   delta[1, K] = normal_lpdf(R_S[1] | log_a[j] - b*S[1], sigma);
@@ -839,6 +827,7 @@ generated quantities {
       for (i in 1:K) { // i = previous (t-1)
         real logp;
         logp = delta[t-1, i] + log(A[i, j]) + normal_lpdf(R_S[t] | log_a[j] - b*S[t], sigma);
+         
         if (logp > delta[t, j]) {
           bpointer[t, j] = i;
           delta[t, j] = logp;
@@ -855,16 +844,17 @@ generated quantities {
   }
   }
 
+real prior_Smax=lognormal_rng(smax_pr,smax_pr_sig);
 
 for(n in 1:N) y_rep[n]=normal_rng(log_a[zstar[n]] - S[n]*b, sigma);
-   
-S_max = 1/b;
+
 for(k in 1:K){
-U_msy[k] = 1-lambert_w0(exp(1-log_a[k]));
-S_msy[k] = (1-lambert_w0(exp(1-log_a[k])))/b;
+Umsy[k] = 1-lambert_w0(exp(1-log_a[k]));
+Smsy[k] = (1-lambert_w0(exp(1-log_a[k])))/b;
 }
 
 }
+
 
 "
   }
@@ -886,11 +876,11 @@ data {
   real pSmax_sig; //prior variance for Smax
 }
 transformed data{
-real logbeta_pr;
-real logbeta_pr_sig;
+real smax_pr;
+real smax_pr_sig;
 
-logbeta_pr_sig=sqrt(log(1+((1/pSmax_sig)*(1/pSmax_sig))/((1/pSmax_mean)*(1/pSmax_mean)))); //this converts sigma on the untransformed scale to a log scale
-logbeta_pr=log(1/pSmax_mean)-0.5*logbeta_pr_sig*logbeta_pr_sig; //convert smax prior to per capita slope - transform to log scale with bias correction
+smax_pr_sig=sqrt(log(1+((pSmax_sig)*(pSmax_sig))/((pSmax_mean)*(pSmax_mean)))); //this converts sigma on the untransformed scale to a log scale
+smax_pr=log(pSmax_mean)-0.5*smax_pr_sig*smax_pr_sig; //convert smax prior to per capita slope - transform to log scale with bias correction
 }
 parameters {
 // Discrete state model
@@ -899,14 +889,14 @@ array[K] simplex[K] A; // transition probabilities
 // A[i][j] = p(z_t = j | z_{t-1} = i)
 // Continuous observation model
 ordered[K] log_a; // max. productivity
-real<upper = 0> log_b; // rate capacity - fixed in this
+real<lower = 0> Smax; //
 real<lower=0> sigma; // observation standard deviations
 }
 
 transformed parameters {
 simplex[K] pi1; // initial state probabilities
 array[K] vector[N] logalpha;
-real b; //
+real b = 1.0/Smax; //
 
 for(i in 1:K){pi1[i]=1/K};
 
@@ -930,7 +920,7 @@ logalpha[t, j] = log_sum_exp(accumulator1);
 }
 model{
 log_a ~ normal(1.5,2.5);
-log_b ~ normal(logbeta_pr,logbeta_pr_sig);
+log_b ~ normal(smax_pr,smax_pr_sig);
 sigma ~ normal(0,1); //half normal on variance (lower limit of zero)
 
 for(k in 1:K){
@@ -1035,11 +1025,11 @@ data {
   real pSmax_sig; //prior variance for Smax
 }
 transformed data{
-real logbeta_pr;
-real logbeta_pr_sig;
+real smax_pr;
+real smax_pr_sig;
 
-logbeta_pr_sig=sqrt(log(1+((1/pSmax_sig)*(1/pSmax_sig))/((1/pSmax_mean)*(1/pSmax_mean)))); //this converts sigma on the untransformed scale to a log scale
-logbeta_pr=log(1/pSmax_mean)-0.5*logbeta_pr_sig*logbeta_pr_sig; //convert smax prior to per capita slope - transform to log scale with bias correction
+smax_pr_sig=sqrt(log(1+((pSmax_sig)*(pSmax_sig))/((pSmax_mean)*(pSmax_mean)))); //this converts sigma on the untransformed scale to a log scale
+smax_pr=log(pSmax_mean)-0.5*smax_pr_sig*smax_pr_sig; //convert smax prior to per capita slope - transform to log scale with bias correction
 }
 parameters {
 // Discrete state model
@@ -1080,7 +1070,7 @@ logalpha[t, j] = log_sum_exp(accumulator);
 }
 model{
 log_a ~ normal(1.5,2.5);
-log_b ~ normal(logbeta_pr,logbeta_pr_sig);
+log_b ~ normal(smax_pr,smax_pr_sig);
 
 sigma ~ normal(0,1); //half normal on variance (lower limit of zero)
   
@@ -1102,10 +1092,10 @@ array[K] vector[N] gamma;
 vector[N] y_rep;
 
 vector[K] S_max;
-real U_msy;
+real Umsy;
 vector[K] S_msy;
 
-real prior_Smax=1/lognormal_rng(logbeta_pr,logbeta_pr_sig);
+real prior_Smax=lognormal_rng(smax_pr,smax_pr_sig);
 
 { // Forward algortihm
 for (t in 1:N)
@@ -1199,11 +1189,11 @@ data {
   real pSmax_sig; //prior variance for Smax
 }
 transformed data{
-real logbeta_pr;
-real logbeta_pr_sig;
+real smax_pr;
+real smax_pr_sig;
 
-logbeta_pr_sig=sqrt(log(1+((1/pSmax_sig)*(1/pSmax_sig))/((1/pSmax_mean)*(1/pSmax_mean)))); //this converts sigma on the untransformed scale to a log scale
-logbeta_pr=log(1/pSmax_mean)-0.5*logbeta_pr_sig*logbeta_pr_sig; //convert smax prior to per capita slope - transform to log scale with bias correction
+smax_pr_sig=sqrt(log(1+((pSmax_sig)*(pSmax_sig))/((pSmax_mean)*(pSmax_mean)))); //this converts sigma on the untransformed scale to a log scale
+smax_pr=log(pSmax_mean)-0.5*smax_pr_sig*smax_pr_sig; //convert smax prior to per capita slope - transform to log scale with bias correction
 }
 parameters {
 // Discrete state model
@@ -1244,7 +1234,7 @@ logalpha[t, j] = log_sum_exp(accumulator);
 model{
 
 log_a ~ normal(1.5,2.5);
-log_b ~ normal(logbeta_pr,logbeta_pr_sig);
+log_b ~ normal(smax_pr,smax_pr_sig);
 
 sigma ~ normal(0,1); //half normal on variance (lower limit of zero)
 
@@ -1353,11 +1343,11 @@ if(type=='hmm'&par=='both'){
   real pSmax_sig; //prior variance for Smax
 }
 transformed data{
-real logbeta_pr;
-real logbeta_pr_sig;
+real smax_pr;
+real smax_pr_sig;
 
-logbeta_pr_sig=sqrt(log(1+((1/pSmax_sig)*(1/pSmax_sig))/((1/pSmax_mean)*(1/pSmax_mean)))); //this converts sigma on the untransformed scale to a log scale
-logbeta_pr=log(1/pSmax_mean)-0.5*logbeta_pr_sig*logbeta_pr_sig; //convert smax prior to per capita slope - transform to log scale with bias correction
+smax_pr_sig=sqrt(log(1+((pSmax_sig)*(pSmax_sig))/((pSmax_mean)*(pSmax_mean)))); //this converts sigma on the untransformed scale to a log scale
+smax_pr=log(pSmax_mean)-0.5*smax_pr_sig*smax_pr_sig; //convert smax prior to per capita slope - transform to log scale with bias correction
 }
     parameters {
       // Discrete state model
@@ -1398,7 +1388,7 @@ array[K] vector[N] logalpha;
     model{
      
       log_a ~ normal(1.5,2.5);
-      log_b ~ normal(logbeta_pr,logbeta_pr_sig);
+      log_b ~ normal(smax_pr,smax_pr_sig);
 
       sigma ~ normal(0,1); //half normal on variance (lower limit of zero)
       
@@ -1424,7 +1414,7 @@ vector[K] S_max;
 vector[K] U_msy;
 vector[K] S_msy;
 
-real prior_Smax=1/lognormal_rng(logbeta_pr,logbeta_pr_sig);
+real prior_Smax=lognormal_rng(smax_pr,smax_pr_sig);
 
 { // Forward algortihm
 for (t in 1:N)
@@ -1518,11 +1508,11 @@ data {
   real pSmax_sig; //prior variance for Smax
 }
 transformed data{
-real logbeta_pr;
-real logbeta_pr_sig;
+real smax_pr;
+real smax_pr_sig;
 
-logbeta_pr_sig=sqrt(log(1+((1/pSmax_sig)*(1/pSmax_sig))/((1/pSmax_mean)*(1/pSmax_mean)))); //this converts sigma on the untransformed scale to a log scale
-logbeta_pr=log(1/pSmax_mean)-0.5*logbeta_pr_sig*logbeta_pr_sig; //convert smax prior to per capita slope - transform to log scale with bias correction
+smax_pr_sig=sqrt(log(1+((pSmax_sig)*(pSmax_sig))/((pSmax_mean)*(pSmax_mean)))); //this converts sigma on the untransformed scale to a log scale
+smax_pr=log(pSmax_mean)-0.5*smax_pr_sig*smax_pr_sig; //convert smax prior to per capita slope - transform to log scale with bias correction
 }
 parameters {
 // Discrete state model
@@ -1564,7 +1554,7 @@ logalpha[t, j] = log_sum_exp(accumulator);
 model{
 
 log_a ~ normal(1.5,2.5);
-log_b ~ normal(logbeta_pr,logbeta_pr_sig);
+log_b ~ normal(smax_pr,smax_pr_sig);
 sigma ~ normal(0,1); //half normal on variance (lower limit of zero)
 
 for(k in 1:K){
@@ -1692,16 +1682,16 @@ sr_mod2<- function(type=c('static','rw','hmm'),ac=FALSE,par=c('n','a','b','both'
      }
     parameters {
       real<lower = 0> log_a;// initial productivity (on log scale)
-      real<upper = 0> log_b; // rate capacity - fixed in this
+      real<lower = 0> Smax; //
     
      //variance components  
       real<lower = 0> sigma;
     
     }
     transformed parameters{
-    	real b;
+    	real b = 1.0/Smax;
     	
-    	b = exp(log_b); //prevents b (density dependence) from being negative (ie. positive)
+    	 //prevents b (density dependence) from being negative (ie. positive)
     }
     model{
       //priors
@@ -1715,11 +1705,11 @@ sr_mod2<- function(type=c('static','rw','hmm'),ac=FALSE,par=c('n','a','b','both'
     }
     generated quantities{
      vector[N] log_lik;
-     real S_max;
+     
 
      for(n in 1:N) log_lik[n] = normal_lpdf(R_S[n]|log_a - S[n]*b, sigma);
      
-    S_max = 1/b;
+  
     }
     "
     }
@@ -1733,16 +1723,16 @@ sr_mod2<- function(type=c('static','rw','hmm'),ac=FALSE,par=c('n','a','b','both'
      }
     parameters {
       real<lower = 0> log_a;// initial productivity (on log scale)
-      real<upper = 0> log_b; // rate capacity - fixed in this
+      real<lower = 0> Smax; //
     
      //variance components  
       real<lower = 0> sigma;
     
     }
     transformed parameters{
-    	real b;
+    	real b = 1.0/Smax;
     	
-    	b = exp(log_b); //prevents b (density dependence) from being negative (ie. positive)
+    	 //prevents b (density dependence) from being negative (ie. positive)
     }
     model{
      log_a ~ normal(1.5,2.5); //intrinsic productivity - wide prior
@@ -1780,12 +1770,12 @@ parameters{
 
 }
 transformed parameters{
-real b;
+real b = 1.0/Smax;
 vector[N] mu;
 vector[N] epsilon; //residuals
 real sigma_AR;
 
-b = exp(log_b);
+
 mu = log_a-b*S;
 
 epsilon[1] = R_S[1] - mu[1];
@@ -1812,12 +1802,12 @@ for(t in 2:N) R_S[t] ~ normal(mu[t], sigma_AR);
 }
  generated quantities{
      vector[N] log_lik;
-     real S_max;
+     
     
     log_lik[1] = normal_lpdf(R_S[1]|mu[1], sigma);
     for(n in 1:N) log_lik[n] = normal_lpdf(R_S[n]|mu[n], sigma_AR);
      
-    S_max = 1/b;
+  
     }
     "
     }
@@ -1842,12 +1832,12 @@ parameters{
 
 }
 transformed parameters{
-real b;
+real b = 1.0/Smax;
 vector[N] mu;
 vector[N] epsilon; //residuals
 real sigma_AR;
 
-b = exp(log_b);
+
 mu = log_a-b*S;
 
 epsilon[1] = R_S[1] - mu[1];
@@ -1892,7 +1882,7 @@ if(type=='rw'&par=='a'){
   }
 parameters{
   real<lower = 0> log_a0;// initial productivity (on log scale)
-  real<upper = 0> log_b; // rate capacity - fixed in this
+  real<lower = 0> Smax; //
 
  //variance components  
   real<lower = 0> sigma;
@@ -1903,7 +1893,7 @@ parameters{
   
 }
 transformed parameters{
-  real b;
+  real b = 1.0/Smax;
   vector[L] log_a; //a in each year (on log scale)
   
   b=exp(log_b);
@@ -1930,11 +1920,11 @@ model{
 }
  generated quantities{
      vector[N] log_lik;
-     real S_max;
+     
      
     for(n in 1:N) log_lik[n] = normal_lpdf(R_S[n]|log_a[ii[n]] - S[n]*b, sigma);
    
-    S_max = 1/b;
+  
   
     }
 "
@@ -1951,7 +1941,7 @@ if(lfo==TRUE){
  }
 parameters{
   real<lower = 0> log_a0;// initial productivity (on log scale)
-  real<upper = 0> log_b; // rate capacity - fixed in this
+  real<lower = 0> Smax; //
 
  //variance components  
   real<lower = 0> sigma;
@@ -1962,7 +1952,7 @@ parameters{
   
 }
 transformed parameters{
-  real b;
+  real b = 1.0/Smax;
   vector[L] log_a; //a in each year (on log scale)
   
   b=exp(log_b);
@@ -2285,9 +2275,7 @@ real<lower=0> sigma; // observation standard deviations
 
 transformed parameters {
 vector[K] logalpha[N];
-real b; //
-
-b=exp(log_b);
+real b = 1.0/Smax; //
 
 { // Forward algorithm log p(z_t = j | y_{1:t})
 array[K] real accumulator1;
@@ -2331,7 +2319,7 @@ array[K] vector[N] loggamma;
 array[K] vector[N] beta;
 array[K] vector[N] gamma;
 
-real S_max;
+
 
 { // Forward algortihm
 for (t in 1:N)
@@ -2426,13 +2414,13 @@ simplex[K] A[K]; // transition probabilities
 // A[i][j] = p(z_t = j | z_{t-1} = i)
 // Continuous observation model
 ordered[K] log_a; // max. productivity
-real<upper = 0> log_b; // rate capacity - fixed in this
+real<lower = 0> Smax; //
 real<lower=0> sigma; // observation standard deviations
 }
 
 transformed parameters {
 vector[K] logalpha[N];
-real b; //
+real b = 1.0/Smax; //
 
 b=exp(log_b);
  
