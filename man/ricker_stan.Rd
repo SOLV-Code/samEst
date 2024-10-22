@@ -6,10 +6,11 @@
 \usage{
 ricker_stan(
   data,
-  AC = FALSE,
+  ac = FALSE,
   smax_priors = NULL,
-  control = stancontrol(),
   mod = NULL,
+  full_posterior = FALSE,
+  control = stancontrol(adapt_delta = 0.99),
   warmup = 300,
   chains = 6,
   iter = 1000,
@@ -18,8 +19,6 @@ ricker_stan(
 }
 \arguments{
 \item{data}{A list or data frame containing Spawners (S) and log(Recruits/Spawners) (logRS) time series.}
-
-\item{AC}{Logical. Are residuals autocorrelated? Default is FALSE}
 
 \item{smax_priors}{Options for custom Smax (capacity) priors - 2 values for the mean and the scale (variance). Defaults to mean = half maximum observed spawners, scale = max. observed spawners (from data)}
 
@@ -34,6 +33,8 @@ chain. The default is 200.}
 (including warmup). The default is 1000.}
 
 \item{...}{Anything else that would be passed to rstan::sampling}
+
+\item{AC}{Logical. Are residuals autocorrelated? Default is FALSE}
 }
 \value{
 a list containing the

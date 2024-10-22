@@ -9,13 +9,13 @@ ricker_hmm_stan(
   par = c("a", "b", "both"),
   k_regime = 2,
   smax_priors = NULL,
-  dirichlet_prior = NULL,
+  dirichlet_stasis_prior = 2,
+  full_posterior = FALSE,
   control = stancontrol(),
   warmup = 300,
   chains = 6,
   iter = 1000,
   mod = NULL,
-  lambertW = FALSE,
   ...
 )
 }
@@ -28,9 +28,6 @@ ricker_hmm_stan(
 
 \item{smax_priors}{Options for custom Smax (capacity) priors - 2 values for the mean and the scale (variance). Defaults to mean = half maximum observed spawners, scale = max. observed spawners (from data)}
 
-\item{dirichlet_prior}{k_regime x k_regime matrix. Prior for transition probability matrix,
-if NULL prior is set to matrix(1,nrow=k_regime,ncol=k_regime)}
-
 \item{control}{output of stancontrol}
 
 \item{warmup}{To be passed to rstan::sampling. A positive integer specifying the number of warmup (aka burnin) iterations per
@@ -41,11 +38,14 @@ chain. The default is 200.}
 \item{iter}{To be passed to rstan::sampling. A positive integer specifying the number of iterations for each chain
 (including warmup). The default is 1000.}
 
-\item{lambertW}{Logical, indicating if lambertW functions should be used in stan code, requires git installation from stan}
-
 \item{...}{Anything else that would be passed to rstan::sampling}
 
 \item{sm_ext}{Default is null, external stan hmm model. Implemented to speed up simulation evaluation, use with caution.}
+
+\item{lambertW}{Logical, indicating if lambertW functions should be used in stan code, requires git installation from stan}
+
+\item{dirichlet_prior}{k_regime x k_regime matrix. Prior for transition probability matrix,
+if NULL prior is set to matrix(1,nrow=k_regime,ncol=k_regime)}
 }
 \value{
 a list containing the

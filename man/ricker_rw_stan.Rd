@@ -8,12 +8,12 @@ ricker_rw_stan(
   data,
   par = c("a", "b", "both"),
   smax_priors = NULL,
+  full_posterior = FALSE,
   control = stancontrol(),
   mod = NULL,
   warmup = 300,
   chains = 6,
   iter = 1000,
-  lambertW = FALSE,
   ...
 )
 }
@@ -32,11 +32,11 @@ chain. The default is 200.}
 \item{iter}{To be passed to rstan::sampling. A positive integer specifying the number of iterations for each chain
 (including warmup). The default is 1000.}
 
-\item{lambertW}{Logical, indicating if lambertW functions should be used in stan code, requires git installation from stan}
-
 \item{...}{Anything else that would be passed to rstan::sampling}
 
 \item{sm_ext}{Default is null, external stan rw model. Implemented to speed up simulation evaluation, use with caution.}
+
+\item{lambertW}{Logical, indicating if lambertW functions should be used in stan code, requires git installation from stan}
 }
 \value{
 a list containing the

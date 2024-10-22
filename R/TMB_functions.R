@@ -645,16 +645,16 @@ ricker_rw_TMB <- function(data, tv.par=c('a','b','both'), silent = FALSE,
   maxgrad <- max(tmb_obj$gr(tmb_opt$par))
 
   if(newton_stp==TRUE & tmb_opt$convergence == 0){
-    j<-1
-    while(maxgrad>0.01){
-      j<-j+1
-      if(j>20){break}
+   for(j in seq_len(20)){
       g <- as.numeric( tmb_obj$gr(tmb_opt$par) )
       h <- optimHess(tmb_opt$par, fn=tmb_obj$fn, gr=tmb_obj$gr)
-      tmb_opt$par <- tmb_opt$par - solve(h, g)
+      tmb_opt$par <- tmb_opt$par- tryCatch({solve(h, g, tol = 1e-18)},
+                  error=function(cond){
+                  message(cond)
+                  return(rep(0,length(tmb_opt$par)))})
+      #tmb_opt$par <- tmb_opt$par - solve(h, g, tol = 1e-18)
       tmb_opt$objective <- tmb_obj$fn(tmb_opt$par)
-    }
-
+    } 
   }
 
   sd_report <- TMB::sdreport(tmb_obj)

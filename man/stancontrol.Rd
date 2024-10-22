@@ -4,7 +4,7 @@
 \alias{stancontrol}
 \title{Sampling control options.}
 \usage{
-stancontrol(adapt_delta = 0.99, ...)
+stancontrol(adapt_delta = 0.999, ...)
 }
 \arguments{
 \item{...}{Anything else. See the 'Control parameters' section of
