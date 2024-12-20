@@ -38,7 +38,7 @@ sr_plot=function(df,mod,title,make.pdf=FALSE,path,type=c('static','rw','hmm'),pa
             axis.text=element_text(face="bold"),axis.title = element_text(face="bold"),plot.title = element_text(face = "bold", hjust = 0.5,size=15))
   }
   if(type=='rw'){
-    x_new=seq(min(df$S),max(df$S),length.out=200)
+    x_new=seq(0,max(df$S),length.out=200)
     by_q=round(quantile(df$by,seq(0,1,by=0.1)))
       if(par=='a'){ #rw alpha=====
         if(form=='stan'){
@@ -53,7 +53,6 @@ sr_plot=function(df,mod,title,make.pdf=FALSE,path,type=c('static','rw','hmm'),pa
             geom_point(aes(colour = by),size=4) +
             scale_colour_viridis_c(name='Year')+
             geom_ribbon(aes(ymin =l90, ymax =u90), alpha = 0.2)+
-            ggtitle(title)+
             xlab("Year") + 
             ylab("log(Alpha)")+
             theme_classic(14)+
@@ -75,9 +74,8 @@ sr_plot=function(df,mod,title,make.pdf=FALSE,path,type=c('static','rw','hmm'),pa
             geom_line(aes(x=by,y=med),linewidth=1.3)+
             geom_point(aes(colour = by),size=4) +
             scale_colour_viridis_c(name='Year')+
-            ggtitle(paste(title))+
             xlab("Year") + 
-            ylab("log(Alpha)")+
+            ylab("Productivity - log(",expression(alpha),")")+
             theme_classic(14)+
             theme(panel.background = element_blank(),strip.background = element_rect(colour=NA, fill=NA),panel.border = element_rect(fill = NA, color = "black"),
                   strip.text = element_text(face="bold", size=12),
@@ -106,7 +104,6 @@ sr_plot=function(df,mod,title,make.pdf=FALSE,path,type=c('static','rw','hmm'),pa
           geom_line(data=pred_df,aes(x=x_new,y=pred_df[,12],colour = by_q[11]),linewidth=1.3)+
           geom_point(aes(colour = by),size=2.5) +
           scale_colour_viridis_c(name='Year')+
-          ggtitle(title)+
           xlab("Spawners") + 
           ylab("Recruits")+
           xlim(0, max(df$S))+
@@ -117,12 +114,26 @@ sr_plot=function(df,mod,title,make.pdf=FALSE,path,type=c('static','rw','hmm'),pa
                 axis.text=element_text(face="bold"),axis.title = element_text(face="bold"),plot.title = element_text(face = "bold", hjust = 0.5,size=15))
 
        
+        title <- ggdraw() + 
+          draw_label(
+            title,
+            fontface = 'bold',
+            x = 0,
+            hjust = 0
+          ) +
+          theme(
+            # add margin on the left of the drawing canvas,
+            # so title is aligned with left edge of first plot
+            plot.margin = margin(0, 0, 0, 7)
+          )
+        
         legend = cowplot::get_legend(plot1)
         
         plot_rw_a=cowplot::plot_grid(plot1 + theme(legend.position="none"),
                       plot2 + theme(legend.position="none"),
-                       ncol=2,nrow=1,labels=c("A","B"))
+                       ncol=2,nrow=1)
         plot=cowplot::plot_grid(plot_rw_a,legend,rel_widths = c(3,.25))
+        plot=cowplot::plot_grid(title,plot,ncol=1,rel_heights = c(0.1,1))
         if(sr_only==TRUE){plot=plot1}
       }
       if(par=='b'){ ###rw beta=====
