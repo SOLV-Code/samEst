@@ -287,14 +287,16 @@ parameters{
   real<lower = 0> Smax; //
 
  //variance components  
-  real<lower = 0> sigma;
-  real<lower = 0> sigma_a;
-
+  real<lower = 0> sigma_tot; //total variance - process + high freq. error
+  real<lower=0,upper=1> F_rw; //fraction of variance as random walk
+  
   //time-varying parameters
   vector[L-1] a_dev; //year-to-year deviations in a
   
 }
 transformed parameters{
+  real<lower = 0> sigma;
+  real<lower = 0> sigma_a;
   real b = 1.0/Smax;
   vector[L] log_a; //a in each year (on log scale)
   
@@ -302,6 +304,9 @@ transformed parameters{
   for(t in 2:L){
     log_a[t] = log_a[t-1] + a_dev[t-1]*sigma_a; //random walk of log_a
   }
+  
+  sigma=(1-F_rw)*sigma_tot;
+  sigma_a=F_rw*sigma_tot;
   
 }  
 model{
@@ -311,9 +316,8 @@ model{
    a_dev ~ std_normal(); //standardized (z-scales) deviances
   
   //variance terms
-  sigma ~ normal(0,1); //half normal on variance (lower limit of zero)
-  sigma_a ~ normal(0,1); //half normal on variance (lower limit of zero)
-   
+  sigma_tot ~ gamma(2,1); //half normal on variance (lower limit of zero)
+  F_rw ~ beta(1.25,3); //fraction attributed to random walk in productivity  
  
   for(n in 1:N) R_S[n] ~ normal(log_a[ii[n]] - b*S[n], sigma); 
   
@@ -420,8 +424,9 @@ parameters {
   real<lower = 0> Smax0;
 
  //variance components  
-  real<lower = 0> sigma;
-  real<lower = 0> sigma_b;
+  real<lower = 0> sigma_tot; //total variance - process + high freq. error
+  real<lower=0,upper=1> F_rw; //fraction of variance as random walk
+ 
   
   //time-varying parameters
   vector[L-1] b_dev; //year-to-year deviations in a
@@ -429,25 +434,30 @@ parameters {
 }
 
 transformed parameters{
+  real<lower = 0> sigma;
+  real<lower = 0> sigma_b;
+  vector[L] logSmax; //b in each year
   vector<lower=0>[L] Smax; //b in each year
   vector<lower=0>[L] b; //b in each year
   
-  
-  Smax[1] = Smax0;
+  logSmax[1] = log(Smax0);
   for(t in 2:L){
-    Smax[t] = Smax[t-1] + b_dev[t-1]*sigma_b;
+    logSmax[t] = logSmax[t-1] + b_dev[t-1]*sigma_b;
   } 
+  
+  sigma=(1-F_rw)*sigma_tot;
+  sigma_b=F_rw*sigma_tot;
+  Smax=exp(logSmax);
   b=1.0./Smax;
 }  
 
 model{
   //priors
   log_a ~ normal(1.5,2.5); //productivity
-  Smax ~  lognormal(smax_pr,smax_pr_sig); //per capita capacity parameter - informative
+  Smax0 ~  lognormal(smax_pr,smax_pr_sig); //per capita capacity parameter - informative
   
   //variance terms
   sigma ~ normal(0,1); //half normal on variance (lower limit of zero)
-  sigma_b ~ normal(0,smax_pr_sig); //half normal on variance (lower limit of zero)
    
   b_dev ~ std_normal();
  for(n in 1:N) R_S[n] ~ normal(log_a-b[ii[n]]*S[n], sigma);

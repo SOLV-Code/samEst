@@ -75,7 +75,7 @@ sr_plot=function(df,mod,title,make.pdf=FALSE,path,type=c('static','rw','hmm'),pa
             geom_point(aes(colour = by),size=4) +
             scale_colour_viridis_c(name='Year')+
             xlab("Year") + 
-            ylab("Productivity - log(",expression(alpha),")")+
+            ylab(paste0("Productivity - log(","\u03b1",")"))+
             theme_classic(14)+
             theme(panel.background = element_blank(),strip.background = element_rect(colour=NA, fill=NA),panel.border = element_rect(fill = NA, color = "black"),
                   strip.text = element_text(face="bold", size=12),
@@ -84,7 +84,7 @@ sr_plot=function(df,mod,title,make.pdf=FALSE,path,type=c('static','rw','hmm'),pa
           
         }
         
-        plot1=ggplot2::ggplot(df, aes(S, R)) +
+        plot1=ggplot2::ggplot(df, aes(S/1000, R/1000)) +
           geom_line(data=pred_df,aes(x=x_new,y=pred_df[,2],colour = by_q[1]),linewidth=1.3)+
           geom_line(data=pred_df,aes(x=x_new,y=pred_df[,3],colour = by_q[2]),linewidth=1.3)+
           geom_line(data=pred_df,aes(x=x_new,y=pred_df[,4],colour = by_q[3]),linewidth=1.3)+
@@ -104,8 +104,8 @@ sr_plot=function(df,mod,title,make.pdf=FALSE,path,type=c('static','rw','hmm'),pa
           geom_line(data=pred_df,aes(x=x_new,y=pred_df[,12],colour = by_q[11]),linewidth=1.3)+
           geom_point(aes(colour = by),size=2.5) +
           scale_colour_viridis_c(name='Year')+
-          xlab("Spawners") + 
-          ylab("Recruits")+
+          xlab("Spawners (thousands)") + 
+          ylab("Recruits (thousands)")+
           xlim(0, max(df$S))+
           ylim(0, max(df$R))+
           theme_classic(14)+
