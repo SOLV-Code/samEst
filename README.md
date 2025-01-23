@@ -1,4 +1,4 @@
-# samEst
+# samEst <img src="man/figures/logo.png" align="right" height="138" />
 Collection of estimation models to estimate stock-recruitment parameters for salmon populations
 
 
