@@ -55,7 +55,7 @@ model{
   Smax ~ lognormal(smax_pr,smax_pr_sig); //per capita capacity parameter - informed by spawner counts
   
   //variance terms
-  sigma ~ normal(0.5,1); //half normal on variance (lower limit of zero)
+  sigma ~ gamma(2,1); //half normal on variance (lower limit of zero)
 
    R_S ~ normal(mu, sigma);
 }
@@ -110,7 +110,7 @@ smax_pr=log(pSmax_mean)-0.5*smax_pr_sig*smax_pr_sig; //convert smax prior to per
  
       //variance terms
       
-       sigma ~ normal(0.5,1); //half normal on variance (lower limit of zero)  
+       sigma ~ gamma(2,1); //half normal on variance (lower limit of zero)  
       
       R_S ~ normal(mu, sigma);
     }
@@ -171,7 +171,7 @@ model{
   Smax ~ lognormal(smax_pr,smax_pr_sig); //informative prior based on max S- wide prior
       
   //variance terms
-  sigma ~ normal(0,1); //half normal on variance (lower limit of zero)
+  sigma ~ gamma(2,1); //half normal on variance (lower limit of zero)
    
   
   //autocorrelation term
@@ -246,7 +246,7 @@ model{
   Smax ~ lognormal(smax_pr,smax_pr_sig); //informative prior based on max S- informative
        
   //variance terms
-  sigma ~ normal(0,1); //half normal on variance (lower limit of zero)
+  sigma ~ gamma(2,1); //half normal on variance (lower limit of zero)
   
   
   //autocorrelation term
@@ -317,7 +317,7 @@ model{
   
   //variance terms
   sigma_tot ~ gamma(2,1); //half normal on variance (lower limit of zero)
-  F_rw ~ beta(1.25,3); //fraction attributed to random walk in productivity  
+  F_rw ~ beta(2,4); //fraction attributed to random walk in productivity  
  
   for(n in 1:N) R_S[n] ~ normal(log_a[ii[n]] - b*S[n], sigma); 
   
@@ -457,8 +457,9 @@ model{
   Smax0 ~  lognormal(smax_pr,smax_pr_sig); //per capita capacity parameter - informative
   
   //variance terms
-  sigma ~ normal(0,1); //half normal on variance (lower limit of zero)
+  sigma_tot ~ gamma(2,1);
    
+ 
   b_dev ~ std_normal();
  for(n in 1:N) R_S[n] ~ normal(log_a-b[ii[n]]*S[n], sigma);
 }

@@ -1257,3 +1257,397 @@ sr_plot2=function(df,mod,title,make.pdf=FALSE,path,type=c('static','rw','hmm'),p
   }
   
 }
+
+
+#plot functions from Gottfried Pestal####
+
+#' Predicted vs observed plot
+#'
+#' @param post.obj posterior samples
+#' @param main.title plot title
+#' @param plot.scale plot scale - how to rescale spawners (e.g. thousands, millions, etc.)
+#' @param scale.label plot scale label
+#' @param rec.label y-axis label - default 'Adult Recruits'
+#' @param spn.label x-axis label - default 'Spawners'
+#' @param file.name filename for output
+#' @export
+
+plot_predvsobs <- function(post.obj = NULL,
+                          main.title = "Test Stock - Predicted vs. Observed",
+                          #plot.log = FALSE, not yet implemented
+                          plot.scale = 10^6,
+                          scale.label = "(Millions)",
+                          rec.label = "Adult Recruits",
+                          spn.label = "Spawners",
+                          file.name = "Plot_FittedvsObs.png",
+){
+  
+  png(filename = file.name,
+      width = 480*4, height = 480*4.5, 
+      units = "px", pointsize = 14*3.3, bg = "white",  res = NA)
+  
+  layout(matrix(c(1,2),ncol=1),heights=c(1,1.8))
+  par(mai=c(3.1,3.1,0.8,0.6))
+  
+  rec.max <- max(post.obj$quants.obs$R,post.obj$quants.obs$p90,na.rm=TRUE)/plot.scale
+  spn.max <- max(post.obj$quants.obs$S,post.obj$quants.curve$S, na.rm=TRUE)/plot.scale
+  
+  if(post.obj$model_type == "TVP"){main.title <- paste0(main.title," (Last2 Gen)")}
+  
+  
+  plot(post.obj$quants.obs$by,post.obj$quants.obs$R/plot.scale,ylim=c(0,rec.max),
+       xlab="Brood Year",ylab=paste(rec.label,scale.label),las=1,
+       pch=21,col="darkblue",type="p",bty="n", main = main.title )
+  
+  polygon(c(post.obj$quants.obs$by,rev(post.obj$quants.obs$by)),
+          c(post.obj$quants.obs$p75/plot.scale, rev(post.obj$quants.obs$p25/plot.scale)  ),
+          col="tomato",border="tomato")
+  lines(post.obj$quants.obs$by,post.obj$quants.obs$p90/plot.scale,col="red",lty=2)
+  lines(post.obj$quants.obs$by,post.obj$quants.obs$p10/plot.scale,col="red",lty=2)
+  lines(post.obj$quants.obs$by,post.obj$quants.obs$p50/plot.scale,col="red",lwd=3)
+  
+  # obs points color fade
+  # this will have different shading sequence for each stock depending on number of years
+  n.obs <- length(min(post.obj$quants.obs$by):max(post.obj$quants.obs$by))
+  #bg.fade <- c(rep(0,5),seq(0,1, length.out=n.obs-5 ))
+  bg.fade <- seq(0.025,1, length.out=n.obs )
+  bg.col <- rgb(0,0,1,bg.fade)
+  points(post.obj$quants.obs$by,post.obj$quants.obs$R/plot.scale,pch=21,col="darkblue",
+         bg = "white")
+  points(post.obj$quants.obs$by,post.obj$quants.obs$R/plot.scale,pch=21,col="darkblue",
+         bg = bg.col)
+  
+  
+  
+  
+  plot(post.obj$quants.obs$S/plot.scale,post.obj$quants.obs$R/plot.scale,
+       ylim=c(0,rec.max),xlim=c(0,spn.max),
+       xlab=paste(spn.label,scale.label),ylab=paste(rec.label,scale.label),las=1,
+       pch=21,col="darkblue",type="p",bty="n",cex=1.3)
+  
+  
+  polygon(c(post.obj$quants.curve$Spn/plot.scale,rev(post.obj$quants.curve$Spn/plot.scale)),
+          c(post.obj$quants.curve$p75/plot.scale, rev(post.obj$quants.curve$p25/plot.scale)  ),
+          col="tomato",border="tomato")
+  lines(post.obj$quants.curve$Spn/plot.scale,post.obj$quants.curve$p90/plot.scale,col="red",lty=2)
+  lines(post.obj$quants.curve$Spn/plot.scale,post.obj$quants.curve$p10/plot.scale,col="red",lty=2)
+  lines(post.obj$quants.curve$Spn/plot.scale,post.obj$quants.curve$p50/plot.scale,col="red",lwd=3)
+  
+  
+  points(post.obj$quants.obs$S/plot.scale,post.obj$quants.obs$R/plot.scale,pch=21,col="darkblue",bg = "white",cex=1.3)
+  points(post.obj$quants.obs$S/plot.scale,post.obj$quants.obs$R/plot.scale,pch=21,col="darkblue",
+         bg = bg.col,cex=1.3)
+  
+  
+  text(post.obj$quants.obs$S/plot.scale,post.obj$quants.obs$R/plot.scale,
+       labels =  post.obj$quants.obs$by,col="darkgrey",cex=0.8,adj=-0.2, xpd=NA)
+  
+  
+  dev.off()
+  
+  
+  
+  
+} # end plot_predvsobs 
+
+
+
+#########################################################
+
+plot_posteriors <- function(post.obj = NULL,
+                            main.title = "Test Stock - Posteriors",
+                            plot.scale = 10^6,
+                            scale.label = "(Millions)",
+                            file.name = "Plot_Posteriors.png",
+                            trim = 0  # proportion of distr to trim at upper tail for abd variables
+                            #(e.g., trim = 0.05 excludes largest 5% of samples)
+){
+  
+  png(filename = file.name,
+      width = 480*4, height = 480*5, 
+      units = "px", pointsize = 14*4, bg = "white",  res = NA)
+  
+  par(mfrow = c(3,2))
+  par(mai=c(3.1,3.1,4,0.6))
+  
+  
+  vals.plot <- post.obj$posteriors$log_a
+  label.plot <- paste("log_a")
+  hist(vals.plot,breaks=40,main=label.plot,
+       axes=FALSE,xlab="",ylab="",border="lightblue",col="lightblue")
+  abline(v= mean(vals.plot),col="red" );axis(1)
+  
+  vals.plot <- post.obj$posteriors$b
+  label.plot <- paste("b")
+  hist(vals.plot,breaks=40,main=label.plot,
+       axes=FALSE,xlab="",ylab="",border="lightblue",col="lightblue")
+  abline(v= mean(vals.plot),col="red" );axis(1)
+  
+  
+  vals.plot <- post.obj$posteriors$S_gen
+  label.plot <- paste("S_gen", scale.label)
+  
+  if(trim == 0){
+    hist(vals.plot,breaks=40,main=label.plot,
+         axes=FALSE,xlab="",ylab="",border="lightblue",col="lightblue")
+    abline(v= mean(vals.plot),col="red" );axis(1)
+  }
+  
+  if(trim > 0){
+    
+    vals.plot <- vals.plot[vals.plot < quantile(vals.plot,probs=1-trim,na.rm=TRUE)]
+    
+    hist(vals.plot,breaks=40,main=paste0(label.plot," trim=",trim*100,"%"),
+         axes=FALSE,xlab="",ylab="",border="lightblue",col="lightblue")
+    abline(v= mean(vals.plot),col="red" );axis(1)
+  }
+  
+  
+  
+  vals.plot <- post.obj$posteriors$S_msy
+  label.plot <- paste("S_msy", scale.label)
+  if(trim == 0){
+    hist(vals.plot,breaks=40,main=label.plot,
+         axes=FALSE,xlab="",ylab="",border="lightblue",col="lightblue")
+    abline(v= mean(vals.plot),col="red" );axis(1)
+  }
+  
+  if(trim > 0){
+    
+    vals.plot <- vals.plot[vals.plot < quantile(vals.plot,probs=1-trim,na.rm=TRUE)]
+    
+    hist(vals.plot,breaks=40,main=paste0(label.plot," trim=",trim*100,"%"),
+         axes=FALSE,xlab="",ylab="",border="lightblue",col="lightblue")
+    abline(v= mean(vals.plot),col="red" );axis(1)
+  }
+  
+  vals.plot <- post.obj$posteriors$S_max
+  label.plot <- paste("S_max", scale.label)
+  if(trim == 0){
+    hist(vals.plot,breaks=40,main=label.plot,
+         axes=FALSE,xlab="",ylab="",border="lightblue",col="lightblue")
+    abline(v= mean(vals.plot),col="red" );axis(1)
+  }
+  
+  if(trim > 0){
+    
+    vals.plot <- vals.plot[vals.plot < quantile(vals.plot,probs=1-trim,na.rm=TRUE)]
+    
+    hist(vals.plot,breaks=40,main=paste0(label.plot," trim=",trim*100,"%"),
+         axes=FALSE,xlab="",ylab="",border="lightblue",col="lightblue")
+    abline(v= mean(vals.plot),col="red" );axis(1)
+  }
+  
+  vals.plot <- post.obj$posteriors$U_msy
+  label.plot <- paste("U_msy (Rate)")
+  hist(vals.plot,breaks=40,main=label.plot,
+       axes=FALSE,xlab="",ylab="",border="lightblue",col="lightblue")
+  abline(v= mean(vals.plot),col="red" );axis(1)
+  
+  if(post.obj$model_type == "TVP"){main.title <- paste0(main.title," (Last2 Gen)")}
+  
+  title(main=main.title,outer=TRUE,line=-2)
+  
+  dev.off()
+  
+}
+
+#################################################
+
+# TAKEN FROM SKEENA NASS PROJECT REPO
+# Building the plot fn here, will then add to RapidRicker
+
+
+
+plotJointDistr <- function(joint.in, x.label ="Var 1",y.label ="Var 2",x.lim = NULL,y.lim=NULL){
+  
+  med.x <- median(joint.in[[1]])
+  med.y <- median(joint.in[[2]])
+  
+  # colors for the contour lines
+  #library(RColorBrewer)
+  #k <- 8
+  #my.cols <- rev(brewer.pal(k, "RdYlBu"))
+  
+  par(pty="s")
+  plot(joint.in[[1]],joint.in[[2]], bty="n", xlab = x.label,ylab = y.label, las = 1,
+       pch =19,col = "lightgrey",cex=0.7,cex.axis=1.4,cex.lab = 1.4,xlim=x.lim,ylim=y.lim)
+  
+  
+  z <- kde2d(joint.in[[1]],joint.in[[2]], n=50)
+  
+  #contour(z, drawlabels=FALSE, nlevels=k, col=my.cols, add=TRUE,lwd=4)
+  contour(z, drawlabels=FALSE, nlevels=8, col="darkgrey", add=TRUE,lwd=4)
+  
+  
+  
+  x.dist <- par("usr")[2]-par("usr")[1]
+  y.dist <- par("usr")[4]-par("usr")[3]
+  
+  RapidRicker::kernel_margin(joint.in[[2]],
+                             at = par("usr")[2] - x.dist*0.15 ,width = x.dist*0.20,
+                             col = "darkgrey",dir = "v")  
+  
+  RapidRicker::kernel_margin(joint.in[[1]],
+                             at = par("usr")[4] - y.dist*0.13 ,width = y.dist*0.20,
+                             col = "darkgrey",dir = "h")  
+  
+  abline(v = med.x,col="darkblue",lty=2,lwd=2)
+  abline(h = med.y,col="darkblue",lty=2,lwd=2)
+  
+  
+  
+  RapidRicker::box_add(quantile(joint.in[[2]],probs=c(0.1,0.25,0.5,0.75,0.9)),
+                       at = par("usr")[2] - x.dist*0.15 ,width = x.dist*0.05,
+                       col = "darkblue",bg="lightgray",label="",dir = "v")
+  
+  RapidRicker::box_add(quantile(joint.in[[1]],probs=c(0.1,0.25,0.5,0.75,0.9)),
+                       at = par("usr")[4] - y.dist*0.13 ,width = y.dist*0.05,
+                       col = "darkblue",bg="lightgray",label="",dir = "h")
+  
+} #end plotJointDistr()
+
+
+plot_jointpost <- function(joint.in = NULL,
+                           x.label ="Var 1",y.label ="Var 2",x.lim = NULL,y.lim=NULL,
+                           main.title = "Test Stock - Joint Posterior",
+                           file.name = "Plot_FittedvsObs.png"
+                           
+){
+  
+  png(filename = file.name,
+      width = 480*4, height = 480*4, 
+      units = "px", pointsize = 14*3.3, bg = "white",  res = NA)
+  
+  par(mai=c(3.3,3.3,4,0.6))
+  
+  plotJointDistr(joint.in = joint.in, 
+                 x.label = x.label,
+                 y.label = y.label,
+                 x.lim = x.lim,y.lim=y.lim)
+  
+  title(main=main.title)
+  
+  dev.off()		   
+  
+}		
+
+
+##################################################
+
+plot_spnvsbm <- function(post.obj = NULL,
+                         spn.data.all = NULL,
+                         main.title = "Test Stock - Relative Abundance Benchmarks",
+                         plot.scale = 10^6,
+                         scale.label = "(Millions)",
+                         AvgGen = 4 , # yrs to use for running avg (feed in dominant age class for each stock)
+                         spn.label = "Spawners",
+                         file.name = "Plot_RelAbdBM.png"
+){
+  
+  png(filename = file.name,
+      width = 480*4.5, height = 480*3.7, 
+      units = "px", pointsize = 14*3.5, bg = "white",  res = NA)
+  
+  #layout(matrix(c(1,2),ncol=1),heights=c(1,1.8))
+  #par(mai=c(3.1,3.1,0.8,0.6))
+  
+  if(post.obj$model_type == "TVP"){main.title <- paste0(main.title," (Last2 Gen)")}
+  
+  
+  bm.df <- post.obj$quants.post %>% dplyr::filter(Variable %in% c("S_gen","S_msy","S_max")) %>%
+    dplyr::select(Variable,p10,p25,p50,p75,p90)
+  
+  sr.used <- post.obj$source_data
+  
+  spn.in <- spn.data.all
+  
+  # fill in missing yrs with NA(to get proper line gaps, and for running geomean calc)
+  full.yrs <-  min(spn.in$Year):max(spn.in$Year)
+  missing.yrs <-  setdiff(full.yrs,spn.in$Year)
+  #print(missing.yrs)
+  if(length(missing.yrs>0)){ spn.in <- left_join(data.frame(by=full.yrs),spn.in,by="Year") }
+  
+  ylim <- c(0, max(spn.in$Spn,na.rm=TRUE))  # ADD BM RANGES!!!!!!!!!!
+  #print(ylim)
+  
+  axis.scale <- 1
+  axis.scale.label <- ""
+  
+  if(ylim[2] >= 1000 & ylim[2] < 10000){ axis.scale <- 100; axis.scale.label <- "(100s)"   }
+  if(ylim[2] >= 10000 & ylim[2] < 1000000){ axis.scale <- 1000; axis.scale.label <- "(1000s)"   }
+  if(ylim[2] >= 1000000 ){ ylim[2]<- 1000000; axis.scale.label <- "(Mill)"   }
+  
+  spn.in$Spn <- spn.in$Spn/axis.scale
+  
+  y.label.use <- paste("Spn",axis.scale.label)
+  
+  x.range <- range(spn.in$Year,na.rm=TRUE)
+  x.ticks <- pretty(x.range)
+  x.ticks <- x.ticks[x.ticks >=min(x.range) & x.ticks <= max(x.range)]
+  
+  
+  plot(1:5,1:5,type="n",bty="n",ylim = ylim/axis.scale ,xlim = x.range+c(0,30) ,  las=1,
+       xlab="", ylab = y.label.use,axes=FALSE, main=main.title, col.main = "darkblue")
+  axis(2,las=1)
+  axis(1,x.ticks)
+  
+  # calculate running geomean
+  gm.in <- log(spn.in$Spn)
+  
+  
+  gm.out <- exp(stats::filter(gm.in,rep(1/AvgGen,times =AvgGen),sides = 1))# 
+  gm.out
+  
+  
+  
+  sgen.vec <- bm.df %>% dplyr::filter(Variable == "S_gen") %>% select(-Variable) %>% unlist()
+  smax.vec <- bm.df %>% dplyr::filter(Variable == "S_max") %>% select(-Variable) %>% unlist()
+  smsy.vec <- bm.df %>% dplyr::filter(Variable == "S_msy") %>% select(-Variable) %>% unlist()
+  #print(sgen.vec)
+  
+  abline(h=sgen.vec[3]/axis.scale,col="red",lwd=3)
+  abline(h=smsy.vec[3]*0.8/axis.scale,col="green",lwd=3,lty=2)
+  
+  # LOWER BM
+  
+  offset.use <- 3
+  box_add(sgen.vec/axis.scale,at=x.range[2]+offset.use,width=2,col="darkblue",bg="lightblue",label="")
+  box_add(smax.vec*0.2/axis.scale,at=x.range[2]+offset.use+4,width=2,col="darkblue",bg="lightblue",label="")
+  axis(1,at=x.range[2]+c(offset.use,offset.use+4),labels=c("Sgen","20%Smax"),las=2)
+  
+  
+  # UPPER bm
+  
+  offset.use <- 13
+  box_add(smsy.vec*0.8/axis.scale,at=x.range[2]+offset.use,width=2,col="darkblue",bg="lightblue",label="")
+  box_add(smax.vec*0.4/axis.scale,at=x.range[2]+offset.use+4,width=2,col="darkblue",bg="lightblue",label="")
+  axis(1,at=x.range[2]+c(offset.use,offset.use+4),labels=c("80%Smsy","40%Smax"),las=2)
+  
+  # BIOL BM
+  offset.use <- 23
+  box_add(smsy.vec/axis.scale,at=x.range[2]+offset.use,width=2,col="darkblue",bg="lightblue",label="")
+  box_add(smax.vec/axis.scale,at=x.range[2]+offset.use+4,width=2,col="darkblue",bg="lightblue",label="")
+  axis(1,at=x.range[2]+c(offset.use,offset.use+4),labels=c("Smsy","Smax"),las=2)
+  
+  
+  lines(spn.in$Year,spn.in$Spn,type="o",col="darkblue",pch=21,bg="white",cex=0.8)
+  points(sr.used$by,sr.used$S/axis.scale,col="darkblue",pch=19,cex=0.8)
+  
+  lines(spn.in$Year,gm.out,type="l",col="red",lwd=4)
+  
+  
+  legend("topleft",legend = c("Used for SR Fit", "Not Used", paste0(AvgGen,"yr Running GeoMean")),
+         pch = c(19,21,NA), col= c("darkblue","darkblue","red"), lty=c(NA,NA,1), lwd=c(NA,NA,3),cex=0.7, bty="n" )
+  
+  
+  
+  dev.off()
+  
+  
+  
+  
+} # end plot_spnvsbm
+
+
+
