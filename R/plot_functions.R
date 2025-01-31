@@ -1273,7 +1273,7 @@ sr_plot2=function(df,mod,title,make.pdf=FALSE,path,type=c('static','rw','hmm'),p
 #' @export
 
 plot_predvsobs <- function(post.obj = NULL,
-                          main.title = "Test Stock - Predicted vs. Observed",
+                          main.title = "Stock - Predicted vs. Observed",
                           #plot.log = FALSE, not yet implemented
                           plot.scale = 10^6,
                           scale.label = "(Millions)",
@@ -1351,11 +1351,8 @@ plot_predvsobs <- function(post.obj = NULL,
 } # end plot_predvsobs 
 
 
-
-#########################################################
-
 plot_posteriors <- function(post.obj = NULL,
-                            main.title = "Test Stock - Posteriors",
+                            main.title = "Stock - Posteriors",
                             plot.scale = 10^6,
                             scale.label = "(Millions)",
                             file.name = "Plot_Posteriors.png",
@@ -1452,12 +1449,6 @@ plot_posteriors <- function(post.obj = NULL,
   
 }
 
-#################################################
-
-# TAKEN FROM SKEENA NASS PROJECT REPO
-# Building the plot fn here, will then add to RapidRicker
-
-
 
 plotJointDistr <- function(joint.in, x.label ="Var 1",y.label ="Var 2",x.lim = NULL,y.lim=NULL){
   
@@ -1532,8 +1523,6 @@ plot_jointpost <- function(joint.in = NULL,
   
 }		
 
-
-##################################################
 
 plot_spnvsbm <- function(post.obj = NULL,
                          spn.data.all = NULL,
