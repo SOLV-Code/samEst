@@ -1279,7 +1279,7 @@ plot_predvsobs <- function(post.obj = NULL,
                           scale.label = "(Millions)",
                           rec.label = "Adult Recruits",
                           spn.label = "Spawners",
-                          file.name = "Plot_FittedvsObs.png",
+                          file.name = "Plot_FittedvsObs.png"
 ){
   
   png(filename = file.name,

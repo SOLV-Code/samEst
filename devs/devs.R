@@ -12,7 +12,7 @@ devtools::load_all()
 
 #render the vignette
 devtools::build_rmd("vignettes/samEst.Rmd")
-
+usethis::use_logo("man/figures/samEst_large.png")
 
 
 
