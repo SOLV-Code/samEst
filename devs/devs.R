@@ -36,6 +36,14 @@ names(phmmb)
 names(phmm)
 
 
+
+
+#reference points
+smsyCalc(p$loga,p$beta)
+umsyCalc(p$loga)
+sgenCalcDirect(p$loga,p$beta)
+
+
 #remotes::install_git('https://github.com/Pacific-salmon-assess/samEst', force=TRUE)
 #library(samEst)
 
