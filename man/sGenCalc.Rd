@@ -4,12 +4,12 @@
 \alias{sGenCalc}
 \title{compute Sgen estimate}
 \usage{
-sGenCalc(a, b, Smsy)
+sGenCalc(loga, b, Smsy)
 }
 \arguments{
-\item{a}{alpha parameter in Ricker function: R=S\emph{exp(a-b}S)}
+\item{loga}{alpha parameter in Ricker function: R=S\emph{exp(loga-b}S)}
 
-\item{b}{beta parameter in Ricker function: R=S\emph{exp(a-b}S)}
+\item{b}{beta parameter in Ricker function: R=S\emph{exp(loga-b}S)}
 
 \item{Smsy}{estimate of Smsy based on the alpha and beta parameters above.}
 }

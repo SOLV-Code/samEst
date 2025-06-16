@@ -317,7 +317,7 @@ model{
   
   //variance terms
   sigma_tot ~ gamma(2,1); //half normal on variance (lower limit of zero)
-  F_rw ~ beta(2,4); //fraction attributed to random walk in productivity  
+  F_rw ~ beta(2,5); //fraction attributed to random walk in productivity  
  
   for(n in 1:N) R_S[n] ~ normal(log_a[ii[n]] - b*S[n], sigma); 
   
@@ -458,7 +458,7 @@ model{
   
   //variance terms
   sigma_tot ~ gamma(2,1);
-   
+  F_rw ~ beta(2,5); //fraction attributed to random walk in productivity   
  
   b_dev ~ std_normal();
  for(n in 1:N) R_S[n] ~ normal(log_a-b[ii[n]]*S[n], sigma);

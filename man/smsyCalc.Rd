@@ -5,10 +5,10 @@
 \title{compute Smsy estimate based on Scheuerell 2016. An explicit solution for
 calculating optimum spawning stock size from Ricker’s stock recruitment model}
 \usage{
-smsyCalc(a, b)
+smsyCalc(loga, b)
 }
 \arguments{
-\item{a}{alpha parameter in Ricker function: R=S\emph{exp(a-b}S)}
+\item{loga}{alpha parameter in Ricker function: R=S\emph{exp(a-b}S)}
 
 \item{b}{beta parameter in Ricker function: R=S\emph{exp(a-b}S)}
 

@@ -12,7 +12,7 @@ devtools::load_all()
 
 #render the vignette
 devtools::build_rmd("vignettes/samEst.Rmd")
-
+usethis::use_logo("man/figures/samEst_large.png")
 
 
 
@@ -34,6 +34,14 @@ names(ptvab)
 names(phmma)
 names(phmmb)
 names(phmm)
+
+
+
+
+#reference points
+smsyCalc(p$loga,p$beta)
+umsyCalc(p$loga)
+sgenCalcDirect(p$loga,p$beta)
 
 
 #remotes::install_git('https://github.com/Pacific-salmon-assess/samEst', force=TRUE)

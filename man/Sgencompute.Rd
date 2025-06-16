@@ -4,12 +4,12 @@
 \alias{Sgencompute}
 \title{compute Sgen likelihood function}
 \usage{
-Sgencompute(S, a, b, Smsy)
+Sgencompute(S, loga, b, Smsy)
 }
 \arguments{
 \item{S}{Spawner numbers set to the interval between 0 and Smsy in sGenCalc.}
 
-\item{a}{alpha parameter in Ricker function: R=S\emph{exp(a-b}S)}
+\item{loga}{alpha parameter in Ricker function: R=S\emph{exp(a-b}S)}
 
 \item{b}{beta parameter in Ricker function: R=S\emph{exp(a-b}S)}
 

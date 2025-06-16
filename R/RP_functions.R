@@ -12,7 +12,7 @@
 #' compute Sgen likelihood function
 #'
 #' @param S Spawner numbers set to the interval between 0 and Smsy in sGenCalc.
-#' @param a alpha parameter in Ricker function: R=S*exp(a-b*S)
+#' @param loga alpha parameter in Ricker function: R=S*exp(a-b*S)
 #' @param b beta parameter in Ricker function: R=S*exp(a-b*S)
 #' @param Smsy estimate of Smsy based on the alpha and beta parameters above.
 #' 
@@ -22,10 +22,10 @@
 #' 
 #' 
 #' 
-Sgencompute <- function(S, a,b, Smsy ) {
+Sgencompute <- function(S, loga, b, Smsy ) {
 	#modified from samsim sGenOptimSmsyum
   
-  prt <- S * exp(a - b * S)
+  prt <- S * exp(loga - b * S)
   epsilon <- log(Smsy) - log(prt)
   nLogLike <- sum(dnorm(epsilon, 0, 0.01, log = T))
   return(list(nSS = sum(nLogLike)))
@@ -38,8 +38,8 @@ Sgencompute <- function(S, a,b, Smsy ) {
 
 #' compute Sgen estimate
 #'
-#' @param a alpha parameter in Ricker function: R=S*exp(a-b*S)
-#' @param b beta parameter in Ricker function: R=S*exp(a-b*S)
+#' @param loga alpha parameter in Ricker function: R=S*exp(loga-b*S)
+#' @param b beta parameter in Ricker function: R=S*exp(loga-b*S)
 #' @param Smsy estimate of Smsy based on the alpha and beta parameters above.
 #' 
 #' @export
@@ -51,12 +51,12 @@ Sgencompute <- function(S, a,b, Smsy ) {
 #' sgen<-sGenCalc(m1$alpha,m1$beta,m1$Smsy)
 #' 
 #' 
-sGenCalc <- function(a,b, Smsy) {
+sGenCalc <- function(loga,b, Smsy) {
   #gives the min Ricker log-likelihood
   if(a>0){
-    fnSGen <- function(S, a, b, Smsy) -1.0 * Sgencompute(S, a, b, Smsy)$nSS
-    fit <- optimize(f = fnSGen, interval = c(0, ((a / b) * (0.5 - 0.07 * a))),
-                 a=a,b=b, Smsy = Smsy)
+    fnSGen <- function(S, loga, b, Smsy) -1.0 * Sgencompute(S, loga, b, Smsy)$nSS
+    fit <- optimize(f = fnSGen, interval = c(0, ((loga / b) * (0.5 - 0.07 * loga))),
+                 loga=loga,b=b, Smsy = Smsy)
   }else{
     fit <-list(minimum=NA)
   }
@@ -72,7 +72,7 @@ sGenCalc <- function(a,b, Smsy) {
 #' compute Smsy estimate based on Scheuerell 2016. An explicit solution for 
 #' calculating optimum spawning stock size from Ricker’s stock recruitment model
 #'
-#' @param a alpha parameter in Ricker function: R=S*exp(a-b*S)
+#' @param loga alpha parameter in Ricker function: R=S*exp(a-b*S)
 #' @param b beta parameter in Ricker function: R=S*exp(a-b*S)
 #' @param Smsy estimate of Smsy based on the alpha and beta parameters above.
 #' 
@@ -82,9 +82,9 @@ sGenCalc <- function(a,b, Smsy) {
 #' 
 #' @export
 #' 
-smsyCalc <- function(a,b) {
+smsyCalc <- function(loga,b) {
   #gives the min Ricker log-likelihood
-  Smsy <- (1 - gsl::lambert_W0(exp(1 - a))) /b
+  Smsy <- (1 - gsl::lambert_W0(exp(1 - loga))) /b
 
   return(Smsy)
 }
@@ -94,8 +94,8 @@ smsyCalc <- function(a,b) {
 #' compute Umsy estimate based on Scheuerell 2016. An explicit solution for 
 #' calculating optimum spawning stock size from Ricker’s stock recruitment model
 #'
-#' @param a alpha parameter in Ricker function: R=S*exp(a-b*S)
-#' @param b beta parameter in Ricker function: R=S*exp(a-b*S)
+#' @param loga alpha parameter in Ricker function: R=S*exp(loga-b*S)
+#' @param b beta parameter in Ricker function: R=S*exp(loga-b*S)
 #' @param Smsy estimate of Smsy based on the alpha and beta parameters above.
 #' 
 #' @importFrom gsl lambert_W0
@@ -104,9 +104,9 @@ smsyCalc <- function(a,b) {
 #' 
 #' @export
 #' 
-umsyCalc <- function(a) {
+umsyCalc <- function(loga) {
   #gives the min Ricker log-likelihood
-  umsy <- (1 - gsl::lambert_W0(exp(1 - a)))
+  umsy <- (1 - gsl::lambert_W0(exp(1 - loga)))
 
   return(umsy)
 }
@@ -210,3 +210,26 @@ stan_regime_rps<- function(m,par=c('a','b','both'),lambertW=FALSE){
 }
 
 
+
+
+
+
+#' compute Sgen estimate based on the lambertW function similarly to
+#' the approach in Scheuerell 2016. An explicit solution for 
+#' calculating optimum spawning stock size from Ricker’s stock recruitment model
+#'
+#' @param loga alpha parameter in Ricker function: R=S*exp(loga-b*S)
+#' @param b beta parameter in Ricker function: R=S*exp(loga-b*S)
+#' 
+#' @importFrom gsl lambert_W0
+#' 
+#' @returns DirectSgen estimate 
+#' 
+#' @export
+#' 
+sgenCalcDirect <- function(loga, b){
+ sMSY <- ( 1 - gsl::lambert_W0 (exp ( 1 - loga) ) ) / b
+ a <- exp(loga)
+ 
+ return(-1/b*gsl::lambert_W0(-b*sMSY/a))
+}
