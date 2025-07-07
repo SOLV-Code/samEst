@@ -1102,9 +1102,9 @@ array[K] vector[N] beta;
 array[K] vector[N] gamma;
 vector[N] y_rep;
 
-vector[K] S_max;
+vector[K] Smax;
 real Umsy;
-vector[K] S_msy;
+vector[K] Smsy;
 
 real prior_Smax=lognormal_rng(smax_pr,smax_pr_sig);
 
@@ -1174,8 +1174,8 @@ for(n in 1:N) y_rep[n]=normal_rng(log_a - S[n]*b[zstar[n]], sigma);
 U_msy= 1-lambert_w0(exp(1-log_a));
 
 for(k in 1:K){
-S_max[k] = 1/b[k];
-S_msy[k] = (1-lambert_w0(exp(1-log_a)))/b[k];
+Smax[k] = 1/b[k];
+Smsy[k] = (1-lambert_w0(exp(1-log_a)))/b[k];
 }
 
 }
@@ -1421,9 +1421,9 @@ array[K] vector[N] beta; //backward state probabilities
 array[K] vector[N] gamma; //forward-backward state probabilities
 
 //reference points
-vector[K] S_max;
-vector[K] U_msy;
-vector[K] S_msy;
+vector[K] Smax;
+vector[K] Umsy;
+vector[K] Smsy;
 
 real prior_Smax=lognormal_rng(smax_pr,smax_pr_sig);
 
@@ -1492,9 +1492,9 @@ zstar[N - t] = bpointer[N - t + 1, zstar[N - t + 1]];
 for(n in 1:N) y_rep[n]=normal_rng(log_a[zstar[n]] - S[n]*b[zstar[n]], sigma);
 
 for(k in 1:K){
-S_max[k] = 1/b[k];
-U_msy[k] = 1-lambert_w0(exp(1-log_a[k]));
-S_msy[k] = (1-lambert_w0(exp(1-log_a[k])))/b[k];
+Smax[k] = 1/b[k];
+Umsy[k] = 1-lambert_w0(exp(1-log_a[k]));
+Smsy[k] = (1-lambert_w0(exp(1-log_a[k])))/b[k];
 }
 
 }
@@ -2049,9 +2049,9 @@ model{
 }
  generated quantities{
      vector[N] log_lik;
-     vector[L] S_max;
+     vector[L] Smax;
     
-    for(l in 1:L) S_max[l] = 1/b[l];
+    for(l in 1:L) Smax[l] = 1/b[l];
     for(n in 1:N) log_lik[n] = normal_lpdf(R_S[n]|log_a - b[ii[n]]*S[n], sigma);
  
  }  
@@ -2175,9 +2175,9 @@ model{
 }
  generated quantities{
      vector[N] log_lik;
-     vector[L] S_max;
+     vector[L] Smax;
     
-    for(l in 1:L) S_max[l] = 1/b[l]; 
+    for(l in 1:L) Smax[l] = 1/b[l]; 
    for(n in 1:N) log_lik[n] = normal_lpdf(R_S[n]|log_a[ii[n]] - S[n]*b[ii[n]], sigma);
    
     }
@@ -2396,7 +2396,7 @@ zstar[N - t] = bpointer[N - t + 1, zstar[N - t + 1]];
 
 for(n in 1:N)log_lik[n] = normal_lpdf(R_S[n]|log_a[zstar[n]] - S[n]*b, sigma);
    
-S_max = 1/b;
+Smax = 1/b;
 
 }
 "
@@ -2625,7 +2625,7 @@ array[K] vector[N] loggamma;
 array[K] vector[N] beta;
 array[K] vector[N] gamma;
 
-vector[K] S_max;
+vector[K] Smax;
 
 { // Forward algortihm
 for (t in 1:N)
@@ -2692,7 +2692,7 @@ for(n in 1:N)log_lik[n] = normal_lpdf(R_S[n]|log_a - S[n]*b[zstar[n]], sigma);
 
 
 for(k in 1:K){
-S_max[k] = 1/b[k];
+Smax[k] = 1/b[k];
 }
 
 }
@@ -2929,7 +2929,7 @@ array[K] vector[N] beta; //backward state probabilities
 array[K] vector[N] gamma; //forward-backward state probabilities
 
 //reference points
-vector[K] S_max;
+vector[K] Smax;
 
 { // Forward algortihm
 for (t in 1:N)
@@ -2996,7 +2996,7 @@ zstar[N - t] = bpointer[N - t + 1, zstar[N - t + 1]];
 for(n in 1:N) log_lik[n] = normal_lpdf(R_S[n]|log_a[zstar[n]] - S[n]*b[zstar[n]], sigma);
 
 for(k in 1:K){
-S_max[k] = 1/b[k];
+Smax[k] = 1/b[k];
 }
 
 }

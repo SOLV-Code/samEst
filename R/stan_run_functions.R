@@ -1,6 +1,6 @@
 #' Simple Ricker model estimated with stan
 #'
-#' @param data A list or data frame containing Spawners (S) and log(Recruits/Spawners) (logRS) time series.
+#' @param data A list or data frame containing complete vectors for: brood year (by), Spawners (s) and log(Recruits/Spawners) (logRS) time series.
 #' @param AC Logical. Are residuals autocorrelated? Default is FALSE
 #' @param smax_priors Options for custom Smax (capacity) priors - 2 values for the mean and the scale (variance). Defaults to mean = half maximum observed spawners, scale = max. observed spawners (from data) 
 #' @param control output of stancontrol

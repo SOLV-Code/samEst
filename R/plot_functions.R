@@ -26,7 +26,7 @@ sr_plot=function(df,mod,title,make.pdf=FALSE,path,type=c('static','rw','hmm'),pa
     }
     plot=ggplot2::ggplot(df, aes(S, R)) +
       geom_line(data=pred_df,aes(x=x_new,y=pred),linewidth=1.3)+
-      geom_point(aes(colour = by),size=2.5) +
+      geom_point(aes(colour = by),size=3.5) +
       scale_colour_viridis_c(name='Year')+
       ggtitle(title)+
       xlab("Spawners") + 
@@ -692,10 +692,10 @@ post_check<- function(fit,data,pdf=FALSE,path=NULL,filename=NULL){
   axis(1, log10(ticksat), col="black", labels=NA,
        tcl=-0.2, lwd=0, lwd.ticks=1)
   
-  smaxs=rstan::extract(fit$fit,pars=c('prior_Smax','S_max'))
+  smaxs=rstan::extract(fit$fit,pars=c('prior_Smax','Smax'))
   hist(c(smaxs$prior_Smax/1e3),breaks=30,freq=T,xlim=c(0,max(c(smaxs[[1]]/1e3,smaxs[[2]]/1e3))),xlab='spawners (1000s)',col=adjustcolor('darkorange',alpha.f=0.5),border='white',main='')
   par(new=T)
-  hist(c(smaxs$S_max/1e3),breaks=30,freq=T,xlim=c(0,max(c(smaxs[[1]]/1e3,smaxs[[2]]/1e3))),xlab='spawners (1000s)',col=adjustcolor('navy',alpha.f=0.5),border='white',main='',yaxt='n')
+  hist(c(smaxs$Smax/1e3),breaks=30,freq=T,xlim=c(0,max(c(smaxs[[1]]/1e3,smaxs[[2]]/1e3))),xlab='spawners (1000s)',col=adjustcolor('navy',alpha.f=0.5),border='white',main='',yaxt='n')
   text('Smax prior',x=par('usr')[2]-((par('usr')[2]-par('usr')[1])*0.2),y=par('usr')[4]-((par('usr')[4]-par('usr')[3])*0.1),col='darkorange')
   text('Smax posterior',x=par('usr')[2]-((par('usr')[2]-par('usr')[1])*0.2),y=par('usr')[4]-((par('usr')[4]-par('usr')[3])*0.2),col='navy')
   
@@ -706,7 +706,7 @@ post_check<- function(fit,data,pdf=FALSE,path=NULL,filename=NULL){
   par(new=T)
   hist(c(smaxs$prior_Smax/1e3),breaks=30,freq=T,xlim=c(0,max(data$S/1e3)*1.2),ylim=c(0,1e3),xlab='',col=adjustcolor('darkorange',alpha.f=0.5),border='white',main='',xaxt='n',yaxt='n',ylab='')
   par(new=T)
-  hist(c(smaxs$S_max/1e3),breaks=30,freq=T,xlim=c(0,max(data$S/1e3)*1.2),ylim=c(0,1e3),xlab='',col=adjustcolor('navy',alpha.f=0.5),border='white',main='',yaxt='n',xaxt='n',ylab='')
+  hist(c(smaxs$Smax/1e3),breaks=30,freq=T,xlim=c(0,max(data$S/1e3)*1.2),ylim=c(0,1e3),xlab='',col=adjustcolor('navy',alpha.f=0.5),border='white',main='',yaxt='n',xaxt='n',ylab='')
   text(y=c(data$R/1e3),x=c(data$S/1e3),data$by,col='darkred',cex=0.8,font=2) 
   if(pdf==T){
     dev.off()
