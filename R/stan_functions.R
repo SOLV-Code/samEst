@@ -12,7 +12,7 @@
 #' @export
 #' @examples
 #' m2=sr_mod(type='static',ac = TRUE,par='n',lfo=T)
-sr_mod<- function(type=c('static','rw','hmm'),ac=FALSE,par=c('n','a','b','both'),lfo=FALSE, modelcode=FALSE){
+sr_mod<- function(type=c('static','rw','hmm'),ac=FALSE,par=c('n','a','b','both'),lfo=FALSE, modelcode=FALSE,smax_di){
   rstan::rstan_options(auto_write = TRUE)
   options(mc.cores = parallel::detectCores())
   
@@ -25,13 +25,14 @@ sr_mod<- function(type=c('static','rw','hmm'),ac=FALSE,par=c('n','a','b','both')
   vector[N] S; //spawners in time T
   real pSmax_mean; //prior mean for Smax
   real pSmax_sig; //prior variance for Smax
+  real smax_dist; //flag for distribution to sample smax - options: 1) normal, 2) lognormal, 3) cauchy
 }
 transformed data{
-real smax_pr;
-real smax_pr_sig;
+real logsmax_pr;
+real logsmax_pr_sig;
 
-smax_pr_sig=sqrt(log(1+((pSmax_sig)*(pSmax_sig))/((pSmax_mean)*(pSmax_mean)))); //this converts sigma on the untransformed scale to a log scale
-smax_pr=log(pSmax_mean)-0.5*smax_pr_sig*smax_pr_sig; //convert smax prior to per capita slope - transform to log scale with bias correction
+logsmax_pr_sig=sqrt(log(1+((pSmax_sig)*(pSmax_sig))/((pSmax_mean)*(pSmax_mean)))); //this converts sigma on the untransformed scale to a log scale
+logsmax_pr=log(pSmax_mean)-0.5*logsmax_pr_sig^2; //convert smax prior to per capita slope - transform to log scale with bias correction
 }
 parameters {
   real log_a;// initial productivity (on log scale)
@@ -52,7 +53,16 @@ transformed parameters{
 model{
   //priors
   log_a ~ normal(1.5,2.5); //intrinsic productivity - wide prior
-  Smax ~ lognormal(smax_pr,smax_pr_sig); //per capita capacity parameter - informed by spawner counts
+
+  if(smax_dist==1){
+  Smax ~ normal(pSmax_mean,pSmax_sig); //spawners at max. recruitment - informative prior, normal distribution
+  }
+  if(smax_dist==2){
+  Smax ~ lognormal(logsmax_pr,logsmax_pr_sig); //spawners at max. recruitment - informative prior, lognormal distribution
+  }
+  if(smax_dist==3){
+  Smax ~ cauchy(pSmax_mean,pSmax_sig); //spawners at max. recruitment - informative prior, cauchy distribution
+  }
   
   //variance terms
   sigma ~ gamma(2,1); //half normal on variance (lower limit of zero)
@@ -62,8 +72,16 @@ model{
 generated quantities{
  real Umsy;
  real Smsy;
- real prior_Smax=lognormal_rng(smax_pr,smax_pr_sig);
- 
+ real prior_Smax;
+ if(smax_dist==1){
+ prior_Smax=normal_rng(pSmax_mean,pSmax_sig);
+ }
+ if(smax_dist==2){
+ prior_Smax=lognormal_rng(logsmax_pr,logsmax_pr_sig);
+ }
+ if(smax_dist==3){
+ prior_Smax=cauchy_rng(pSmax_mean,pSmax_sig);
+ }
  vector[N] y_rep;
  
 Umsy = 1-lambert_w0(exp(1-log_a));
@@ -79,14 +97,14 @@ for(n in 1:N) y_rep[n]=normal_rng(mu[n],sigma);
      vector[N] S; //spawners in time T   real y_oos; //log(recruits per spawner)
       real x_oos; //spawners in time T
       real pSmax_mean; //prior mean for Smax
-     real pSmax_sig; //prior variance for Smax
+ real smax_dist; //flag for distribution to sample smax - options: 1) normal, 2) lognormal, 3) cauchy
 }
 transformed data{
-real smax_pr;
-real smax_pr_sig;
+real logsmax_pr;
+real logsmax_pr_sig;
 
-smax_pr_sig=sqrt(log(1+((pSmax_sig)*(pSmax_sig))/((pSmax_mean)*(pSmax_mean)))); //this converts sigma on the untransformed scale to a log scale
-smax_pr=log(pSmax_mean)-0.5*smax_pr_sig*smax_pr_sig; //convert smax prior to per capita slope - transform to log scale with bias correction
+logsmax_pr_sig=sqrt(log(1+((pSmax_sig)*(pSmax_sig))/((pSmax_mean)*(pSmax_mean)))); //this converts sigma on the untransformed scale to a log scale
+logsmax_pr=log(pSmax_mean)-0.5*logsmax_pr_sig^2; //convert smax prior to per capita slope - transform to log scale with bias correction
 }
     parameters {
       real log_a;// initial productivity (on log scale)
@@ -106,8 +124,16 @@ smax_pr=log(pSmax_mean)-0.5*smax_pr_sig*smax_pr_sig; //convert smax prior to per
     }
     model{
       log_a ~ normal(1.5,2.5); //intrinsic productivity - wide prior
-      Smax ~ lognormal(smax_pr,smax_pr_sig); //informative prior based on max S
- 
+      if(smax_dist==1){
+  Smax ~ normal(pSmax_mean,pSmax_sig); //spawners at max. recruitment - informative prior, normal distribution
+  }
+  if(smax_dist==2){
+  Smax ~ lognormal(logsmax_pr,logsmax_pr_sig); //spawners at max. recruitment - informative prior, lognormal distribution
+  }
+  if(smax_dist==3){
+  Smax ~ cauchy(pSmax_mean,pSmax_sig); //spawners at max. recruitment - informative prior, cauchy distribution
+  }
+  
       //variance terms
       
        sigma ~ gamma(2,1); //half normal on variance (lower limit of zero)  
@@ -132,13 +158,14 @@ smax_pr=log(pSmax_mean)-0.5*smax_pr_sig*smax_pr_sig; //convert smax prior to per
   vector[N] S; //spawners in time T
   real pSmax_mean; //prior mean for Smax
   real pSmax_sig; //prior variance for Smax
+  real smax_dist; //flag for distribution to sample smax - options: 1) normal, 2) lognormal, 3) cauchy
 }
 transformed data{
-real smax_pr;
-real smax_pr_sig;
+real logsmax_pr;
+real logsmax_pr_sig;
 
-smax_pr_sig=sqrt(log(1+((pSmax_sig)*(pSmax_sig))/((pSmax_mean)*(pSmax_mean)))); //this converts sigma on the untransformed scale to a log scale
-smax_pr=log(pSmax_mean)-0.5*smax_pr_sig*smax_pr_sig; //convert smax prior to per capita slope - transform to log scale with bias correction
+logsmax_pr_sig=sqrt(log(1+((pSmax_sig)*(pSmax_sig))/((pSmax_mean)*(pSmax_mean)))); //this converts sigma on the untransformed scale to a log scale
+logsmax_pr=log(pSmax_mean)-0.5*logsmax_pr_sig^2; //convert smax prior to per capita slope - transform to log scale with bias correction
 }
 parameters{
   real log_a;// initial productivity (on log scale)
@@ -167,13 +194,23 @@ transformed parameters{
 }
 model{
   //priors
+  
+  //alpha
   log_a ~ normal(1.5,2.5); //intrinsic productivity - wide prior
-  Smax ~ lognormal(smax_pr,smax_pr_sig); //informative prior based on max S- wide prior
-      
+  
+  //Smax
+  if(smax_dist==1){
+  Smax ~ normal(pSmax_mean,pSmax_sig); //spawners at max. recruitment - informative prior, normal distribution
+  }
+  if(smax_dist==2){
+  Smax ~ lognormal(logsmax_pr,logsmax_pr_sig); //spawners at max. recruitment - informative prior, lognormal distribution
+  }
+  if(smax_dist==3){
+  Smax ~ cauchy(pSmax_mean,pSmax_sig); //spawners at max. recruitment - informative prior, cauchy distribution
+  }    
   //variance terms
   sigma ~ gamma(2,1); //half normal on variance (lower limit of zero)
    
-  
   //autocorrelation term
   rho ~ uniform(-1,1);
   
@@ -184,7 +221,16 @@ model{
 generated quantities{
   real Umsy;
   real Smsy;
-  real prior_Smax=lognormal_rng(smax_pr,smax_pr_sig);
+  real prior_Smax;
+ if(smax_dist==1){
+ prior_Smax=normal_rng(pSmax_mean,pSmax_sig);
+ }
+ if(smax_dist==2){
+ prior_Smax=lognormal_rng(logsmax_pr,logsmax_pr_sig);
+ }
+ if(smax_dist==3){
+ prior_Smax=cauchy_rng(pSmax_mean,pSmax_sig);
+ }
 
   vector[N] y_rep;
   for(n in 1:N) y_rep[n]=normal_rng(mu[n],sigma);
@@ -205,15 +251,14 @@ if(lfo==TRUE){
   vector[N] S; //spawners in time T
   real y_oos; //log(recruits per spawner)
   real x_oos; //spawners in time T
- real pSmax_mean; //prior mean for Smax
-  real pSmax_sig; //prior variance for Smax
+ real smax_dist; //flag for distribution to sample smax - options: 1) normal, 2) lognormal, 3) cauchy
 }
 transformed data{
-real smax_pr;
-real smax_pr_sig;
+real logsmax_pr;
+real logsmax_pr_sig;
 
-smax_pr_sig=sqrt(log(1+((pSmax_sig)*(pSmax_sig))/((pSmax_mean)*(pSmax_mean)))); //this converts sigma on the untransformed scale to a log scale
-smax_pr=log(pSmax_mean)-0.5*smax_pr_sig*smax_pr_sig; //convert smax prior to per capita slope - transform to log scale with bias correction
+logsmax_pr_sig=sqrt(log(1+((pSmax_sig)*(pSmax_sig))/((pSmax_mean)*(pSmax_mean)))); //this converts sigma on the untransformed scale to a log scale
+logsmax_pr=log(pSmax_mean)-0.5*logsmax_pr_sig^2; //convert smax prior to per capita slope - transform to log scale with bias correction
 }
 parameters{
   real log_a;// initial productivity (on log scale)
@@ -243,8 +288,16 @@ sigma_AR = sigma*sqrt(1-rho^2);
 model{
   //priors
   log_a ~ normal(1.5,2.5); //intrinsic productivity - wide prior
-  Smax ~ lognormal(smax_pr,smax_pr_sig); //informative prior based on max S- informative
-       
+  //Smax
+  if(smax_dist==1){
+  Smax ~ normal(pSmax_mean,pSmax_sig); //spawners at max. recruitment - informative prior, normal distribution
+  }
+  if(smax_dist==2){
+  Smax ~ lognormal(logsmax_pr,logsmax_pr_sig); //spawners at max. recruitment - informative prior, lognormal distribution
+  }
+  if(smax_dist==3){
+  Smax ~ cauchy(pSmax_mean,pSmax_sig); //spawners at max. recruitment - informative prior, cauchy distribution
+  }      
   //variance terms
   sigma ~ gamma(2,1); //half normal on variance (lower limit of zero)
   
@@ -274,13 +327,14 @@ if(type=='rw'&par=='a'){
   vector[N] S; //spawners in time T
   real pSmax_mean; //prior mean for Smax
   real pSmax_sig; //prior variance for Smax
+  real smax_dist; //flag for distribution to sample smax - options: 1) normal, 2) lognormal, 3) cauchy
 }
 transformed data{
-real smax_pr;
-real smax_pr_sig;
+real logsmax_pr;
+real logsmax_pr_sig;
 
-smax_pr_sig=sqrt(log(1+((pSmax_sig)*(pSmax_sig))/((pSmax_mean)*(pSmax_mean)))); //this converts sigma on the untransformed scale to a log scale
-smax_pr=log(pSmax_mean)-0.5*smax_pr_sig*smax_pr_sig; //convert smax prior to per capita slope - transform to log scale with bias correction
+logsmax_pr_sig=sqrt(log(1+((pSmax_sig)*(pSmax_sig))/((pSmax_mean)*(pSmax_mean)))); //this converts sigma on the untransformed scale to a log scale
+logsmax_pr=log(pSmax_mean)-0.5*logsmax_pr_sig^2; //convert smax prior to per capita slope - transform to log scale with bias correction
 }
 parameters{
   real log_a0;// initial productivity (on log scale)
@@ -312,7 +366,18 @@ transformed parameters{
 model{
   //priors
   log_a0 ~ normal(1.5,2.5); //initial productivity - wide prior
-  Smax ~ lognormal(smax_pr,smax_pr_sig); //informative prior based on max S- informative
+
+ if(smax_dist==1){
+  Smax ~ normal(pSmax_mean,pSmax_sig); //spawners at max. recruitment - informative prior, normal distribution
+  }
+  if(smax_dist==2){
+  Smax ~ lognormal(logsmax_pr,logsmax_pr_sig); //spawners at max. recruitment - informative prior, lognormal distribution
+  }
+  if(smax_dist==3){
+  Smax ~ cauchy(pSmax_mean,pSmax_sig); //spawners at max. recruitment - informative prior, cauchy distribution
+  }
+
+
    a_dev ~ std_normal(); //standardized (z-scales) deviances
   
   //variance terms
@@ -325,8 +390,16 @@ model{
  generated quantities{
      vector[L] Umsy;
      vector[L] Smsy;
-     real prior_Smax=lognormal_rng(smax_pr,smax_pr_sig);
-
+      real prior_Smax;
+ if(smax_dist==1){
+ prior_Smax=normal_rng(pSmax_mean,pSmax_sig);
+ }
+ if(smax_dist==2){
+ prior_Smax=lognormal_rng(logsmax_pr,logsmax_pr_sig);
+ }
+ if(smax_dist==3){
+ prior_Smax=cauchy_rng(pSmax_mean,pSmax_sig);
+ }
     vector[N] y_rep;
     for(n in 1:N){    y_rep[n]=normal_rng(log_a[ii[n]] - b*S[n],sigma);
 }
@@ -349,13 +422,14 @@ if(lfo==TRUE){
   real x_oos; //spawners in time T
  real pSmax_mean; //prior mean for Smax
   real pSmax_sig; //prior variance for Smax
+  real smax_dist; //flag for distribution to sample smax - options: 1) normal, 2) lognormal, 3) cauchy
 }
 transformed data{
-real smax_pr;
-real smax_pr_sig;
+real logsmax_pr;
+real logsmax_pr_sig;
 
-smax_pr_sig=sqrt(log(1+((pSmax_sig)*(pSmax_sig))/((pSmax_mean)*(pSmax_mean)))); //this converts sigma on the untransformed scale to a log scale
-smax_pr=log(pSmax_mean)-0.5*smax_pr_sig*smax_pr_sig; //convert smax prior to per capita slope - transform to log scale with bias correction
+logsmax_pr_sig=sqrt(log(1+((pSmax_sig)*(pSmax_sig))/((pSmax_mean)*(pSmax_mean)))); //this converts sigma on the untransformed scale to a log scale
+logsmax_pr=log(pSmax_mean)-0.5*logsmax_pr_sig^2; //convert smax prior to per capita slope - transform to log scale with bias correction
 }
 parameters{
   real log_a0;// initial productivity (on log scale)
@@ -383,7 +457,17 @@ transformed parameters{
 model{
   //priors
   log_a0 ~ normal(1.5,2.5); //initial productivity - wide prior
-  Smax ~ lognormal(smax_pr,smax_pr_sig); //informative prior based on max S- informative
+ 
+  if(smax_dist==1){
+  Smax ~ normal(pSmax_mean,pSmax_sig); //spawners at max. recruitment - informative prior, normal distribution
+  }
+  if(smax_dist==2){
+  Smax ~ lognormal(logsmax_pr,logsmax_pr_sig); //spawners at max. recruitment - informative prior, lognormal distribution
+  }
+  if(smax_dist==3){
+  Smax ~ cauchy(pSmax_mean,pSmax_sig); //spawners at max. recruitment - informative prior, cauchy distribution
+  }
+  
     a_dev ~ std_normal(); //standardized (z-scales) deviances
   
   //variance terms
@@ -411,13 +495,14 @@ if(type=='rw'&par=='b'){
   vector[N] S; //spawners in time T
  real pSmax_mean; //prior mean for Smax
   real pSmax_sig; //prior variance for Smax
+ real smax_dist; //flag for distribution to sample smax - options: 1) normal, 2) lognormal, 3) cauchy
 }
 transformed data{
-real smax_pr;
-real smax_pr_sig;
+real logsmax_pr;
+real logsmax_pr_sig;
 
-smax_pr_sig=sqrt(log(1+((pSmax_sig)*(pSmax_sig))/((pSmax_mean)*(pSmax_mean)))); //this converts sigma on the untransformed scale to a log scale
-smax_pr=log(pSmax_mean)-0.5*smax_pr_sig*smax_pr_sig; //convert smax prior to per capita slope - transform to log scale with bias correction
+logsmax_pr_sig=sqrt(log(1+((pSmax_sig)*(pSmax_sig))/((pSmax_mean)*(pSmax_mean)))); //this converts sigma on the untransformed scale to a log scale
+logsmax_pr=log(pSmax_mean)-0.5*logsmax_pr_sig^2; //convert smax prior to per capita slope - transform to log scale with bias correction
 }
 parameters {
   real log_a;// initial productivity (on log scale) - fixed in this
@@ -454,8 +539,15 @@ transformed parameters{
 model{
   //priors
   log_a ~ normal(1.5,2.5); //productivity
-  Smax0 ~  lognormal(smax_pr,smax_pr_sig); //per capita capacity parameter - informative
-  
+  if(smax_dist==1){
+  Smax0 ~ normal(pSmax_mean,pSmax_sig); //spawners at max. recruitment - informative prior, normal distribution
+  }
+  if(smax_dist==2){
+  Smax0 ~ lognormal(logsmax_pr,logsmax_pr_sig); //spawners at max. recruitment - informative prior, lognormal distribution
+  }
+  if(smax_dist==3){
+  Smax0 ~ cauchy(pSmax_mean,pSmax_sig); //spawners at max. recruitment - informative prior, cauchy distribution
+  } 
   //variance terms
   sigma_tot ~ gamma(2,1);
   F_rw ~ beta(2,5); //fraction attributed to random walk in productivity   
@@ -466,8 +558,16 @@ model{
 generated quantities{
      real Umsy;
      vector[L] Smsy;
-     real prior_Smax=lognormal_rng(smax_pr,smax_pr_sig);
-     
+           real prior_Smax;
+ if(smax_dist==1){
+ prior_Smax=normal_rng(pSmax_mean,pSmax_sig);
+ }
+ if(smax_dist==2){
+ prior_Smax=lognormal_rng(logsmax_pr,logsmax_pr_sig);
+ }
+ if(smax_dist==3){
+ prior_Smax=cauchy_rng(pSmax_mean,pSmax_sig);
+ }
     vector[N] y_rep;
     for(n in 1:N) y_rep[n]=normal_rng(log_a - b[ii[n]]*S[n],sigma);
      
@@ -489,13 +589,14 @@ if(lfo==TRUE){
   real x_oos; //spawners in time T
  real pSmax_mean; //prior mean for Smax
   real pSmax_sig; //prior variance for Smax
+ real smax_dist; //flag for distribution to sample smax - options: 1) normal, 2) lognormal, 3) cauchy
 }
 transformed data{
-real smax_pr;
-real smax_pr_sig;
+real logsmax_pr;
+real logsmax_pr_sig;
 
-smax_pr_sig=sqrt(log(1+((pSmax_sig)*(pSmax_sig))/((pSmax_mean)*(pSmax_mean)))); //this converts sigma on the untransformed scale to a log scale
-smax_pr=log(pSmax_mean)-0.5*smax_pr_sig*smax_pr_sig; //convert smax prior to per capita slope - transform to log scale with bias correction
+logsmax_pr_sig=sqrt(log(1+((pSmax_sig)*(pSmax_sig))/((pSmax_mean)*(pSmax_mean)))); //this converts sigma on the untransformed scale to a log scale
+logsmax_pr=log(pSmax_mean)-0.5*logsmax_pr_sig^2; //convert smax prior to per capita slope - transform to log scale with bias correction
 }
 parameters {
   real log_a;// initial productivity (on log scale) - fixed in this
@@ -524,8 +625,15 @@ transformed parameters{
 model{
   //priors
   log_a ~ normal(1.5,2.5); //productivity
-  Smax0 ~ normal(smax_pr,smax_pr_sig); //initial capacity
-  
+  if(smax_dist==1){
+  Smax0 ~ normal(pSmax_mean,pSmax_sig); //spawners at max. recruitment - informative prior, normal distribution
+  }
+  if(smax_dist==2){
+  Smax0 ~ lognormal(logsmax_pr,logsmax_pr_sig); //spawners at max. recruitment - informative prior, lognormal distribution
+  }
+  if(smax_dist==3){
+  Smax0 ~ cauchy(pSmax_mean,pSmax_sig); //spawners at max. recruitment - informative prior, cauchy distribution
+  } 
   //variance terms
   sigma ~ normal(0,1); //half normal on variance (lower limit of zero)
   sigma_b ~ normal(0,smax_pr_sig); //half normal on variance (lower limit of zero)
@@ -553,13 +661,14 @@ if(type=='rw'&par=='both'){
   vector[N] S; //spawners in time T
  real pSmax_mean; //prior mean for Smax
   real pSmax_sig; //prior variance for Smax
+ real smax_dist; //flag for distribution to sample smax - options: 1) normal, 2) lognormal, 3) cauchy
 }
 transformed data{
-real smax_pr;
-real smax_pr_sig;
+real logsmax_pr;
+real logsmax_pr_sig;
 
-smax_pr_sig=sqrt(log(1+((pSmax_sig)*(pSmax_sig))/((pSmax_mean)*(pSmax_mean)))); //this converts sigma on the untransformed scale to a log scale
-smax_pr=log(pSmax_mean)-0.5*smax_pr_sig*smax_pr_sig; //convert smax prior to per capita slope - transform to log scale with bias correction
+logsmax_pr_sig=sqrt(log(1+((pSmax_sig)*(pSmax_sig))/((pSmax_mean)*(pSmax_mean)))); //this converts sigma on the untransformed scale to a log scale
+logsmax_pr=log(pSmax_mean)-0.5*logsmax_pr_sig^2; //convert smax prior to per capita slope - transform to log scale with bias correction
 }
 parameters{
   real log_a0;// initial productivity (on log scale) - fixed in this
@@ -593,8 +702,15 @@ transformed parameters{
 model{
   //priors
   log_a0 ~ normal(1.5,2.5); //initial productivity
-  Smax0 ~ normal(smax_pr,smax_pr_sig); //initial capacity
-  
+  if(smax_dist==1){
+  Smax0 ~ normal(pSmax_mean,pSmax_sig); //spawners at max. recruitment - informative prior, normal distribution
+  }
+  if(smax_dist==2){
+  Smax0 ~ lognormal(logsmax_pr,logsmax_pr_sig); //spawners at max. recruitment - informative prior, lognormal distribution
+  }
+  if(smax_dist==3){
+  Smax0 ~ cauchy(pSmax_mean,pSmax_sig); //spawners at max. recruitment - informative prior, cauchy distribution
+  }  
   //variance terms
   sigma ~ normal(0,1); //half normal on variance (lower limit of zero)
   sigma_a ~ normal(0,1); //half normal on variance (lower limit of zero)
@@ -610,8 +726,16 @@ model{
      vector[L] Umsy;
      vector[L] Smsy;
      vector[N] y_rep;
-     real prior_Smax=lognormal_rng(smax_pr,smax_pr_sig);
-     
+           real prior_Smax;
+ if(smax_dist==1){
+ prior_Smax=normal_rng(pSmax_mean,pSmax_sig);
+ }
+ if(smax_dist==2){
+ prior_Smax=lognormal_rng(logsmax_pr,logsmax_pr_sig);
+ }
+ if(smax_dist==3){
+ prior_Smax=cauchy_rng(pSmax_mean,pSmax_sig);
+ }
     for(n in 1:N) y_rep[n]=normal_rng(log_a[ii[n]] - b[ii[n]]*S[n],sigma);
 
    for(l in 1:L){
@@ -633,13 +757,14 @@ if(lfo==TRUE){
   real x_oos; //spawners in time T
  real pSmax_mean; //prior mean for Smax
   real pSmax_sig; //prior variance for Smax
+ real smax_dist; //flag for distribution to sample smax - options: 1) normal, 2) lognormal, 3) cauchy
 }
 transformed data{
-real smax_pr;
-real smax_pr_sig;
+real logsmax_pr;
+real logsmax_pr_sig;
 
-smax_pr_sig=sqrt(log(1+((pSmax_sig)*(pSmax_sig))/((pSmax_mean)*(pSmax_mean)))); //this converts sigma on the untransformed scale to a log scale
-smax_pr=log(pSmax_mean)-0.5*smax_pr_sig*smax_pr_sig; //convert smax prior to per capita slope - transform to log scale with bias correction
+logsmax_pr_sig=sqrt(log(1+((pSmax_sig)*(pSmax_sig))/((pSmax_mean)*(pSmax_mean)))); //this converts sigma on the untransformed scale to a log scale
+logsmax_pr=log(pSmax_mean)-0.5*logsmax_pr_sig^2; //convert smax prior to per capita slope - transform to log scale with bias correction
 }
 parameters {
   real log_a0;// initial productivity (on log scale) - fixed in this
@@ -724,13 +849,14 @@ data {
   matrix[K,K] alpha_dirichlet; //prior inputs for dirichlet 
   real pSmax_mean; //prior mean for Smax
   real pSmax_sig; //prior variance for Smax
+ real smax_dist; //flag for distribution to sample smax - options: 1) normal, 2) lognormal, 3) cauchy
 }
 transformed data{
-real smax_pr;
-real smax_pr_sig;
+real logsmax_pr;
+real logsmax_pr_sig;
 
-smax_pr_sig=sqrt(log(1+((pSmax_sig)*(pSmax_sig))/((pSmax_mean)*(pSmax_mean)))); //this converts sigma on the untransformed scale to a log scale
-smax_pr=log(pSmax_mean)-0.5*smax_pr_sig*smax_pr_sig; //convert smax prior to per capita slope - transform to log scale with bias correction
+logsmax_pr_sig=sqrt(log(1+((pSmax_sig)*(pSmax_sig))/((pSmax_mean)*(pSmax_mean)))); //this converts sigma on the untransformed scale to a log scale
+logsmax_pr=log(pSmax_mean)-0.5*logsmax_pr_sig^2; //convert smax prior to per capita slope - transform to log scale with bias correction
 }
 parameters {
   // Discrete state model
@@ -740,12 +866,14 @@ parameters {
   // A[i][j] = p(z_t = j | z_{t-1} = i)
   // Continuous observation model
   ordered[K] log_a; // max. productivity
-  real<lower=0> b; // rate capacity - fixed in this
+  real<lower=0> Smax; // spawners at max. recruitment
   real<lower=0> sigma; // observation standard deviations
 }
 
 transformed parameters {
   vector[K] logalpha[N];
+  real<lower=0> b; // rate capacity - fixed in this
+  b=1.0./Smax;
 
 { // Forward algorithm log p(z_t = j | y_{1:t})
   real accumulator1[K];
@@ -767,7 +895,15 @@ transformed parameters {
 model{
   for(k in 1:K) log_a[k] ~ normal(1.5,2.5);
  
-  Smax ~ lognormal(smax_pr,smax_pr_sig); //capacity
+  if(smax_dist==1){
+  Smax ~ normal(pSmax_mean,pSmax_sig); //spawners at max. recruitment - informative prior, normal distribution
+  }
+  if(smax_dist==2){
+  Smax ~ lognormal(logsmax_pr,logsmax_pr_sig); //spawners at max. recruitment - informative prior, lognormal distribution
+  }
+  if(smax_dist==3){
+  Smax ~ cauchy(pSmax_mean,pSmax_sig); //spawners at max. recruitment - informative prior, cauchy distribution
+  }
   
   sigma ~ normal(0.5,1); //half normal on variance (lower limit of zero)
   pi1~ dirichlet(rep_vector(1,K));
@@ -791,6 +927,17 @@ generated quantities {
   vector[N] y_rep;
   vector[K] Umsy;
   vector[K] Smsy;
+ real prior_Smax;
+ if(smax_dist==1){
+ prior_Smax=normal_rng(pSmax_mean,pSmax_sig);
+ }
+ if(smax_dist==2){
+ prior_Smax=lognormal_rng(logsmax_pr,logsmax_pr_sig);
+ }
+ if(smax_dist==3){
+ prior_Smax=cauchy_rng(pSmax_mean,pSmax_sig);
+ }
+ 
   
   { // Forward algortihm
   for (t in 1:N)
@@ -885,13 +1032,14 @@ data {
   real x_oos; //spawners in time T
  real pSmax_mean; //prior mean for Smax
   real pSmax_sig; //prior variance for Smax
+ real smax_dist; //flag for distribution to sample smax - options: 1) normal, 2) lognormal, 3) cauchy
 }
 transformed data{
-real smax_pr;
-real smax_pr_sig;
+real logsmax_pr;
+real logsmax_pr_sig;
 
-smax_pr_sig=sqrt(log(1+((pSmax_sig)*(pSmax_sig))/((pSmax_mean)*(pSmax_mean)))); //this converts sigma on the untransformed scale to a log scale
-smax_pr=log(pSmax_mean)-0.5*smax_pr_sig*smax_pr_sig; //convert smax prior to per capita slope - transform to log scale with bias correction
+logsmax_pr_sig=sqrt(log(1+((pSmax_sig)*(pSmax_sig))/((pSmax_mean)*(pSmax_mean)))); //this converts sigma on the untransformed scale to a log scale
+logsmax_pr=log(pSmax_mean)-0.5*logsmax_pr_sig^2; //convert smax prior to per capita slope - transform to log scale with bias correction
 }
 parameters {
 // Discrete state model
@@ -910,8 +1058,6 @@ array[K] vector[N] logalpha;
 real b = 1.0/Smax; //
 
 for(i in 1:K){pi1[i]=1/K};
-
-b=exp(log_b);
  
 { // Forward algorithm log p(z_t = j | y_{1:t})
 array[K] real accumulator1;
@@ -931,7 +1077,15 @@ logalpha[t, j] = log_sum_exp(accumulator1);
 }
 model{
 log_a ~ normal(1.5,2.5);
-log_b ~ normal(smax_pr,smax_pr_sig);
+ if(smax_dist==1){
+  Smax ~ normal(pSmax_mean,pSmax_sig); //spawners at max. recruitment - informative prior, normal distribution
+  }
+  if(smax_dist==2){
+  Smax ~ lognormal(logsmax_pr,logsmax_pr_sig); //spawners at max. recruitment - informative prior, lognormal distribution
+  }
+  if(smax_dist==3){
+  Smax ~ cauchy(pSmax_mean,pSmax_sig); //spawners at max. recruitment - informative prior, cauchy distribution
+  }
 sigma ~ normal(0,1); //half normal on variance (lower limit of zero)
 
 for(k in 1:K){
@@ -1034,13 +1188,14 @@ data {
  matrix[K,K] alpha_dirichlet; //prior inputs for dirichlet 
  real pSmax_mean; //prior mean for Smax
   real pSmax_sig; //prior variance for Smax
+ real smax_dist; //flag for distribution to sample smax - options: 1) normal, 2) lognormal, 3) cauchy
 }
 transformed data{
-real smax_pr;
-real smax_pr_sig;
+real logsmax_pr;
+real logsmax_pr_sig;
 
-smax_pr_sig=sqrt(log(1+((pSmax_sig)*(pSmax_sig))/((pSmax_mean)*(pSmax_mean)))); //this converts sigma on the untransformed scale to a log scale
-smax_pr=log(pSmax_mean)-0.5*smax_pr_sig*smax_pr_sig; //convert smax prior to per capita slope - transform to log scale with bias correction
+logsmax_pr_sig=sqrt(log(1+((pSmax_sig)*(pSmax_sig))/((pSmax_mean)*(pSmax_mean)))); //this converts sigma on the untransformed scale to a log scale
+logsmax_pr=log(pSmax_mean)-0.5*logsmax_pr_sig^2; //convert smax prior to per capita slope - transform to log scale with bias correction
 }
 parameters {
 // Discrete state model
@@ -1049,7 +1204,7 @@ array[K] simplex[K] A; // transition probabilities
 // A[i][j] = p(z_t = j | z_{t-1} = i)
 // Continuous observation model
 real<lower = 0>  log_a; // max. productivity
-ordered[K] log_b; //// rate capacity - fixed in this
+ordered[K] Smax; //// rate capacity - fixed in this
 real<lower=0> sigma; // observation standard deviations
 }
 
@@ -1061,7 +1216,7 @@ ordered[K] b;
 
   pi1=rep_vector(1.0/K,K);
 
-b=exp(log_b);
+b=1.0/Smax;
 
 { // Forward algorithm log p(z_t = j | y_{1:t})
 array[K] real accumulator;
@@ -1081,7 +1236,16 @@ logalpha[t, j] = log_sum_exp(accumulator);
 }
 model{
 log_a ~ normal(1.5,2.5);
-log_b ~ normal(smax_pr,smax_pr_sig);
+
+if(smax_dist==1){
+  Smax ~ normal(pSmax_mean,pSmax_sig); //spawners at max. recruitment - informative prior, normal distribution
+  }
+  if(smax_dist==2){
+  Smax ~ lognormal(logsmax_pr,logsmax_pr_sig); //spawners at max. recruitment - informative prior, lognormal distribution
+  }
+  if(smax_dist==3){
+  Smax ~ cauchy(pSmax_mean,pSmax_sig); //spawners at max. recruitment - informative prior, cauchy distribution
+  }
 
 sigma ~ normal(0,1); //half normal on variance (lower limit of zero)
   
@@ -1101,13 +1265,19 @@ array[K] vector[N] loggamma;
 array[K] vector[N] beta;
 array[K] vector[N] gamma;
 vector[N] y_rep;
-
-vector[K] Smax;
 real Umsy;
 vector[K] Smsy;
 
-real prior_Smax=lognormal_rng(smax_pr,smax_pr_sig);
-
+real prior_Smax;
+ if(smax_dist==1){
+ prior_Smax=normal_rng(pSmax_mean,pSmax_sig);
+ }
+ if(smax_dist==2){
+ prior_Smax=lognormal_rng(logsmax_pr,logsmax_pr_sig);
+ }
+ if(smax_dist==3){
+ prior_Smax=cauchy_rng(pSmax_mean,pSmax_sig);
+ }
 { // Forward algortihm
 for (t in 1:N)
 alpha[t] = softmax(logalpha[t]);
@@ -1174,7 +1344,6 @@ for(n in 1:N) y_rep[n]=normal_rng(log_a - S[n]*b[zstar[n]], sigma);
 U_msy= 1-lambert_w0(exp(1-log_a));
 
 for(k in 1:K){
-Smax[k] = 1/b[k];
 Smsy[k] = (1-lambert_w0(exp(1-log_a)))/b[k];
 }
 
@@ -1198,13 +1367,14 @@ data {
   real x_oos; //spawners 1-year ahead
  real pSmax_mean; //prior mean for Smax
   real pSmax_sig; //prior variance for Smax
+ real smax_dist; //flag for distribution to sample smax - options: 1) normal, 2) lognormal, 3) cauchy
 }
 transformed data{
-real smax_pr;
-real smax_pr_sig;
+real logsmax_pr;
+real logsmax_pr_sig;
 
-smax_pr_sig=sqrt(log(1+((pSmax_sig)*(pSmax_sig))/((pSmax_mean)*(pSmax_mean)))); //this converts sigma on the untransformed scale to a log scale
-smax_pr=log(pSmax_mean)-0.5*smax_pr_sig*smax_pr_sig; //convert smax prior to per capita slope - transform to log scale with bias correction
+logsmax_pr_sig=sqrt(log(1+((pSmax_sig)*(pSmax_sig))/((pSmax_mean)*(pSmax_mean)))); //this converts sigma on the untransformed scale to a log scale
+logsmax_pr=log(pSmax_mean)-0.5*logsmax_pr_sig^2; //convert smax prior to per capita slope - transform to log scale with bias correction
 }
 parameters {
 // Discrete state model
@@ -1213,18 +1383,18 @@ array[K] simplex[K] A; // transition probabilities
 // A[i][j] = p(z_t = j | z_{t-1} = i)
 // Continuous observation model
 real<lower = 0>  log_a; // max. productivity
-ordered[K] log_b; // rate capacity - fixed in this
+ordered[K] Smax; // rate capacity - fixed in this
 real<lower=0> sigma; // observation standard deviations
 }
 
 transformed parameters {
 simplex[K] pi1; // initial state probabilities
 array[K] vector[N] logalpha;
-vector[K] b;
+ordered[K] b;
 
 for(i in 1:K){pi1[i]=1/K};
 
-b=exp(log_b);
+b=1.0/Smax;
  
 { // Forward algorithm log p(z_t = j | y_{1:t})
 array[K] real accumulator;
@@ -1245,7 +1415,16 @@ logalpha[t, j] = log_sum_exp(accumulator);
 model{
 
 log_a ~ normal(1.5,2.5);
-log_b ~ normal(smax_pr,smax_pr_sig);
+
+if(smax_dist==1){
+  Smax ~ normal(pSmax_mean,pSmax_sig); //spawners at max. recruitment - informative prior, normal distribution
+  }
+  if(smax_dist==2){
+  Smax ~ lognormal(logsmax_pr,logsmax_pr_sig); //spawners at max. recruitment - informative prior, lognormal distribution
+  }
+  if(smax_dist==3){
+  Smax ~ cauchy(pSmax_mean,pSmax_sig); //spawners at max. recruitment - informative prior, cauchy distribution
+  }
 
 sigma ~ normal(0,1); //half normal on variance (lower limit of zero)
 
@@ -1352,13 +1531,14 @@ if(type=='hmm'&par=='both'){
   matrix[K,K] alpha_dirichlet; //prior inputs for dirichlet 
     real pSmax_mean; //prior mean for Smax
   real pSmax_sig; //prior variance for Smax
+ real smax_dist; //flag for distribution to sample smax - options: 1) normal, 2) lognormal, 3) cauchy
 }
 transformed data{
-real smax_pr;
-real smax_pr_sig;
+real logsmax_pr;
+real logsmax_pr_sig;
 
-smax_pr_sig=sqrt(log(1+((pSmax_sig)*(pSmax_sig))/((pSmax_mean)*(pSmax_mean)))); //this converts sigma on the untransformed scale to a log scale
-smax_pr=log(pSmax_mean)-0.5*smax_pr_sig*smax_pr_sig; //convert smax prior to per capita slope - transform to log scale with bias correction
+logsmax_pr_sig=sqrt(log(1+((pSmax_sig)*(pSmax_sig))/((pSmax_mean)*(pSmax_mean)))); //this converts sigma on the untransformed scale to a log scale
+logsmax_pr=log(pSmax_mean)-0.5*logsmax_pr_sig^2; //convert smax prior to per capita slope - transform to log scale with bias correction
 }
     parameters {
       // Discrete state model
@@ -1367,7 +1547,7 @@ smax_pr=log(pSmax_mean)-0.5*smax_pr_sig*smax_pr_sig; //convert smax prior to per
       // A[i][j] = p(z_t = j | z_{t-1} = i)
       // Continuous observation model
       ordered[K] log_a; // regime max. productivity
-      vector[K] log_b; // regime rate capacity 
+      vector[K] Smax; // regime rate capacity 
       real<lower=0> sigma; // observation standard deviations
     }
     
@@ -1378,7 +1558,7 @@ array[K] vector[N] logalpha;
         
 	  pi1=rep_vector(1.0/K,K);
 
-        b=exp(log_b);
+        b=1.0/Smax;
         
         { // Forward algorithm log p(z_t = j | y_{1:t})
           array[K] real accumulator;
@@ -1399,8 +1579,18 @@ array[K] vector[N] logalpha;
     model{
      
       log_a ~ normal(1.5,2.5);
-      log_b ~ normal(smax_pr,smax_pr_sig);
-
+     
+      if(smax_dist==1){
+  Smax ~ normal(pSmax_mean,pSmax_sig); //spawners at max. recruitment - informative prior, normal distribution
+  }
+  if(smax_dist==2){
+  Smax ~ lognormal(logsmax_pr,logsmax_pr_sig); //spawners at max. recruitment - informative prior, lognormal distribution
+  }
+  if(smax_dist==3){
+  Smax ~ cauchy(pSmax_mean,pSmax_sig); //spawners at max. recruitment - informative prior, cauchy distribution
+  }
+  
+  
       sigma ~ normal(0,1); //half normal on variance (lower limit of zero)
       
       for(k in 1:K){
@@ -1421,7 +1611,6 @@ array[K] vector[N] beta; //backward state probabilities
 array[K] vector[N] gamma; //forward-backward state probabilities
 
 //reference points
-vector[K] Smax;
 vector[K] Umsy;
 vector[K] Smsy;
 
@@ -1492,7 +1681,6 @@ zstar[N - t] = bpointer[N - t + 1, zstar[N - t + 1]];
 for(n in 1:N) y_rep[n]=normal_rng(log_a[zstar[n]] - S[n]*b[zstar[n]], sigma);
 
 for(k in 1:K){
-Smax[k] = 1/b[k];
 Umsy[k] = 1-lambert_w0(exp(1-log_a[k]));
 Smsy[k] = (1-lambert_w0(exp(1-log_a[k])))/b[k];
 }
@@ -1517,13 +1705,14 @@ data {
   real x_oos; //spawners 1-year ahead
  real pSmax_mean; //prior mean for Smax
   real pSmax_sig; //prior variance for Smax
+ real smax_dist; //flag for distribution to sample smax - options: 1) normal, 2) lognormal, 3) cauchy
 }
 transformed data{
-real smax_pr;
-real smax_pr_sig;
+real logsmax_pr;
+real logsmax_pr_sig;
 
-smax_pr_sig=sqrt(log(1+((pSmax_sig)*(pSmax_sig))/((pSmax_mean)*(pSmax_mean)))); //this converts sigma on the untransformed scale to a log scale
-smax_pr=log(pSmax_mean)-0.5*smax_pr_sig*smax_pr_sig; //convert smax prior to per capita slope - transform to log scale with bias correction
+logsmax_pr_sig=sqrt(log(1+((pSmax_sig)*(pSmax_sig))/((pSmax_mean)*(pSmax_mean)))); //this converts sigma on the untransformed scale to a log scale
+logsmax_pr=log(pSmax_mean)-0.5*logsmax_pr_sig^2; //convert smax prior to per capita slope - transform to log scale with bias correction
 }
 parameters {
 // Discrete state model
@@ -1532,16 +1721,16 @@ array[K] simplex[K] A; // transition probabilities
 // A[i][j] = p(z_t = j | z_{t-1} = i)
 // Continuous observation model
 ordered[K] log_a; // regime max. productivity
-vector[K] log_b; // regime rate capacity 
+vector<lower=0>[K] Smax; // regime rate capacity 
 real<lower=0> sigma; // observation standard deviations
 }
 
 transformed parameters {
 array[K] vector[N] logalpha;
-vector[K] b; //
+vector<lower=0>[K] b; //
 simplex[K] pi1; // initial state probabilities
 
-b=exp(log_b);
+b=1.0/Smax;
 
 pi1=rep_vector(1.0/K,K);
 
@@ -1565,7 +1754,17 @@ logalpha[t, j] = log_sum_exp(accumulator);
 model{
 
 log_a ~ normal(1.5,2.5);
-log_b ~ normal(smax_pr,smax_pr_sig);
+
+     if(smax_dist==1){
+  Smax ~ normal(pSmax_mean,pSmax_sig); //spawners at max. recruitment - informative prior, normal distribution
+  }
+  if(smax_dist==2){
+  Smax ~ lognormal(logsmax_pr,logsmax_pr_sig); //spawners at max. recruitment - informative prior, lognormal distribution
+  }
+  if(smax_dist==3){
+  Smax ~ cauchy(pSmax_mean,pSmax_sig); //spawners at max. recruitment - informative prior, cauchy distribution
+  }
+
 sigma ~ normal(0,1); //half normal on variance (lower limit of zero)
 
 for(k in 1:K){
